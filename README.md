@@ -141,12 +141,21 @@ node words_20k_pipeline.js --clean-only --import-start-id=3327
 # Cleanup + dodanie np. 3000 nowych slow
 node words_20k_pipeline.js --target=3000 --import-start-id=3327
 
+# Cleanup + zuzycie calej kolejki z gory
+node words_20k_pipeline.js --consume-all --import-start-id=3327
+
 git add .
 git commit -m "cleanup i import slow"
 git push
 ```
 
 `bundle.html` nie jest potrzebny do GitHub Pages. Wystarcza `index.html` + `app.js` + `style.css` + `words.json`.
+
+Import działa teraz jak kolejka FIFO: skrypt bierze wpisy od góry `20k.txt` i konsumuje je od góry.
+Jeśli dany wpis nie zostanie dodany (np. filtr, duplikat, słaba jakość), i tak znika z początku kolejki.
+
+Po wyczerpaniu kolejki możesz po prostu ponownie utworzyć `20k.txt` (1 angielskie słowo na linię)
+i uruchomić pipeline tym samym skryptem.
 
 ---
 

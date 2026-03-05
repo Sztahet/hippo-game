@@ -6,6 +6,7 @@ const STORAGE_KEY = 'vocab_progress';
 const SYNC_URL_KEY = 'vocab_sync_url';
 const SYNC_TOKEN_KEY = 'vocab_sync_token';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
+const IGNORED_WORD_IDS_KEY = 'vocab_ignored_word_ids';
 
 const ALL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const LEVEL_DESCRIPTIONS = {
@@ -32,6 +33,7 @@ let syncUrl = localStorage.getItem(SYNC_URL_KEY) || '';
 let syncToken = localStorage.getItem(SYNC_TOKEN_KEY) || '';
 let syncStatus = 'idle'; // 'idle' | 'syncing' | 'ok' | 'error'
 let activeLevels = loadActiveLevels();
+let ignoredWordIds = loadIgnoredWordIds();
 
 // ===== DATA =====
 function loadProgress() {
@@ -59,8 +61,25 @@ function saveActiveLevels() {
   localStorage.setItem(ACTIVE_LEVELS_KEY, JSON.stringify(activeLevels));
 }
 
+function loadIgnoredWordIds() {
+  try {
+    const raw = localStorage.getItem(IGNORED_WORD_IDS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
+  } catch {
+    return [];
+  }
+}
+
+function saveIgnoredWordIds() {
+  localStorage.setItem(IGNORED_WORD_IDS_KEY, JSON.stringify(ignoredWordIds));
+}
+
 function getActiveWords() {
-  return allWords.filter(w => activeLevels.includes(w.level || 'A1'));
+  const ignoredSet = new Set(ignoredWordIds);
+  return allWords.filter(w => activeLevels.includes(w.level || 'A1') && !ignoredSet.has(Number(w.id)));
 }
 
 function saveProgress() {
@@ -116,6 +135,15 @@ async function pullFromSheets() {
           }
         } catch {}
       }
+      if (raw._settings && raw._settings.ignoredWordIds) {
+        try {
+          const remoteIgnored = JSON.parse(raw._settings.ignoredWordIds);
+          if (Array.isArray(remoteIgnored)) {
+            ignoredWordIds = remoteIgnored.map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
+            saveIgnoredWordIds();
+          }
+        } catch {}
+      }
       // Return only real word-progress entries
       const cleaned = {};
       for (const [k, v] of Object.entries(raw)) {
@@ -140,7 +168,10 @@ async function pushToSheets(changedIds) {
     if (progress[id]) subset[id] = progress[id];
   }
   // Always push settings alongside progress changes
-  subset._settings = { activeLevels: JSON.stringify(activeLevels) };
+  subset._settings = {
+    activeLevels: JSON.stringify(activeLevels),
+    ignoredWordIds: JSON.stringify(ignoredWordIds)
+  };
   syncStatus = 'syncing';
   updateSyncIndicator();
   try {
@@ -162,7 +193,15 @@ async function pushSettingsToSheets() {
     await fetch(syncUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ token: syncToken, progress: { _settings: { activeLevels: JSON.stringify(activeLevels) } } })
+      body: JSON.stringify({
+        token: syncToken,
+        progress: {
+          _settings: {
+            activeLevels: JSON.stringify(activeLevels),
+            ignoredWordIds: JSON.stringify(ignoredWordIds)
+          }
+        }
+      })
     });
   } catch {}
 }
@@ -506,16 +545,24 @@ function renderSummary() {
   const wrong = sessionResults.filter(r => r.status === 'wrong').length;
   const total = sessionResults.length;
   const pct = Math.round((correct / total) * 100);
+  const isPerfectSession = total === SESSION_SIZE && correct === SESSION_SIZE;
 
+  const ignoredSet = new Set(ignoredWordIds);
   const wordRows = sessionResults.map(r => {
     const dotClass = r.status === 'correct' ? 'dot-correct' : r.status === 'typo' ? 'dot-typo' : 'dot-wrong';
+    const isIgnored = ignoredSet.has(Number(r.wordId));
     return `
       <div class="word-result">
         <div style="display:flex;align-items:center;">
           <div class="word-result-status ${dotClass}"></div>
           <span>${escapeHtml(r.pl)}</span>
         </div>
-        <span>${escapeHtml(r.correctAnswer)}</span>
+        <div class="word-result-right">
+          <span>${escapeHtml(r.correctAnswer)}</span>
+          <button class="btn-ignore-word" data-word-id="${r.wordId}" ${isIgnored ? 'disabled' : ''}>
+            ${isIgnored ? 'Ignorowane' : 'Ignoruj'}
+          </button>
+        </div>
       </div>
     `;
   }).join('');
@@ -523,6 +570,12 @@ function renderSummary() {
   app.innerHTML = `
     <div class="screen">
       <h1>Podsumowanie sesji</h1>
+      ${isPerfectSession ? `
+      <div class="perfect-session-banner">
+        <div class="perfect-session-hippo">🦛✨</div>
+        <div class="perfect-session-title">Szczęśliwy Hipek!</div>
+        <div class="perfect-session-text">20/20, sesja zaliczona na 100%!</div>
+      </div>` : ''}
       <div class="summary-card">
         <div class="summary-score">${pct}%</div>
         <div class="summary-score-label">poprawnych odpowiedzi</div>
@@ -547,12 +600,71 @@ function renderSummary() {
     </div>
   `;
 
+  if (isPerfectSession) {
+    // Small delayed popup gives a celebratory effect after summary render.
+    setTimeout(showHappyHippoPopup, 150);
+  }
+
+  document.querySelectorAll('.btn-ignore-word').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.dataset.wordId);
+      if (!Number.isFinite(id)) return;
+      ignoreWordById(id);
+      btn.textContent = 'Ignorowane';
+      btn.disabled = true;
+    });
+  });
+
   document.getElementById('btn-home').addEventListener('click', renderHome);
+}
+
+function ignoreWordById(wordId) {
+  if (ignoredWordIds.includes(wordId)) return;
+  ignoredWordIds.push(wordId);
+  saveIgnoredWordIds();
+
+  // Remove progress so ignored words fully disappear from active queues and stats.
+  if (progress[wordId]) {
+    delete progress[wordId];
+    saveProgress();
+  }
+
+  if (syncUrl) {
+    pushSettingsToSheets();
+  }
+}
+
+function showHappyHippoPopup() {
+  if (document.getElementById('happy-hippo-popup')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'happy-hippo-popup';
+  overlay.className = 'hippo-popup-overlay';
+  overlay.innerHTML = `
+    <div class="hippo-popup-card" role="dialog" aria-live="polite" aria-label="Perfect session celebration">
+      <div class="hippo-popup-emoji">🦛🎉</div>
+      <h2>Szczęśliwy Hipek!</h2>
+      <p>Perfekcyjna sesja: 20/20 poprawnych odpowiedzi.</p>
+      <button class="btn btn-primary" id="btn-close-hippo-popup">Super!</button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    overlay.remove();
+  };
+
+  document.getElementById('btn-close-hippo-popup').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
 }
 
 // ===== SETTINGS SCREEN =====
 function renderSettings() {
   const currentUrl = getSyncUrl();
+  const ignoredCount = ignoredWordIds.length;
 
   // Build word counts per level for display
   const levelCounts = {};
@@ -588,6 +700,13 @@ function renderSettings() {
           ⚠️ Wybierz co najmniej jeden poziom.
         </div>
         <button class="btn btn-primary" id="btn-save-levels" style="margin-top:1rem;">Zapisz poziomy</button>
+      </div>
+
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Ignorowane słówka</h2>
+        <p style="font-size:0.9rem;color:#555;">Aktualnie ignorowane: <strong id="ignored-count">${ignoredCount}</strong></p>
+        <p style="font-size:0.85rem;color:#6b7280;margin:0.5rem 0 1rem;">Słówka oznaczysz jako ignorowane w podsumowaniu sesji. Ignorowane nie trafiają do kolejnych sesji.</p>
+        <button class="btn btn-secondary" id="btn-clear-ignored" ${ignoredCount === 0 ? 'disabled' : ''}>Wyczyść listę ignorowanych</button>
       </div>
 
       <div class="card" style="text-align:left;margin-top:1rem;">
@@ -668,6 +787,19 @@ function renderSettings() {
       '<span style="color:#166534;">✓ Zapisano URL i token</span>';
   });
 
+  const btnClearIgnored = document.getElementById('btn-clear-ignored');
+  if (btnClearIgnored) {
+    btnClearIgnored.addEventListener('click', () => {
+      if (!ignoredWordIds.length) return;
+      if (!confirm('Czy na pewno chcesz przywrócić wszystkie ignorowane słówka?')) return;
+      ignoredWordIds = [];
+      saveIgnoredWordIds();
+      if (syncUrl) pushSettingsToSheets();
+      btnClearIgnored.disabled = true;
+      document.getElementById('ignored-count').textContent = '0';
+    });
+  }
+
   document.getElementById('btn-test-sync').addEventListener('click', async () => {
     const url = document.getElementById('input-sync-url').value.trim();
     const token = document.getElementById('input-sync-token').value.trim();
@@ -715,7 +847,16 @@ function renderSettings() {
         await fetch(syncUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ token: syncToken, progress: { ...progress, _settings: { activeLevels: JSON.stringify(activeLevels) } } })
+          body: JSON.stringify({
+            token: syncToken,
+            progress: {
+              ...progress,
+              _settings: {
+                activeLevels: JSON.stringify(activeLevels),
+                ignoredWordIds: JSON.stringify(ignoredWordIds)
+              }
+            }
+          })
         });
         btnPush.textContent = '✓ Wysłano!';
       } catch {

@@ -15,7 +15,8 @@ const STOPWORDS = new Set([
 
 const LOW_SIGNAL = new Set([
   'usr','pst','gmt','dvd','rss','isbn','oauth','smtp','fgets','printf','xhtml','xlibs','dns','tcp','udp','pci','usb','vga','bmp','jpg','jpeg','png','gif','asp','jsp','cgi','dll',
-  'aaa','xxx','xx','yy','zz','ooo','todo','misc','aka','ibid','lhs','rhs','sdk','cmd','tmp','spec','proc'
+  'aaa','xxx','xx','yy','zz','ooo','todo','misc','aka','ibid','lhs','rhs','sdk','cmd','tmp','spec','proc',
+  'thats','hdtv','expansys','utils','phys','comp','ist','nascar'
 ]);
 
 const ADULT_OR_UNWANTED = new Set([
@@ -25,7 +26,8 @@ const ADULT_OR_UNWANTED = new Set([
 
 const NAME_LIKE = new Set([
   'john','mary','michael','david','james','robert','daniel','thomas','richard','charles','joseph','paul','mark','donald','george','kenneth','steven','edward','brian','ronald','anthony','kevin','jason','matthew','gary','timothy','jose','larry','jeffrey','frank','scott','eric','andrew','raymond','gregory','joshua','jerry','dennis','walter','patrick','peter','harold','douglas','henry','carl','arthur','ryan','roger','joe','juan','jack','albert','jonathan','justin',
-  'anna','emma','julia','sarah','jessica','laura','nicole','linda','karen','ashley','susan','maria','jennifer','donna','jill','helen','rachel','katie','christine','victoria','amanda','lisa','kimberly','melissa','deborah','sharon','michelle','emily','sandra','carol','rebecca','diane','kathleen','amy','angela','heather','sophia'
+  'anna','emma','julia','sarah','jessica','laura','nicole','linda','karen','ashley','susan','maria','jennifer','donna','jill','helen','rachel','katie','christine','victoria','amanda','lisa','kimberly','melissa','deborah','sharon','michelle','emily','sandra','carol','rebecca','diane','kathleen','amy','angela','heather','sophia',
+  'ted','luke','julie','catherine','chuck','dale','perry','thomson','palmer','harrison','benjamin'
 ]);
 
 function normalize(s) {
@@ -73,6 +75,7 @@ function parseArgs(argv) {
   const out = {
     cleanOnly: false,
     target: 0,
+    consumeAll: false,
     importStartId: 3327,
     batchSize: 220,
     concurrency: 12
@@ -80,6 +83,7 @@ function parseArgs(argv) {
 
   for (const arg of argv) {
     if (arg === '--clean-only') out.cleanOnly = true;
+    else if (arg === '--consume-all') out.consumeAll = true;
     else if (arg.startsWith('--target=')) out.target = Number(arg.split('=')[1] || 0);
     else if (arg.startsWith('--import-start-id=')) out.importStartId = Number(arg.split('=')[1] || 3327);
     else if (arg.startsWith('--batch-size=')) out.batchSize = Number(arg.split('=')[1] || 220);
@@ -90,7 +94,10 @@ function parseArgs(argv) {
   if (!Number.isFinite(out.importStartId) || out.importStartId < 1) throw new Error('Invalid --import-start-id value');
   if (!Number.isFinite(out.batchSize) || out.batchSize < 1) throw new Error('Invalid --batch-size value');
   if (!Number.isFinite(out.concurrency) || out.concurrency < 1) throw new Error('Invalid --concurrency value');
-  if (out.cleanOnly) out.target = 0;
+  if (out.cleanOnly) {
+    out.target = 0;
+    out.consumeAll = false;
+  }
 
   return out;
 }
@@ -206,6 +213,10 @@ function countDuplicates(words) {
   try {
     const args = parseArgs(process.argv.slice(2));
 
+    if (!fs.existsSync(SOURCE_PATH)) {
+      throw new Error(`Missing ${SOURCE_PATH}. Provide a plain-text list with one English word per line.`);
+    }
+
     const words = JSON.parse(fs.readFileSync(WORDS_PATH, 'utf8'));
     const sourceLines = fs.readFileSync(SOURCE_PATH, 'utf8').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 
@@ -215,30 +226,37 @@ function countDuplicates(words) {
     const existingPl = new Set(cleaned.map((w) => normalize(w.pl)));
 
     const added = [];
-    const usedEn = [];
     let translatedTotal = 0;
+    let consumedFromTop = 0;
+    let skippedBeforeTranslate = 0;
 
-    if (args.target > 0) {
-      const seenCandidates = new Set();
-      const candidates = [];
-
-      for (const line of sourceLines) {
-        const w = normalize(line);
-        if (!isCandidateAllowed(w)) continue;
-        if (existingEn.has(w)) continue;
-        if (seenCandidates.has(w)) continue;
-        seenCandidates.add(w);
-        candidates.push(w);
-      }
-
-      if (candidates.length < args.target) {
-        throw new Error(`Not enough candidates left for ${args.target}. Have ${candidates.length}.`);
-      }
-
+    if (args.target > 0 || args.consumeAll) {
       let nextId = Math.max(...cleaned.map((w) => Number(w.id) || 0)) + 1;
+      const seenConsumedEn = new Set();
 
-      for (let start = 0; start < candidates.length && added.length < args.target; start += args.batchSize) {
-        const batch = candidates.slice(start, start + args.batchSize);
+      while (consumedFromTop < sourceLines.length && (args.consumeAll || added.length < args.target)) {
+        const batch = [];
+
+        // Consume strictly from the top of 20k.txt; any reviewed entry is removed.
+        while (consumedFromTop < sourceLines.length && batch.length < args.batchSize) {
+          const raw = sourceLines[consumedFromTop++];
+          const w = normalize(raw);
+
+          if (!isCandidateAllowed(w)) {
+            skippedBeforeTranslate++;
+            continue;
+          }
+          if (existingEn.has(w) || seenConsumedEn.has(w)) {
+            skippedBeforeTranslate++;
+            continue;
+          }
+
+          seenConsumedEn.add(w);
+          batch.push(w);
+        }
+
+        if (batch.length === 0) continue;
+
         const translated = await translateBatch(batch, args.concurrency);
         translatedTotal += batch.length;
 
@@ -260,21 +278,19 @@ function countDuplicates(words) {
 
           cleaned.push(row);
           added.push(row);
-          usedEn.push(en);
           existingEn.add(en);
           existingPl.add(pl);
         }
 
-        console.log(`Progress: translated ${translatedTotal}, added ${added.length}/${args.target}`);
+        console.log(`Progress: consumed ${consumedFromTop}, translated ${translatedTotal}, added ${added.length}/${args.target}`);
       }
 
-      if (added.length !== args.target) {
-        throw new Error(`Could not add ${args.target} unique words. Added ${added.length}.`);
+      if (!args.consumeAll && added.length !== args.target) {
+        throw new Error(`Could not add ${args.target} unique words. Added ${added.length}, consumed ${consumedFromTop}.`);
       }
     }
 
-    const removeSet = new Set(usedEn);
-    const remaining20k = sourceLines.filter((line) => !removeSet.has(normalize(line)));
+    const remaining20k = (args.target > 0 || args.consumeAll) ? sourceLines.slice(consumedFromTop) : sourceLines;
 
     const duplicates = countDuplicates(cleaned);
 
@@ -291,6 +307,10 @@ function countDuplicates(words) {
     console.log('Cleanup removed invalid rows:', removed.invalid);
     console.log('Added rows:', added.length);
     console.log('Added by level:', levelAdded);
+    if (args.target > 0 || args.consumeAll) {
+      console.log('Consumed from top of 20k:', consumedFromTop);
+      console.log('Skipped before translate:', skippedBeforeTranslate);
+    }
     console.log('Final words count:', cleaned.length);
     console.log('Remaining 20k entries:', remaining20k.length);
     console.log('Final duplicate EN keys:', duplicates.dupEn);

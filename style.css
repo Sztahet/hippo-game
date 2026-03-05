@@ -384,6 +384,31 @@ h2 {
   margin-bottom: 1rem;
 }
 
+.perfect-session-banner {
+  background: linear-gradient(135deg, #dcfce7 0%, #dbeafe 100%);
+  border: 2px solid #86efac;
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.perfect-session-hippo {
+  font-size: 2rem;
+  margin-bottom: 0.15rem;
+}
+
+.perfect-session-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #166534;
+}
+
+.perfect-session-text {
+  font-size: 0.9rem;
+  color: #14532d;
+}
+
 /* ===== WORD LIST IN SUMMARY ===== */
 .word-result {
   display: flex;
@@ -392,6 +417,31 @@ h2 {
   padding: 0.5rem 0;
   font-size: 0.9rem;
   border-bottom: 1px solid #f5f5f5;
+}
+
+.word-result-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-ignore-word {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  border-radius: 8px;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-ignore-word:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.btn-ignore-word:disabled {
+  opacity: 0.65;
+  cursor: default;
 }
 
 .word-result:last-child {
@@ -447,6 +497,52 @@ h2 {
 
 .screen {
   animation: fadeIn 0.3s ease;
+}
+
+.hippo-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 9999;
+}
+
+.hippo-popup-card {
+  width: min(440px, 100%);
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.4rem;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+  animation: hippoPopIn 0.32s ease;
+}
+
+.hippo-popup-card h2 {
+  margin: 0.2rem 0 0.45rem;
+  color: #14532d;
+}
+
+.hippo-popup-card p {
+  margin-bottom: 1rem;
+  color: #334155;
+}
+
+.hippo-popup-emoji {
+  font-size: 2.4rem;
+}
+
+@keyframes hippoPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ===== RESPONSIVE ===== */

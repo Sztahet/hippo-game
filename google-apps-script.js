@@ -53,8 +53,12 @@ function doGet(e) {
       if (!wordId) continue;
       const key = String(wordId);
       if (key === '_settings') {
-        // Special row: level column holds JSON of active CEFR levels
-        progress['_settings'] = { activeLevels: String(level) };
+        // Special row: level column holds active CEFR levels JSON,
+        // nextReview column holds ignored word IDs JSON.
+        progress['_settings'] = {
+          activeLevels: String(level || '[]'),
+          ignoredWordIds: String(nextReview || '[]')
+        };
       } else {
         progress[key] = {
           level: Number(level),
@@ -102,8 +106,8 @@ function doPost(e) {
     for (const [wordId, entry] of Object.entries(incoming)) {
       let row;
       if (wordId === '_settings') {
-        // Settings row: store active CEFR levels JSON in the level column
-        row = ['_settings', entry.activeLevels || '[]', '', ''];
+        // Settings row: store app settings JSON chunks in dedicated columns.
+        row = ['_settings', entry.activeLevels || '[]', entry.ignoredWordIds || '[]', ''];
       } else {
         row = [Number(wordId), entry.level, entry.nextReview, entry.lastReview || ''];
       }
