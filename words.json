@@ -13166,7 +13166,7 @@
   {
     "id": 2429,
     "pl": "mordownia",
-    "en": "slaughterhouse (archaic)",
+    "en": "slaughterhouse",
     "level": "C2"
   },
   {
@@ -13184,7 +13184,7 @@
   {
     "id": 2432,
     "pl": "wieszcz",
-    "en": "bard/prophet-poet",
+    "en": "bard",
     "level": "C2"
   },
   {
@@ -13196,13 +13196,13 @@
   {
     "id": 2434,
     "pl": "dzierżawa",
-    "en": "tenure/lease (archaic)",
+    "en": "tenure",
     "level": "C2"
   },
   {
     "id": 2435,
     "pl": "żywot",
-    "en": "life (archaic/literary)",
+    "en": "life",
     "level": "C2"
   },
   {
@@ -13214,7 +13214,7 @@
   {
     "id": 2437,
     "pl": "hetman",
-    "en": "hetman (commander)",
+    "en": "hetman",
     "level": "C2"
   },
   {
@@ -13256,13 +13256,13 @@
   {
     "id": 2444,
     "pl": "zwycięstwo",
-    "en": "victory (literary)",
+    "en": "victory",
     "level": "C2"
   },
   {
     "id": 2445,
     "pl": "klęska",
-    "en": "defeat/disaster",
+    "en": "defeat",
     "level": "C2"
   },
   {
@@ -13286,13 +13286,7 @@
   {
     "id": 2449,
     "pl": "baszta",
-    "en": "tower/bastion",
-    "level": "C2"
-  },
-  {
-    "id": 2450,
-    "pl": "bramа",
-    "en": "gate (archaic)",
+    "en": "tower",
     "level": "C2"
   },
   {
@@ -13304,13 +13298,13 @@
   {
     "id": 2452,
     "pl": "świtanie",
-    "en": "dawn (literary)",
+    "en": "dawn",
     "level": "C2"
   },
   {
     "id": 2453,
     "pl": "zmrok",
-    "en": "dusk (literary)",
+    "en": "dusk",
     "level": "C2"
   },
   {
@@ -13358,7 +13352,7 @@
   {
     "id": 2462,
     "pl": "przenikliwy",
-    "en": "incisive/penetrating",
+    "en": "incisive",
     "level": "C2"
   },
   {
@@ -13382,7 +13376,7 @@
   {
     "id": 2466,
     "pl": "wyrafinowany",
-    "en": "refined/sophisticated",
+    "en": "refined",
     "level": "C2"
   },
   {
@@ -13766,7 +13760,7 @@
   {
     "id": 2551,
     "pl": "abolicja",
-    "en": "abolition (legal)",
+    "en": "abolition",
     "level": "C2"
   },
   {
@@ -14072,7 +14066,7 @@
   {
     "id": 2606,
     "pl": "dywagować",
-    "en": "to digress/ramble",
+    "en": "to digress",
     "level": "C2"
   },
   {
@@ -15590,7 +15584,7 @@
   {
     "id": 2896,
     "pl": "przecier",
-    "en": "sieve/strainer",
+    "en": "sieve",
     "level": "A2"
   },
   {
@@ -16632,12 +16626,6 @@
     "level": "B2"
   },
   {
-    "id": 3097,
-    "pl": "kazus",
-    "en": "case study (ethics)",
-    "level": "B2"
-  },
-  {
     "id": 3098,
     "pl": "inżynieria eugeniczna",
     "en": "eugenic engineering",
@@ -16933,7 +16921,7 @@
   },
   {
     "id": 3162,
-    "pl": "LCA (analiza cyklu życia)",
+    "pl": "LCA",
     "en": "life cycle assessment",
     "level": "B2"
   },
@@ -17444,25 +17432,25 @@
   {
     "id": 3253,
     "pl": "opak",
-    "en": "backward (archaic)",
+    "en": "backward",
     "level": "C2"
   },
   {
     "id": 3254,
     "pl": "jeno",
-    "en": "only/but (archaic)",
+    "en": "only",
     "level": "C2"
   },
   {
     "id": 3255,
     "pl": "czart",
-    "en": "devil (archaic)",
+    "en": "devil",
     "level": "C2"
   },
   {
     "id": 3256,
     "pl": "mamona",
-    "en": "Mammon/wealth (archaic)",
+    "en": "Mammon",
     "level": "C2"
   },
   {
@@ -17498,13 +17486,13 @@
   {
     "id": 3262,
     "pl": "jędza",
-    "en": "hag/witch",
+    "en": "hag",
     "level": "C2"
   },
   {
     "id": 3263,
     "pl": "błoto",
-    "en": "mud/swamp (older connotation)",
+    "en": "mud",
     "level": "C2"
   },
   {
@@ -17516,7 +17504,7 @@
   {
     "id": 3265,
     "pl": "ostęp",
-    "en": "deep forest/thicket",
+    "en": "deep forest",
     "level": "C2"
   },
   {
@@ -17534,13 +17522,7 @@
   {
     "id": 3268,
     "pl": "grodzisko",
-    "en": "fortified settlement (ruin)",
-    "level": "C2"
-  },
-  {
-    "id": 3269,
-    "pl": "gród",
-    "en": "stronghold (historical)",
+    "en": "fortified settlement",
     "level": "C2"
   },
   {
@@ -17552,13 +17534,7 @@
   {
     "id": 3271,
     "pl": "opole",
-    "en": "territorial community (historical)",
-    "level": "C2"
-  },
-  {
-    "id": 3272,
-    "pl": "komes",
-    "en": "count (historical)",
+    "en": "territorial community",
     "level": "C2"
   },
   {
@@ -17756,7 +17732,7 @@
   {
     "id": 3317,
     "pl": "nieokiełznany",
-    "en": "untamed/unbridled",
+    "en": "untamed",
     "level": "C2"
   },
   {
@@ -18111,12 +18087,6 @@
     "id": 3391,
     "pl": "recenzje",
     "en": "reviews",
-    "level": "A2"
-  },
-  {
-    "id": 3392,
-    "pl": "życie",
-    "en": "life",
     "level": "A2"
   },
   {
@@ -18669,12 +18639,6 @@
     "id": 3493,
     "pl": "wydarzenia",
     "en": "events",
-    "level": "A2"
-  },
-  {
-    "id": 3494,
-    "pl": "jan",
-    "en": "john",
     "level": "A2"
   },
   {
@@ -19758,12 +19722,6 @@
     "level": "A2"
   },
   {
-    "id": 3691,
-    "pl": "dawid",
-    "en": "david",
-    "level": "A2"
-  },
-  {
     "id": 3692,
     "pl": "zabawa",
     "en": "fun",
@@ -19929,12 +19887,6 @@
     "id": 3720,
     "pl": "bezpośredni",
     "en": "direct",
-    "level": "A2"
-  },
-  {
-    "id": 3721,
-    "pl": "microsoftu",
-    "en": "microsoft",
     "level": "A2"
   },
   {
@@ -20298,12 +20250,6 @@
     "level": "A2"
   },
   {
-    "id": 3789,
-    "pl": "linuksa",
-    "en": "linux",
-    "level": "A2"
-  },
-  {
     "id": 3790,
     "pl": "produkcja",
     "en": "production",
@@ -20448,12 +20394,6 @@
     "level": "A2"
   },
   {
-    "id": 3815,
-    "pl": "michał",
-    "en": "michael",
-    "level": "A2"
-  },
-  {
     "id": 3816,
     "pl": "znany",
     "en": "known",
@@ -20493,12 +20433,6 @@
     "id": 3822,
     "pl": "bezprzewodowy",
     "en": "wireless",
-    "level": "A2"
-  },
-  {
-    "id": 3823,
-    "pl": "paweł",
-    "en": "paul",
     "level": "A2"
   },
   {
@@ -21126,12 +21060,6 @@
     "level": "A2"
   },
   {
-    "id": 3937,
-    "pl": "roberta",
-    "en": "robert",
-    "level": "A2"
-  },
-  {
     "id": 3938,
     "pl": "strona główna",
     "en": "homepage",
@@ -21552,12 +21480,6 @@
     "level": "A2"
   },
   {
-    "id": 4016,
-    "pl": "tomasz",
-    "en": "thomas",
-    "level": "A2"
-  },
-  {
     "id": 4017,
     "pl": "takty muzyczne",
     "en": "numbers",
@@ -21870,12 +21792,6 @@
     "level": "B1"
   },
   {
-    "id": 4073,
-    "pl": "nokii",
-    "en": "nokia",
-    "level": "B1"
-  },
-  {
     "id": 4074,
     "pl": "uderzenie",
     "en": "impact",
@@ -21960,12 +21876,6 @@
     "level": "B1"
   },
   {
-    "id": 4089,
-    "pl": "williama",
-    "en": "william",
-    "level": "B1"
-  },
-  {
     "id": 4090,
     "pl": "wyrazić",
     "en": "express",
@@ -21981,12 +21891,6 @@
     "id": 4093,
     "pl": "dystans",
     "en": "distance",
-    "level": "B1"
-  },
-  {
-    "id": 4094,
-    "pl": "piotr",
-    "en": "peter",
     "level": "B1"
   },
   {
@@ -22059,12 +21963,6 @@
     "id": 4107,
     "pl": "wybrany",
     "en": "selected",
-    "level": "B1"
-  },
-  {
-    "id": 4108,
-    "pl": "amazonka",
-    "en": "amazon",
     "level": "B1"
   },
   {
@@ -22539,12 +22437,6 @@
     "id": 4194,
     "pl": "reklamy",
     "en": "ads",
-    "level": "B1"
-  },
-  {
-    "id": 4195,
-    "pl": "maryja",
-    "en": "mary",
     "level": "B1"
   },
   {
@@ -23766,12 +23658,6 @@
     "level": "B1"
   },
   {
-    "id": 4419,
-    "pl": "karol",
-    "en": "charles",
-    "level": "B1"
-  },
-  {
     "id": 4420,
     "pl": "naród",
     "en": "nation",
@@ -24150,12 +24036,6 @@
     "level": "B1"
   },
   {
-    "id": 4487,
-    "pl": "smar",
-    "en": "cum",
-    "level": "B1"
-  },
-  {
     "id": 4488,
     "pl": "kupujący",
     "en": "buyer",
@@ -24378,12 +24258,6 @@
     "level": "B1"
   },
   {
-    "id": 4528,
-    "pl": "johnsona",
-    "en": "johnson",
-    "level": "B1"
-  },
-  {
     "id": 4529,
     "pl": "szybko",
     "en": "quickly",
@@ -24525,12 +24399,6 @@
     "id": 4553,
     "pl": "towary drugiej jakości",
     "en": "seconds",
-    "level": "B1"
-  },
-  {
-    "id": 4554,
-    "pl": "jonesa",
-    "en": "jones",
     "level": "B1"
   },
   {
@@ -24966,12 +24834,6 @@
     "level": "B1"
   },
   {
-    "id": 4636,
-    "pl": "ipoda",
-    "en": "ipod",
-    "level": "B1"
-  },
-  {
     "id": 4637,
     "pl": "powiedzenie",
     "en": "saying",
@@ -25404,12 +25266,6 @@
     "level": "B1"
   },
   {
-    "id": 4718,
-    "pl": "williamsa",
-    "en": "williams",
-    "level": "B1"
-  },
-  {
     "id": 4719,
     "pl": "druk",
     "en": "printing",
@@ -25461,12 +25317,6 @@
     "id": 4728,
     "pl": "kluby",
     "en": "clubs",
-    "level": "B2"
-  },
-  {
-    "id": 4730,
-    "pl": "jacksona",
-    "en": "jackson",
     "level": "B2"
   },
   {
@@ -26526,12 +26376,6 @@
     "level": "B2"
   },
   {
-    "id": 4933,
-    "pl": "austina",
-    "en": "austin",
-    "level": "B2"
-  },
-  {
     "id": 4934,
     "pl": "ulubione",
     "en": "favorites",
@@ -26541,12 +26385,6 @@
     "id": 4936,
     "pl": "sprężyny",
     "en": "springs",
-    "level": "B2"
-  },
-  {
-    "id": 4938,
-    "pl": "andrzej",
-    "en": "andrew",
     "level": "B2"
   },
   {
@@ -26589,12 +26427,6 @@
     "id": 4945,
     "pl": "obrażenia",
     "en": "injury",
-    "level": "B2"
-  },
-  {
-    "id": 4946,
-    "pl": "józef",
-    "en": "joseph",
     "level": "B2"
   },
   {
@@ -26655,12 +26487,6 @@
     "id": 4959,
     "pl": "urzędnicy",
     "en": "officials",
-    "level": "B2"
-  },
-  {
-    "id": 4960,
-    "pl": "briana",
-    "en": "brian",
     "level": "B2"
   },
   {
@@ -26871,12 +26697,6 @@
     "id": 4998,
     "pl": "próbki",
     "en": "samples",
-    "level": "B2"
-  },
-  {
-    "id": 4999,
-    "pl": "davisa",
-    "en": "davis",
     "level": "B2"
   },
   {
@@ -27150,12 +26970,6 @@
     "level": "B2"
   },
   {
-    "id": 5052,
-    "pl": "anna",
-    "en": "ann",
-    "level": "B2"
-  },
-  {
     "id": 5053,
     "pl": "pierścienie",
     "en": "rings",
@@ -27183,12 +26997,6 @@
     "id": 5057,
     "pl": "damski",
     "en": "ladies",
-    "level": "B2"
-  },
-  {
-    "id": 5058,
-    "pl": "henz",
-    "en": "henry",
     "level": "B2"
   },
   {
@@ -27510,12 +27318,6 @@
     "level": "B2"
   },
   {
-    "id": 5116,
-    "pl": "disneya",
-    "en": "disney",
-    "level": "B2"
-  },
-  {
     "id": 5117,
     "pl": "gospodarstwo domowe",
     "en": "household",
@@ -27741,12 +27543,6 @@
     "id": 5160,
     "pl": "głównie",
     "en": "mostly",
-    "level": "C1"
-  },
-  {
-    "id": 5161,
-    "pl": "eryk",
-    "en": "eric",
     "level": "C1"
   },
   {
@@ -28074,12 +27870,6 @@
     "level": "C1"
   },
   {
-    "id": 5225,
-    "pl": "wilsona",
-    "en": "wilson",
-    "level": "C1"
-  },
-  {
     "id": 5226,
     "pl": "kształt",
     "en": "shape",
@@ -28206,12 +27996,6 @@
     "level": "C1"
   },
   {
-    "id": 5248,
-    "pl": "kutas",
-    "en": "dick",
-    "level": "C1"
-  },
-  {
     "id": 5249,
     "pl": "kompaktowy",
     "en": "compact",
@@ -28293,18 +28077,6 @@
     "id": 5262,
     "pl": "dokładny",
     "en": "accurate",
-    "level": "C1"
-  },
-  {
-    "id": 5263,
-    "pl": "stefan",
-    "en": "stephen",
-    "level": "C1"
-  },
-  {
-    "id": 5264,
-    "pl": "elżbieta",
-    "en": "elizabeth",
     "level": "C1"
   },
   {
@@ -28779,12 +28551,6 @@
     "id": 5352,
     "pl": "przenoszenie",
     "en": "transmission",
-    "level": "A2"
-  },
-  {
-    "id": 5353,
-    "pl": "andersona",
-    "en": "anderson",
     "level": "A2"
   },
   {
@@ -29463,12 +29229,6 @@
     "id": 5479,
     "pl": "chwytak",
     "en": "lewis",
-    "level": "A2"
-  },
-  {
-    "id": 5480,
-    "pl": "howarda",
-    "en": "howard",
     "level": "A2"
   },
   {
@@ -30186,12 +29946,6 @@
     "level": "A2"
   },
   {
-    "id": 5617,
-    "pl": "lincolna",
-    "en": "lincoln",
-    "level": "A2"
-  },
-  {
     "id": 5618,
     "pl": "pomogło",
     "en": "helped",
@@ -30300,12 +30054,6 @@
     "level": "A2"
   },
   {
-    "id": 5638,
-    "pl": "wieża",
-    "en": "tower",
-    "level": "A2"
-  },
-  {
     "id": 5639,
     "pl": "suma",
     "en": "sum",
@@ -30327,12 +30075,6 @@
     "id": 5642,
     "pl": "tymczasowy",
     "en": "temporary",
-    "level": "A2"
-  },
-  {
-    "id": 5643,
-    "pl": "alana",
-    "en": "alan",
     "level": "A2"
   },
   {
@@ -30747,12 +30489,6 @@
     "id": 5724,
     "pl": "cięcie",
     "en": "cutting",
-    "level": "A2"
-  },
-  {
-    "id": 5726,
-    "pl": "szymon",
-    "en": "simon",
     "level": "A2"
   },
   {
@@ -31284,12 +31020,6 @@
     "level": "A2"
   },
   {
-    "id": 5825,
-    "pl": "aleksander",
-    "en": "alexander",
-    "level": "A2"
-  },
-  {
     "id": 5826,
     "pl": "audycja",
     "en": "broadcast",
@@ -31626,12 +31356,6 @@
     "level": "A2"
   },
   {
-    "id": 5884,
-    "pl": "hondy",
-    "en": "honda",
-    "level": "A2"
-  },
-  {
     "id": 5885,
     "pl": "rachunki",
     "en": "bills",
@@ -31854,12 +31578,6 @@
     "level": "A2"
   },
   {
-    "id": 5925,
-    "pl": "siemensa",
-    "en": "siemens",
-    "level": "A2"
-  },
-  {
     "id": 5926,
     "pl": "oznaczał",
     "en": "meant",
@@ -31956,12 +31674,6 @@
     "level": "A2"
   },
   {
-    "id": 5942,
-    "pl": "marszałek",
-    "en": "marshall",
-    "level": "A2"
-  },
-  {
     "id": 5943,
     "pl": "masaż",
     "en": "massage",
@@ -32004,12 +31716,6 @@
     "level": "A2"
   },
   {
-    "id": 5953,
-    "pl": "aleks",
-    "en": "alex",
-    "level": "A2"
-  },
-  {
     "id": 5954,
     "pl": "huk",
     "en": "bang",
@@ -32031,12 +31737,6 @@
     "id": 5957,
     "pl": "zaburzenia",
     "en": "disorders",
-    "level": "A2"
-  },
-  {
-    "id": 5958,
-    "pl": "hamiltona",
-    "en": "hamilton",
     "level": "A2"
   },
   {
@@ -32382,12 +32082,6 @@
     "level": "A2"
   },
   {
-    "id": 6021,
-    "pl": "franklina",
-    "en": "franklin",
-    "level": "A2"
-  },
-  {
     "id": 6022,
     "pl": "kąt",
     "en": "angle",
@@ -32508,12 +32202,6 @@
     "level": "A2"
   },
   {
-    "id": 6046,
-    "pl": "morgana",
-    "en": "morgan",
-    "level": "A2"
-  },
-  {
     "id": 6047,
     "pl": "pochodny",
     "en": "derived",
@@ -32535,12 +32223,6 @@
     "id": 6051,
     "pl": "komputery stacjonarne",
     "en": "desktops",
-    "level": "A2"
-  },
-  {
-    "id": 6052,
-    "pl": "kolumb",
-    "en": "columbus",
     "level": "A2"
   },
   {
@@ -32724,12 +32406,6 @@
     "level": "A2"
   },
   {
-    "id": 6087,
-    "pl": "hiltona",
-    "en": "hilton",
-    "level": "A2"
-  },
-  {
     "id": 6088,
     "pl": "rozpoznać",
     "en": "ken",
@@ -32760,12 +32436,6 @@
     "level": "A2"
   },
   {
-    "id": 6093,
-    "pl": "debiana",
-    "en": "debian",
-    "level": "A2"
-  },
-  {
     "id": 6094,
     "pl": "do",
     "en": "till",
@@ -32781,12 +32451,6 @@
     "id": 6096,
     "pl": "inwestowanie",
     "en": "investing",
-    "level": "A2"
-  },
-  {
-    "id": 6097,
-    "pl": "krzysztof",
-    "en": "christopher",
     "level": "A2"
   },
   {
@@ -33090,12 +32754,6 @@
     "level": "A2"
   },
   {
-    "id": 6153,
-    "pl": "harrisa",
-    "en": "harris",
-    "level": "A2"
-  },
-  {
     "id": 6154,
     "pl": "mile na godzinę",
     "en": "mph",
@@ -33135,12 +32793,6 @@
     "id": 6160,
     "pl": "kompozycja",
     "en": "composition",
-    "level": "A2"
-  },
-  {
-    "id": 6161,
-    "pl": "toyoty",
-    "en": "toyota",
     "level": "A2"
   },
   {
@@ -33423,12 +33075,6 @@
     "id": 6216,
     "pl": "sakrament",
     "en": "sacramento",
-    "level": "A2"
-  },
-  {
-    "id": 6218,
-    "pl": "russella",
-    "en": "russell",
     "level": "A2"
   },
   {
@@ -33786,12 +33432,6 @@
     "level": "B1"
   },
   {
-    "id": 6280,
-    "pl": "thompsona",
-    "en": "thompson",
-    "level": "B1"
-  },
-  {
     "id": 6281,
     "pl": "zwycięzcy",
     "en": "winners",
@@ -33846,12 +33486,6 @@
     "level": "B1"
   },
   {
-    "id": 6291,
-    "pl": "nelsona",
-    "en": "nelson",
-    "level": "B1"
-  },
-  {
     "id": 6292,
     "pl": "przybył",
     "en": "arrived",
@@ -33867,12 +33501,6 @@
     "id": 6294,
     "pl": "twarze",
     "en": "faces",
-    "level": "B1"
-  },
-  {
-    "id": 6295,
-    "pl": "kutasy",
-    "en": "cocks",
     "level": "B1"
   },
   {
@@ -34011,12 +33639,6 @@
     "id": 6322,
     "pl": "strzelanie",
     "en": "shooting",
-    "level": "B1"
-  },
-  {
-    "id": 6323,
-    "pl": "kenta",
-    "en": "kent",
     "level": "B1"
   },
   {
@@ -34176,12 +33798,6 @@
     "level": "B1"
   },
   {
-    "id": 6351,
-    "pl": "gordona",
-    "en": "gordon",
-    "level": "B1"
-  },
-  {
     "id": 6353,
     "pl": "rolnicy",
     "en": "farmers",
@@ -34263,12 +33879,6 @@
     "id": 6371,
     "pl": "dyrektor generalny",
     "en": "ceo",
-    "level": "B1"
-  },
-  {
-    "id": 6372,
-    "pl": "simpsona",
-    "en": "simpson",
     "level": "B1"
   },
   {
@@ -34656,12 +34266,6 @@
     "level": "B1"
   },
   {
-    "id": 6447,
-    "pl": "campbella",
-    "en": "campbell",
-    "level": "B1"
-  },
-  {
     "id": 6448,
     "pl": "budzić",
     "en": "wake",
@@ -34737,12 +34341,6 @@
     "id": 6464,
     "pl": "sms-y",
     "en": "sms",
-    "level": "B1"
-  },
-  {
-    "id": 6465,
-    "pl": "gówno",
-    "en": "shit",
     "level": "B1"
   },
   {
@@ -34845,12 +34443,6 @@
     "id": 6485,
     "pl": "uczniowie",
     "en": "pupils",
-    "level": "B1"
-  },
-  {
-    "id": 6486,
-    "pl": "stewarta",
-    "en": "stewart",
     "level": "B1"
   },
   {
@@ -34977,12 +34569,6 @@
     "id": 6507,
     "pl": "częściowo",
     "en": "partly",
-    "level": "B1"
-  },
-  {
-    "id": 6508,
-    "pl": "nikona",
-    "en": "nikon",
     "level": "B1"
   },
   {
@@ -35247,12 +34833,6 @@
     "id": 6556,
     "pl": "zdolność",
     "en": "capability",
-    "level": "B1"
-  },
-  {
-    "id": 6557,
-    "pl": "craiga",
-    "en": "craig",
     "level": "B1"
   },
   {
@@ -35706,12 +35286,6 @@
     "level": "B1"
   },
   {
-    "id": 6643,
-    "pl": "małgorzata",
-    "en": "margaret",
-    "level": "B1"
-  },
-  {
     "id": 6644,
     "pl": "kompak",
     "en": "compaq",
@@ -35781,12 +35355,6 @@
     "id": 6656,
     "pl": "sektory",
     "en": "sectors",
-    "level": "B1"
-  },
-  {
-    "id": 6657,
-    "pl": "samuela",
-    "en": "samuel",
     "level": "B1"
   },
   {
@@ -35917,14 +35485,8 @@
   },
   {
     "id": 6681,
-    "pl": "obr./min",
+    "pl": "obr.",
     "en": "rpm",
-    "level": "B1"
-  },
-  {
-    "id": 6682,
-    "pl": "diabeł",
-    "en": "devil",
     "level": "B1"
   },
   {
@@ -36120,12 +35682,6 @@
     "level": "B1"
   },
   {
-    "id": 6723,
-    "pl": "filip",
-    "en": "philip",
-    "level": "B1"
-  },
-  {
     "id": 6724,
     "pl": "elita",
     "en": "elite",
@@ -36165,12 +35721,6 @@
     "id": 6731,
     "pl": "wyświetlanie",
     "en": "displaying",
-    "level": "B1"
-  },
-  {
-    "id": 6732,
-    "pl": "collinsa",
-    "en": "collins",
     "level": "B1"
   },
   {
@@ -36366,12 +35916,6 @@
     "level": "B1"
   },
   {
-    "id": 6769,
-    "pl": "parkera",
-    "en": "parker",
-    "level": "B1"
-  },
-  {
     "id": 6770,
     "pl": "określający",
     "en": "determining",
@@ -36387,12 +35931,6 @@
     "id": 6772,
     "pl": "spersonalizowane",
     "en": "personalized",
-    "level": "B1"
-  },
-  {
-    "id": 6773,
-    "pl": "kennedy'ego",
-    "en": "kennedy",
     "level": "B1"
   },
   {
@@ -36738,12 +36276,6 @@
     "level": "B1"
   },
   {
-    "id": 6835,
-    "pl": "świt",
-    "en": "dawn",
-    "level": "B1"
-  },
-  {
     "id": 6836,
     "pl": "reprezentowanie",
     "en": "representing",
@@ -36765,12 +36297,6 @@
     "id": 6839,
     "pl": "usunięte",
     "en": "deleted",
-    "level": "B1"
-  },
-  {
-    "id": 6840,
-    "pl": "michell",
-    "en": "mitchell",
     "level": "B1"
   },
   {
@@ -36870,12 +36396,6 @@
     "level": "B1"
   },
   {
-    "id": 6858,
-    "pl": "morrisa",
-    "en": "morris",
-    "level": "B1"
-  },
-  {
     "id": 6859,
     "pl": "bestsellery",
     "en": "bestsellers",
@@ -36972,12 +36492,6 @@
     "level": "B1"
   },
   {
-    "id": 6883,
-    "pl": "evansa",
-    "en": "evans",
-    "level": "B1"
-  },
-  {
     "id": 6884,
     "pl": "zwiastować",
     "en": "herald",
@@ -37017,12 +36531,6 @@
     "id": 6892,
     "pl": "atrakcja",
     "en": "attraction",
-    "level": "B1"
-  },
-  {
-    "id": 6893,
-    "pl": "alicja",
-    "en": "alice",
     "level": "B1"
   },
   {
@@ -37185,12 +36693,6 @@
     "id": 6929,
     "pl": "nagrania",
     "en": "recordings",
-    "level": "B1"
-  },
-  {
-    "id": 6930,
-    "pl": "jeffersona",
-    "en": "jefferson",
     "level": "B1"
   },
   {
@@ -37665,12 +37167,6 @@
     "id": 7016,
     "pl": "kapelusze",
     "en": "hats",
-    "level": "B1"
-  },
-  {
-    "id": 7017,
-    "pl": "robinsona",
-    "en": "robinson",
     "level": "B1"
   },
   {
@@ -38394,12 +37890,6 @@
     "level": "B2"
   },
   {
-    "id": 7162,
-    "pl": "nortona",
-    "en": "norton",
-    "level": "B2"
-  },
-  {
     "id": 7163,
     "pl": "wyeliminować",
     "en": "eliminate",
@@ -38829,12 +38319,6 @@
     "id": 7243,
     "pl": "spodziewany",
     "en": "prospective",
-    "level": "B2"
-  },
-  {
-    "id": 7244,
-    "pl": "wibratory",
-    "en": "dildos",
     "level": "B2"
   },
   {
@@ -39588,12 +39072,6 @@
     "level": "B2"
   },
   {
-    "id": 7391,
-    "pl": "stanleya",
-    "en": "stanley",
-    "level": "B2"
-  },
-  {
     "id": 7392,
     "pl": "psychologiczny",
     "en": "psychological",
@@ -39981,12 +39459,6 @@
     "id": 7474,
     "pl": "więzy",
     "en": "chains",
-    "level": "B2"
-  },
-  {
-    "id": 7475,
-    "pl": "kingstona",
-    "en": "kingston",
     "level": "B2"
   },
   {
@@ -41490,12 +40962,6 @@
     "level": "B2"
   },
   {
-    "id": 7797,
-    "pl": "stanforda",
-    "en": "stanford",
-    "level": "B2"
-  },
-  {
     "id": 7799,
     "pl": "pończochy",
     "en": "stockings",
@@ -41718,12 +41184,6 @@
     "level": "C1"
   },
   {
-    "id": 7839,
-    "pl": "stuarta",
-    "en": "stuart",
-    "level": "C1"
-  },
-  {
     "id": 7840,
     "pl": "współautorzy",
     "en": "contributors",
@@ -41763,12 +41223,6 @@
     "id": 7848,
     "pl": "dyskrecja",
     "en": "discretion",
-    "level": "C1"
-  },
-  {
-    "id": 7852,
-    "pl": "wibrator",
-    "en": "vibrator",
     "level": "C1"
   },
   {
@@ -42942,12 +42396,6 @@
     "level": "C1"
   },
   {
-    "id": 8080,
-    "pl": "szekspir",
-    "en": "shakespeare",
-    "level": "C1"
-  },
-  {
     "id": 8081,
     "pl": "poradnik",
     "en": "hints",
@@ -43005,12 +42453,6 @@
     "id": 8091,
     "pl": "przewodowy",
     "en": "wired",
-    "level": "C1"
-  },
-  {
-    "id": 8092,
-    "pl": "elvisa",
-    "en": "elvis",
     "level": "C1"
   },
   {
@@ -43176,12 +42618,6 @@
     "level": "C1"
   },
   {
-    "id": 8125,
-    "pl": "uściski",
-    "en": "hughes",
-    "level": "C1"
-  },
-  {
     "id": 8126,
     "pl": "fotografowie",
     "en": "photographers",
@@ -43266,12 +42702,6 @@
     "level": "C1"
   },
   {
-    "id": 8144,
-    "pl": "watsonie",
-    "en": "watson",
-    "level": "C1"
-  },
-  {
     "id": 8145,
     "pl": "kłamliwy",
     "en": "lying",
@@ -43308,21 +42738,9 @@
     "level": "C1"
   },
   {
-    "id": 8152,
-    "pl": "bryana",
-    "en": "bryan",
-    "level": "C1"
-  },
-  {
     "id": 8153,
     "pl": "ce",
     "en": "cet",
-    "level": "C1"
-  },
-  {
-    "id": 8154,
-    "pl": "ręczna robota",
-    "en": "handjob",
     "level": "C1"
   },
   {
@@ -43800,12 +43218,6 @@
     "level": "C2"
   },
   {
-    "id": 8256,
-    "pl": "patrycja",
-    "en": "patricia",
-    "level": "C2"
-  },
-  {
     "id": 8257,
     "pl": "klakson",
     "en": "horn",
@@ -43827,12 +43239,6 @@
     "id": 8262,
     "pl": "drobnostki",
     "en": "trivia",
-    "level": "C2"
-  },
-  {
-    "id": 8263,
-    "pl": "adidasa",
-    "en": "adidas",
     "level": "C2"
   },
   {
@@ -44094,12 +43500,6 @@
     "level": "C2"
   },
   {
-    "id": 8322,
-    "pl": "chryslera",
-    "en": "chrysler",
-    "level": "C2"
-  },
-  {
     "id": 8323,
     "pl": "odmawiać",
     "en": "refuse",
@@ -44115,12 +43515,6 @@
     "id": 8325,
     "pl": "zapach",
     "en": "fragrance",
-    "level": "C2"
-  },
-  {
-    "id": 8326,
-    "pl": "mcdonalda",
-    "en": "mcdonald",
     "level": "C2"
   },
   {
@@ -44298,12 +43692,6 @@
     "level": "A2"
   },
   {
-    "id": 8356,
-    "pl": "czarleston",
-    "en": "charleston",
-    "level": "A2"
-  },
-  {
     "id": 8357,
     "pl": "obsługiwane",
     "en": "handled",
@@ -44358,12 +43746,6 @@
     "level": "A2"
   },
   {
-    "id": 8366,
-    "pl": "burtona",
-    "en": "burton",
-    "level": "A2"
-  },
-  {
     "id": 8367,
     "pl": "zawodowy",
     "en": "vocational",
@@ -44379,12 +43761,6 @@
     "id": 8369,
     "pl": "skopiowane",
     "en": "copied",
-    "level": "A2"
-  },
-  {
-    "id": 8370,
-    "pl": "gibsona",
-    "en": "gibson",
     "level": "A2"
   },
   {
@@ -44784,12 +44160,6 @@
     "level": "A2"
   },
   {
-    "id": 8437,
-    "pl": "alfreda",
-    "en": "alfred",
-    "level": "A2"
-  },
-  {
     "id": 8438,
     "pl": "kolonialny",
     "en": "colonial",
@@ -44931,12 +44301,6 @@
     "id": 8461,
     "pl": "odnieść sukces",
     "en": "succeed",
-    "level": "A2"
-  },
-  {
-    "id": 8462,
-    "pl": "leonarda",
-    "en": "leonard",
     "level": "A2"
   },
   {
@@ -45252,12 +44616,6 @@
     "level": "A2"
   },
   {
-    "id": 8515,
-    "pl": "spencera",
-    "en": "spencer",
-    "level": "A2"
-  },
-  {
     "id": 8516,
     "pl": "urugwaj",
     "en": "uruguay",
@@ -45357,12 +44715,6 @@
     "id": 8532,
     "pl": "wyrównanie",
     "en": "alignment",
-    "level": "A2"
-  },
-  {
-    "id": 8533,
-    "pl": "masturbacja",
-    "en": "masturbating",
     "level": "A2"
   },
   {
@@ -45690,12 +45042,6 @@
     "level": "A2"
   },
   {
-    "id": 8588,
-    "pl": "petersburgu",
-    "en": "petersburg",
-    "level": "A2"
-  },
-  {
     "id": 8589,
     "pl": "konsekwentnie",
     "en": "consistently",
@@ -45783,12 +45129,6 @@
     "id": 8603,
     "pl": "ludzkość",
     "en": "humanity",
-    "level": "A2"
-  },
-  {
-    "id": 8604,
-    "pl": "holmesa",
-    "en": "holmes",
     "level": "A2"
   },
   {
@@ -45939,12 +45279,6 @@
     "id": 8629,
     "pl": "sześcian",
     "en": "cube",
-    "level": "A2"
-  },
-  {
-    "id": 8630,
-    "pl": "volkswagena",
-    "en": "volkswagen",
     "level": "A2"
   },
   {
@@ -46230,12 +45564,6 @@
     "level": "A2"
   },
   {
-    "id": 8678,
-    "pl": "mozambik",
-    "en": "mozambique",
-    "level": "A2"
-  },
-  {
     "id": 8679,
     "pl": "śmieci",
     "en": "trash",
@@ -46338,12 +45666,6 @@
     "level": "A2"
   },
   {
-    "id": 8696,
-    "pl": "lexmarka",
-    "en": "lexmark",
-    "level": "A2"
-  },
-  {
     "id": 8697,
     "pl": "sprzątaczki",
     "en": "cleaners",
@@ -46422,12 +45744,6 @@
     "level": "A2"
   },
   {
-    "id": 8710,
-    "pl": "bennetta",
-    "en": "bennett",
-    "level": "A2"
-  },
-  {
     "id": 8711,
     "pl": "wyobraźnia",
     "en": "imagination",
@@ -46467,12 +45783,6 @@
     "id": 8717,
     "pl": "przydzielać",
     "en": "assign",
-    "level": "A2"
-  },
-  {
-    "id": 8718,
-    "pl": "armstronga",
-    "en": "armstrong",
     "level": "A2"
   },
   {
@@ -46617,12 +45927,6 @@
     "id": 8742,
     "pl": "liryczny",
     "en": "lyric",
-    "level": "A2"
-  },
-  {
-    "id": 8743,
-    "pl": "klara",
-    "en": "claire",
     "level": "A2"
   },
   {
@@ -47502,12 +46806,6 @@
     "level": "A2"
   },
   {
-    "id": 8891,
-    "pl": "hopkinsa",
-    "en": "hopkins",
-    "level": "A2"
-  },
-  {
     "id": 8892,
     "pl": "pilny",
     "en": "urgent",
@@ -47541,12 +46839,6 @@
     "id": 8897,
     "pl": "gratulacje",
     "en": "congratulations",
-    "level": "A2"
-  },
-  {
-    "id": 8898,
-    "pl": "cohena",
-    "en": "cohen",
     "level": "A2"
   },
   {
@@ -47760,12 +47052,6 @@
     "level": "A2"
   },
   {
-    "id": 8934,
-    "pl": "bradforda",
-    "en": "bradford",
-    "level": "A2"
-  },
-  {
     "id": 8935,
     "pl": "dł",
     "en": "len",
@@ -47781,12 +47067,6 @@
     "id": 8937,
     "pl": "półwysep",
     "en": "peninsula",
-    "level": "A2"
-  },
-  {
-    "id": 8938,
-    "pl": "reynoldsa",
-    "en": "reynolds",
     "level": "A2"
   },
   {
@@ -48102,12 +47382,6 @@
     "level": "A2"
   },
   {
-    "id": 8991,
-    "pl": "richardsona",
-    "en": "richardson",
-    "level": "A2"
-  },
-  {
     "id": 8992,
     "pl": "hindus",
     "en": "hindu",
@@ -48204,12 +47478,6 @@
     "level": "A2"
   },
   {
-    "id": 9008,
-    "pl": "adekwatność",
-    "en": "acdbentity",
-    "level": "A2"
-  },
-  {
     "id": 9009,
     "pl": "brał udział",
     "en": "participated",
@@ -48285,12 +47553,6 @@
     "id": 9021,
     "pl": "oczywisty",
     "en": "evident",
-    "level": "A2"
-  },
-  {
-    "id": 9022,
-    "pl": "co",
-    "en": "whats",
     "level": "A2"
   },
   {
@@ -48381,12 +47643,6 @@
     "id": 9037,
     "pl": "bez",
     "en": "sans",
-    "level": "A2"
-  },
-  {
-    "id": 9038,
-    "pl": "światkot",
-    "en": "worldcat",
     "level": "A2"
   },
   {
@@ -48660,12 +47916,6 @@
     "level": "A2"
   },
   {
-    "id": 9084,
-    "pl": "colemana",
-    "en": "coleman",
-    "level": "A2"
-  },
-  {
     "id": 9085,
     "pl": "hurra",
     "en": "hugh",
@@ -48753,12 +48003,6 @@
     "id": 9100,
     "pl": "tenisówki",
     "en": "trainers",
-    "level": "A2"
-  },
-  {
-    "id": 9101,
-    "pl": "muza",
-    "en": "muze",
     "level": "A2"
   },
   {
@@ -48876,12 +48120,6 @@
     "level": "A2"
   },
   {
-    "id": 9121,
-    "pl": "ania",
-    "en": "annie",
-    "level": "A2"
-  },
-  {
     "id": 9122,
     "pl": "krótszy",
     "en": "shorter",
@@ -48921,12 +48159,6 @@
     "id": 9128,
     "pl": "ukraść",
     "en": "steal",
-    "level": "A2"
-  },
-  {
-    "id": 9129,
-    "pl": "rafinowany",
-    "en": "refined",
     "level": "A2"
   },
   {
@@ -48975,12 +48207,6 @@
     "id": 9137,
     "pl": "incydenty",
     "en": "incidents",
-    "level": "A2"
-  },
-  {
-    "id": 9138,
-    "pl": "petersona",
-    "en": "peterson",
     "level": "A2"
   },
   {
@@ -49050,27 +48276,9 @@
     "level": "A2"
   },
   {
-    "id": 9150,
-    "pl": "cena katalogowa",
-    "en": "listprice",
-    "level": "A2"
-  },
-  {
     "id": 9151,
     "pl": "atmosferyczny",
     "en": "atmospheric",
-    "level": "A2"
-  },
-  {
-    "id": 9152,
-    "pl": "mędrzec",
-    "en": "sagem",
-    "level": "A2"
-  },
-  {
-    "id": 9153,
-    "pl": "burza wiedzy",
-    "en": "knowledgestorm",
     "level": "A2"
   },
   {
@@ -49173,12 +48381,6 @@
     "id": 9170,
     "pl": "odmowa",
     "en": "denial",
-    "level": "A2"
-  },
-  {
-    "id": 9171,
-    "pl": "u",
-    "en": "uri",
     "level": "A2"
   },
   {
@@ -49287,12 +48489,6 @@
     "id": 9189,
     "pl": "powiernik",
     "en": "trustee",
-    "level": "A2"
-  },
-  {
-    "id": 9190,
-    "pl": "robótki ręczne",
-    "en": "handjobs",
     "level": "A2"
   },
   {
@@ -50886,12 +50082,6 @@
     "level": "B1"
   },
   {
-    "id": 9457,
-    "pl": "cipa",
-    "en": "cunt",
-    "level": "B1"
-  },
-  {
     "id": 9458,
     "pl": "pogoń",
     "en": "chevy",
@@ -52098,12 +51288,6 @@
     "level": "B1"
   },
   {
-    "id": 9659,
-    "pl": "orgazm",
-    "en": "orgasm",
-    "level": "B1"
-  },
-  {
     "id": 9660,
     "pl": "odroczone",
     "en": "deferred",
@@ -53022,12 +52206,6 @@
     "level": "B1"
   },
   {
-    "id": 9813,
-    "pl": "erotyka",
-    "en": "erotica",
-    "level": "B1"
-  },
-  {
     "id": 9814,
     "pl": "czasowy",
     "en": "temporal",
@@ -53523,12 +52701,6 @@
     "id": 9896,
     "pl": "terminale",
     "en": "terminals",
-    "level": "B1"
-  },
-  {
-    "id": 9897,
-    "pl": "morrisona",
-    "en": "morrison",
     "level": "B1"
   },
   {
@@ -55308,12 +54480,6 @@
     "level": "B2"
   },
   {
-    "id": 10194,
-    "pl": "einsteina",
-    "en": "einstein",
-    "level": "B2"
-  },
-  {
     "id": 10196,
     "pl": "statua",
     "en": "statue",
@@ -55401,12 +54567,6 @@
     "id": 10210,
     "pl": "nadajnik",
     "en": "transmitter",
-    "level": "B2"
-  },
-  {
-    "id": 10211,
-    "pl": "dorota",
-    "en": "dorothy",
     "level": "B2"
   },
   {
@@ -55659,12 +54819,6 @@
     "id": 10253,
     "pl": "uchwalone",
     "en": "enacted",
-    "level": "B2"
-  },
-  {
-    "id": 10254,
-    "pl": "tenuta",
-    "en": "tenure",
     "level": "B2"
   },
   {
@@ -57906,12 +57060,6 @@
     "level": "B2"
   },
   {
-    "id": 10628,
-    "pl": "dixona",
-    "en": "dixon",
-    "level": "B2"
-  },
-  {
     "id": 10629,
     "pl": "grzechy",
     "en": "sins",
@@ -58776,12 +57924,6 @@
     "level": "B2"
   },
   {
-    "id": 10773,
-    "pl": "mozarta",
-    "en": "mozart",
-    "level": "B2"
-  },
-  {
     "id": 10774,
     "pl": "przyśpieszenie",
     "en": "acceleration",
@@ -58941,12 +58083,6 @@
     "id": 10800,
     "pl": "hinduski",
     "en": "hindi",
-    "level": "B2"
-  },
-  {
-    "id": 10801,
-    "pl": "presleya",
-    "en": "presley",
     "level": "B2"
   },
   {
@@ -60006,12 +59142,6 @@
     "level": "C1"
   },
   {
-    "id": 10979,
-    "pl": "nixona",
-    "en": "nixon",
-    "level": "C1"
-  },
-  {
     "id": 10980,
     "pl": "gwadelupa",
     "en": "guadeloupe",
@@ -60798,12 +59928,6 @@
     "level": "C1"
   },
   {
-    "id": 11112,
-    "pl": "fitzgeralda",
-    "en": "fitzgerald",
-    "level": "C1"
-  },
-  {
     "id": 11113,
     "pl": "kopnięcia",
     "en": "kicks",
@@ -61080,12 +60204,6 @@
     "level": "C1"
   },
   {
-    "id": 11159,
-    "pl": "wstecz",
-    "en": "backward",
-    "level": "C1"
-  },
-  {
     "id": 11160,
     "pl": "przemianować",
     "en": "rename",
@@ -61131,12 +60249,6 @@
     "id": 11167,
     "pl": "jednorazowe",
     "en": "disposable",
-    "level": "C1"
-  },
-  {
-    "id": 11168,
-    "pl": "williamsona",
-    "en": "williamson",
     "level": "C1"
   },
   {
@@ -61650,12 +60762,6 @@
     "level": "C2"
   },
   {
-    "id": 11254,
-    "pl": "świat komputerowy",
-    "en": "computerworld",
-    "level": "C2"
-  },
-  {
     "id": 11255,
     "pl": "skrzele",
     "en": "gill",
@@ -61935,12 +61041,6 @@
     "id": 11301,
     "pl": "kapitalizm",
     "en": "capitalism",
-    "level": "C2"
-  },
-  {
-    "id": 11302,
-    "pl": "hancocka",
-    "en": "hancock",
     "level": "C2"
   },
   {
@@ -64122,12 +63222,6 @@
     "level": "A2"
   },
   {
-    "id": 11666,
-    "pl": "acdblina",
-    "en": "acdbline",
-    "level": "A2"
-  },
-  {
     "id": 11667,
     "pl": "nadający się do użytku",
     "en": "usable",
@@ -64167,12 +63261,6 @@
     "id": 11673,
     "pl": "pogromca",
     "en": "slayer",
-    "level": "A2"
-  },
-  {
-    "id": 11674,
-    "pl": "zapłacić",
-    "en": "payne",
     "level": "A2"
   },
   {
@@ -64563,12 +63651,6 @@
     "id": 11739,
     "pl": "obolały",
     "en": "sore",
-    "level": "A2"
-  },
-  {
-    "id": 11740,
-    "pl": "aalija",
-    "en": "aaliyah",
     "level": "A2"
   },
   {
@@ -65049,12 +64131,6 @@
     "id": 11820,
     "pl": "układy",
     "en": "layouts",
-    "level": "A2"
-  },
-  {
-    "id": 11821,
-    "pl": "evana",
-    "en": "evan",
     "level": "A2"
   },
   {
@@ -65673,12 +64749,6 @@
     "id": 11924,
     "pl": "medale",
     "en": "medals",
-    "level": "A2"
-  },
-  {
-    "id": 11925,
-    "pl": "dickinsona",
-    "en": "dickinson",
     "level": "A2"
   },
   {
@@ -66948,12 +66018,6 @@
     "level": "A2"
   },
   {
-    "id": 12138,
-    "pl": "marks",
-    "en": "marx",
-    "level": "A2"
-  },
-  {
     "id": 12139,
     "pl": "kłócąc się",
     "en": "arguing",
@@ -67161,12 +66225,6 @@
     "id": 12173,
     "pl": "uczennica",
     "en": "schoolgirl",
-    "level": "A2"
-  },
-  {
-    "id": 12174,
-    "pl": "cezar",
-    "en": "caesar",
     "level": "A2"
   },
   {
@@ -67455,12 +66513,6 @@
     "id": 12223,
     "pl": "holowniczy",
     "en": "towing",
-    "level": "A2"
-  },
-  {
-    "id": 12224,
-    "pl": "wech",
-    "en": "welch",
     "level": "A2"
   },
   {
@@ -68142,12 +67194,6 @@
     "level": "B1"
   },
   {
-    "id": 12338,
-    "pl": "nichole",
-    "en": "nichols",
-    "level": "B1"
-  },
-  {
     "id": 12339,
     "pl": "reg",
     "en": "regs",
@@ -68427,12 +67473,6 @@
     "id": 12385,
     "pl": "płynnie",
     "en": "smoothly",
-    "level": "B1"
-  },
-  {
-    "id": 12386,
-    "pl": "pastorzy",
-    "en": "parsons",
     "level": "B1"
   },
   {
@@ -69804,12 +68844,6 @@
     "level": "B1"
   },
   {
-    "id": 12615,
-    "pl": "mccartneya",
-    "en": "mccartney",
-    "level": "B1"
-  },
-  {
     "id": 12616,
     "pl": "anglojęzyczny",
     "en": "anglo",
@@ -70413,12 +69447,6 @@
     "id": 12717,
     "pl": "kąpielowy",
     "en": "bathing",
-    "level": "B1"
-  },
-  {
-    "id": 12718,
-    "pl": "lamberta",
-    "en": "lambert",
     "level": "B1"
   },
   {
@@ -73038,12 +72066,6 @@
     "level": "B2"
   },
   {
-    "id": 13155,
-    "pl": "bękart",
-    "en": "bastard",
-    "level": "B2"
-  },
-  {
     "id": 13156,
     "pl": "kolejka górska",
     "en": "coaster",
@@ -73173,12 +72195,6 @@
     "id": 13177,
     "pl": "miraż",
     "en": "mirage",
-    "level": "B2"
-  },
-  {
-    "id": 13178,
-    "pl": "lennona",
-    "en": "lennon",
     "level": "B2"
   },
   {
@@ -73719,12 +72735,6 @@
     "id": 13268,
     "pl": "waży",
     "en": "weighs",
-    "level": "B2"
-  },
-  {
-    "id": 13269,
-    "pl": "sinatrę",
-    "en": "sinatra",
     "level": "B2"
   },
   {
@@ -76566,12 +75576,6 @@
     "level": "B2"
   },
   {
-    "id": 13744,
-    "pl": "orgazmy",
-    "en": "orgasms",
-    "level": "B2"
-  },
-  {
     "id": 13745,
     "pl": "plantronika",
     "en": "plantronics",
@@ -77097,12 +76101,6 @@
     "id": 13832,
     "pl": "blok",
     "en": "bloc",
-    "level": "C1"
-  },
-  {
-    "id": 13833,
-    "pl": "różowy świat",
-    "en": "pinkworld",
     "level": "C1"
   },
   {
@@ -82032,12 +81030,6 @@
     "level": "C2"
   },
   {
-    "id": 14656,
-    "pl": "licho",
-    "en": "dickens",
-    "level": "C2"
-  },
-  {
     "id": 14657,
     "pl": "punkt końcowy",
     "en": "endpoint",
@@ -82299,18 +81291,6 @@
     "id": 14700,
     "pl": "karola",
     "en": "carole",
-    "level": "C2"
-  },
-  {
-    "id": 14701,
-    "pl": "ceta",
-    "en": "cette",
-    "level": "C2"
-  },
-  {
-    "id": 14702,
-    "pl": "schwarzeneggera",
-    "en": "schwarzenegger",
     "level": "C2"
   },
   {
@@ -82779,12 +81759,6 @@
     "id": 14781,
     "pl": "podkreślone",
     "en": "underlined",
-    "level": "C2"
-  },
-  {
-    "id": 14782,
-    "pl": "galileusz",
-    "en": "galileo",
     "level": "C2"
   },
   {
@@ -83526,12 +82500,6 @@
     "level": "C2"
   },
   {
-    "id": 14906,
-    "pl": "hitchcocka",
-    "en": "hitchcock",
-    "level": "C2"
-  },
-  {
     "id": 14907,
     "pl": "trawestis",
     "en": "travestis",
@@ -83607,12 +82575,6 @@
     "id": 14919,
     "pl": "utonięcie",
     "en": "drowning",
-    "level": "C2"
-  },
-  {
-    "id": 14920,
-    "pl": "głupie gadanie",
-    "en": "bullshit",
     "level": "C2"
   },
   {
@@ -84201,12 +83163,6 @@
     "id": 15018,
     "pl": "zo",
     "en": "zoe",
-    "level": "C2"
-  },
-  {
-    "id": 15019,
-    "pl": "ubera",
-    "en": "uber",
     "level": "C2"
   },
   {
@@ -85221,12 +84177,6 @@
     "id": 15188,
     "pl": "napompowany",
     "en": "pumped",
-    "level": "C2"
-  },
-  {
-    "id": 15189,
-    "pl": "tolkiena",
-    "en": "tolkien",
     "level": "C2"
   },
   {
