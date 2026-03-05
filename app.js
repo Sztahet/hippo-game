@@ -77,6 +77,17 @@ function saveIgnoredWordIds() {
   localStorage.setItem(IGNORED_WORD_IDS_KEY, JSON.stringify(ignoredWordIds));
 }
 
+function buildSettingsPayload() {
+  // Backward-compatible payload: older Apps Script deployments persist only activeLevels.
+  return {
+    activeLevels: JSON.stringify({
+      levels: activeLevels,
+      ignoredWordIds: ignoredWordIds
+    }),
+    ignoredWordIds: JSON.stringify(ignoredWordIds)
+  };
+}
+
 function getActiveWords() {
   const ignoredSet = new Set(ignoredWordIds);
   return allWords.filter(w => activeLevels.includes(w.level || 'A1') && !ignoredSet.has(Number(w.id)));
@@ -129,6 +140,22 @@ async function pullFromSheets() {
       if (raw._settings && raw._settings.activeLevels) {
         try {
           const remote = JSON.parse(raw._settings.activeLevels);
+
+          // New format: { levels: [...], ignoredWordIds: [...] }
+          if (remote && !Array.isArray(remote) && typeof remote === 'object') {
+            if (Array.isArray(remote.levels) && remote.levels.length > 0) {
+              activeLevels = remote.levels;
+              saveActiveLevels();
+            }
+            if (Array.isArray(remote.ignoredWordIds)) {
+              ignoredWordIds = remote.ignoredWordIds
+                .map((v) => Number(v))
+                .filter((v) => Number.isFinite(v) && v > 0);
+              saveIgnoredWordIds();
+            }
+          }
+
+          // Legacy format: [...levels]
           if (Array.isArray(remote) && remote.length > 0) {
             activeLevels = remote;
             saveActiveLevels();
@@ -168,16 +195,14 @@ async function pushToSheets(changedIds) {
     if (progress[id]) subset[id] = progress[id];
   }
   // Always push settings alongside progress changes
-  subset._settings = {
-    activeLevels: JSON.stringify(activeLevels),
-    ignoredWordIds: JSON.stringify(ignoredWordIds)
-  };
+  subset._settings = buildSettingsPayload();
   syncStatus = 'syncing';
   updateSyncIndicator();
   try {
     await fetch(syncUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
+      keepalive: true,
       body: JSON.stringify({ token: syncToken, progress: subset })
     });
     syncStatus = 'ok';
@@ -189,21 +214,25 @@ async function pushToSheets(changedIds) {
 
 async function pushSettingsToSheets() {
   if (!syncUrl) return;
+  syncStatus = 'syncing';
+  updateSyncIndicator();
   try {
     await fetch(syncUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
+      keepalive: true,
       body: JSON.stringify({
         token: syncToken,
         progress: {
-          _settings: {
-            activeLevels: JSON.stringify(activeLevels),
-            ignoredWordIds: JSON.stringify(ignoredWordIds)
-          }
+          _settings: buildSettingsPayload()
         }
       })
     });
-  } catch {}
+    syncStatus = 'ok';
+  } catch {
+    syncStatus = 'error';
+  }
+  updateSyncIndicator();
 }
 
 function updateSyncIndicator() {
@@ -851,10 +880,7 @@ function renderSettings() {
             token: syncToken,
             progress: {
               ...progress,
-              _settings: {
-                activeLevels: JSON.stringify(activeLevels),
-                ignoredWordIds: JSON.stringify(ignoredWordIds)
-              }
+              _settings: buildSettingsPayload()
             }
           })
         });

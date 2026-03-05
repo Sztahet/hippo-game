@@ -53,8 +53,8 @@ function doGet(e) {
       if (!wordId) continue;
       const key = String(wordId);
       if (key === '_settings') {
-        // Special row: level column holds active CEFR levels JSON,
-        // nextReview column holds ignored word IDs JSON.
+        // Special row: level column holds either legacy levels array JSON
+        // or a settings object JSON, nextReview column can hold ignored IDs JSON.
         progress['_settings'] = {
           activeLevels: String(level || '[]'),
           ignoredWordIds: String(nextReview || '[]')
