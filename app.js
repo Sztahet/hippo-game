@@ -5,6 +5,17 @@ const DUE_RATIO = 0.7;
 const STORAGE_KEY = 'vocab_progress';
 const SYNC_URL_KEY = 'vocab_sync_url';
 const SYNC_TOKEN_KEY = 'vocab_sync_token';
+const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
+
+const ALL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const LEVEL_DESCRIPTIONS = {
+  A1: 'Podstawy (985 słów)',
+  A2: 'Elementarny',
+  B1: 'Średniozaawansowany',
+  B2: 'Wyższy średni',
+  C1: 'Zaawansowany',
+  C2: 'Biegły',
+};
 
 // ===== ACCESS PASSWORD =====
 // Zmień to hasło na coś własnego!
@@ -20,6 +31,7 @@ let sessionResults = []; // { wordId, status: 'correct'|'typo'|'wrong', userAnsw
 let syncUrl = localStorage.getItem(SYNC_URL_KEY) || '';
 let syncToken = localStorage.getItem(SYNC_TOKEN_KEY) || '';
 let syncStatus = 'idle'; // 'idle' | 'syncing' | 'ok' | 'error'
+let activeLevels = loadActiveLevels();
 
 // ===== DATA =====
 function loadProgress() {
@@ -29,6 +41,26 @@ function loadProgress() {
   } catch {
     return {};
   }
+}
+
+function loadActiveLevels() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_LEVELS_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      // Validate — must be array of known levels
+      if (Array.isArray(saved) && saved.length > 0) return saved;
+    }
+  } catch {}
+  return ['A1', 'A2']; // sensible default — start with basics
+}
+
+function saveActiveLevels() {
+  localStorage.setItem(ACTIVE_LEVELS_KEY, JSON.stringify(activeLevels));
+}
+
+function getActiveWords() {
+  return allWords.filter(w => activeLevels.includes(w.level || 'A1'));
 }
 
 function saveProgress() {
@@ -73,7 +105,23 @@ async function pullFromSheets() {
     if (data.ok) {
       syncStatus = 'ok';
       updateSyncIndicator();
-      return data.progress;
+      const raw = data.progress || {};
+      // Extract and apply _settings if present
+      if (raw._settings && raw._settings.activeLevels) {
+        try {
+          const remote = JSON.parse(raw._settings.activeLevels);
+          if (Array.isArray(remote) && remote.length > 0) {
+            activeLevels = remote;
+            saveActiveLevels();
+          }
+        } catch {}
+      }
+      // Return only real word-progress entries
+      const cleaned = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (k !== '_settings') cleaned[k] = v;
+      }
+      return cleaned;
     }
     syncStatus = 'error';
     updateSyncIndicator();
@@ -91,7 +139,8 @@ async function pushToSheets(changedIds) {
   for (const id of changedIds) {
     if (progress[id]) subset[id] = progress[id];
   }
-  if (Object.keys(subset).length === 0) return;
+  // Always push settings alongside progress changes
+  subset._settings = { activeLevels: JSON.stringify(activeLevels) };
   syncStatus = 'syncing';
   updateSyncIndicator();
   try {
@@ -105,6 +154,17 @@ async function pushToSheets(changedIds) {
     syncStatus = 'error';
   }
   updateSyncIndicator();
+}
+
+async function pushSettingsToSheets() {
+  if (!syncUrl) return;
+  try {
+    await fetch(syncUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ token: syncToken, progress: { _settings: { activeLevels: JSON.stringify(activeLevels) } } })
+    });
+  } catch {}
 }
 
 function updateSyncIndicator() {
@@ -345,7 +405,12 @@ function renderHome() {
 }
 
 function startSession() {
-  session = buildSession(allWords, progress);
+  const activeWords = getActiveWords();
+  if (activeWords.length === 0) {
+    renderSettings();
+    return;
+  }
+  session = buildSession(activeWords, progress);
   if (session.length === 0) {
     renderHome();
     return;
@@ -487,20 +552,55 @@ function renderSummary() {
 // ===== SETTINGS SCREEN =====
 function renderSettings() {
   const currentUrl = getSyncUrl();
+
+  // Build word counts per level for display
+  const levelCounts = {};
+  for (const lvl of ALL_LEVELS) levelCounts[lvl] = 0;
+  for (const w of allWords) levelCounts[w.level || 'A1']++;
+
+  const levelTogglesHtml = ALL_LEVELS.map(lvl => {
+    const active = activeLevels.includes(lvl);
+    const count = levelCounts[lvl] || 0;
+    return `
+      <label class="level-toggle ${active ? 'level-toggle--active' : ''}" data-level="${lvl}">
+        <input type="checkbox" ${active ? 'checked' : ''} data-level="${lvl}" style="display:none;">
+        <span class="level-badge level-${lvl.toLowerCase()}">${lvl}</span>
+        <span class="level-info">
+          <span class="level-name">${LEVEL_DESCRIPTIONS[lvl]}</span>
+          <span class="level-count">${count} słów</span>
+        </span>
+        <span class="level-check">${active ? '✓' : ''}</span>
+      </label>`;
+  }).join('');
+
   app.innerHTML = `
     <div class="screen">
-      <h1>Ustawienia synchronizacji</h1>
+      <h1>⚙️ Ustawienia</h1>
+
       <div class="card" style="text-align:left;">
-        <p style="margin-bottom:1rem;color:#555;font-size:0.9rem;">Połącz z Google Sheets aby synchronizować postęp między urządzeniami.</p>
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Poziomy CEFR do nauki</h2>
+        <p style="font-size:0.85rem;color:#555;margin-bottom:1rem;">Zaznacz które poziomy chcesz ćwiczyć. Co najmniej jeden musi być wybrany.</p>
+        <div id="level-toggles">
+          ${levelTogglesHtml}
+        </div>
+        <div id="level-warning" style="display:none;margin-top:0.5rem;color:#991b1b;font-size:0.85rem;">
+          ⚠️ Wybierz co najmniej jeden poziom.
+        </div>
+        <button class="btn btn-primary" id="btn-save-levels" style="margin-top:1rem;">Zapisz poziomy</button>
+      </div>
+
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Synchronizacja z Google Sheets</h2>
+        <p style="margin-bottom:1rem;color:#555;font-size:0.85rem;">Połącz z Google Sheets aby synchronizować postęp między urządzeniami.</p>
         <label style="font-weight:600;font-size:0.9rem;">URL Apps Script Web App:</label>
-        <input type="url" class="input-answer" id="input-sync-url" 
+        <input type="url" class="input-answer" id="input-sync-url"
           placeholder="https://script.google.com/macros/s/.../exec"
-          value="${escapeHtml(currentUrl)}" 
+          value="${escapeHtml(currentUrl)}"
           style="width:100%;margin:0.75rem 0;">
         <label style="font-weight:600;font-size:0.9rem;">Token (hasło dostępu):</label>
-        <input type="password" class="input-answer" id="input-sync-token" 
+        <input type="password" class="input-answer" id="input-sync-token"
           placeholder="Twoje tajne hasło z Apps Script"
-          value="${escapeHtml(getSyncToken())}" 
+          value="${escapeHtml(getSyncToken())}"
           style="width:100%;margin:0.75rem 0;">
         <div style="display:flex;gap:0.5rem;">
           <button class="btn btn-primary" id="btn-save-url" style="flex:1;">Zapisz</button>
@@ -515,17 +615,46 @@ function renderSettings() {
           <li>W wierszu 1 wpisz: <code>wordId</code> | <code>level</code> | <code>nextReview</code> | <code>lastReview</code></li>
           <li>Otwórz <strong>Rozszerzenia → Apps Script</strong></li>
           <li>Wklej kod z pliku <code>google-apps-script.js</code></li>
-          <li><strong>Zmień SECRET_TOKEN</strong> na własne hasło (to samo wpisz powyżej!)</li>
+          <li><strong>Zmień SECRET_TOKEN</strong> na własne hasło</li>
           <li>Kliknij <strong>Wdróż → Nowe wdrożenie</strong></li>
           <li>Typ: <strong>Aplikacja internetowa</strong>, Dostęp: <strong>Każdy</strong></li>
           <li>Skopiuj URL i wklej powyżej</li>
         </ol>
       </div>
+
       ${syncUrl ? '<button class="btn btn-secondary" id="btn-force-pull" style="margin-top:0.75rem;">Pobierz postęp z Sheets</button>' : ''}
       ${syncUrl ? '<button class="btn btn-secondary" id="btn-force-push" style="margin-top:0.75rem;">Wyślij postęp do Sheets</button>' : ''}
       <button class="btn btn-secondary" id="btn-back" style="margin-top:0.75rem;">← Wróć</button>
     </div>
   `;
+
+  // Level toggle interaction
+  document.querySelectorAll('#level-toggles .level-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      const lvl = el.dataset.level;
+      const checkbox = el.querySelector('input[type=checkbox]');
+      checkbox.checked = !checkbox.checked;
+      el.classList.toggle('level-toggle--active', checkbox.checked);
+      el.querySelector('.level-check').textContent = checkbox.checked ? '✓' : '';
+    });
+  });
+
+  document.getElementById('btn-save-levels').addEventListener('click', () => {
+    const selected = [...document.querySelectorAll('#level-toggles input:checked')].map(c => c.dataset.level);
+    if (selected.length === 0) {
+      document.getElementById('level-warning').style.display = 'block';
+      return;
+    }
+    document.getElementById('level-warning').style.display = 'none';
+    activeLevels = selected;
+    saveActiveLevels();
+    if (syncUrl) pushSettingsToSheets();
+    document.getElementById('btn-save-levels').textContent = '✓ Zapisano!';
+    setTimeout(() => {
+      if (document.getElementById('btn-save-levels'))
+        document.getElementById('btn-save-levels').textContent = 'Zapisz poziomy';
+    }, 2000);
+  });
 
   document.getElementById('btn-save-url').addEventListener('click', () => {
     const url = document.getElementById('input-sync-url').value.trim();
@@ -540,27 +669,21 @@ function renderSettings() {
     const url = document.getElementById('input-sync-url').value.trim();
     const token = document.getElementById('input-sync-token').value.trim();
     const resultEl = document.getElementById('sync-test-result');
-    if (!url) {
-      resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz URL</span>';
-      return;
-    }
-    if (!token) {
-      resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz token (hasło)</span>';
-      return;
-    }
+    if (!url) { resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz URL</span>'; return; }
+    if (!token) { resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz token</span>'; return; }
     resultEl.innerHTML = '<span style="color:#555;">Testuję połączenie...</span>';
     try {
       const sep = url.includes('?') ? '&' : '?';
       const resp = await fetch(url + sep + 'token=' + encodeURIComponent(token));
       const data = await resp.json();
       if (data.ok) {
-        const count = Object.keys(data.progress || {}).length;
-        resultEl.innerHTML = `<span style="color:#166534;">✓ Połączono! Znaleziono ${count} wpisów w arkuszu.</span>`;
+        const count = Object.keys(data.progress || {}).filter(k => k !== '_settings').length;
+        resultEl.innerHTML = `<span style="color:#166534;">✓ Połączono! Znaleziono ${count} wpisów.</span>`;
       } else {
         resultEl.innerHTML = `<span style="color:#991b1b;">✗ Błąd: ${escapeHtml(data.error || 'nieznany')}</span>`;
       }
-    } catch (err) {
-      resultEl.innerHTML = `<span style="color:#991b1b;">✗ Nie udało się połączyć. Sprawdź URL i uprawnienia.</span>`;
+    } catch {
+      resultEl.innerHTML = `<span style="color:#991b1b;">✗ Nie udało się połączyć.</span>`;
     }
   });
 
@@ -586,16 +709,13 @@ function renderSettings() {
       btnPush.textContent = 'Wysyłam...';
       btnPush.disabled = true;
       try {
-        syncStatus = 'syncing';
         await fetch(syncUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ token: syncToken, progress })
+          body: JSON.stringify({ token: syncToken, progress: { ...progress, _settings: { activeLevels: JSON.stringify(activeLevels) } } })
         });
-        syncStatus = 'ok';
         btnPush.textContent = '✓ Wysłano!';
       } catch {
-        syncStatus = 'error';
         btnPush.textContent = '✗ Błąd wysyłania';
       }
     });

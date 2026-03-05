@@ -50,8 +50,13 @@ function doGet(e) {
     // Pomijamy wiersz nagłówkowy (i=0)
     for (let i = 1; i < data.length; i++) {
       const [wordId, level, nextReview, lastReview] = data[i];
-      if (wordId) {
-        progress[String(wordId)] = {
+      if (!wordId) continue;
+      const key = String(wordId);
+      if (key === '_settings') {
+        // Special row: level column holds JSON of active CEFR levels
+        progress['_settings'] = { activeLevels: String(level) };
+      } else {
+        progress[key] = {
           level: Number(level),
           nextReview: String(nextReview),
           lastReview: String(lastReview)
@@ -95,9 +100,14 @@ function doPost(e) {
     // Aktualizuj lub dodaj wpisy
     const newRows = [];
     for (const [wordId, entry] of Object.entries(incoming)) {
-      const row = [Number(wordId), entry.level, entry.nextReview, entry.lastReview || ''];
+      let row;
+      if (wordId === '_settings') {
+        // Settings row: store active CEFR levels JSON in the level column
+        row = ['_settings', entry.activeLevels || '[]', '', ''];
+      } else {
+        row = [Number(wordId), entry.level, entry.nextReview, entry.lastReview || ''];
+      }
       if (rowMap[wordId]) {
-        // Aktualizuj istniejący wiersz
         sheet.getRange(rowMap[wordId], 1, 1, 4).setValues([row]);
       } else {
         newRows.push(row);
