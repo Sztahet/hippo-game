@@ -294,11 +294,12 @@ function buildSession(words, progress) {
 // ===== STATS =====
 function getStats() {
   const today = getToday();
+  const words = getActiveWords();
   let dueCount = 0;
   let learnedCount = 0;
   let masteredCount = 0;
 
-  for (const w of allWords) {
+  for (const w of words) {
     const p = progress[w.id];
     if (!p) continue;
     if (p.level >= 8) {
@@ -309,18 +310,18 @@ function getStats() {
     learnedCount++;
   }
 
-  const newCount = allWords.length - learnedCount;
+  const newCount = words.length - learnedCount;
 
   // Per-level counts
   const levelCounts = new Array(9).fill(0);
-  for (const w of allWords) {
+  for (const w of words) {
     const p = progress[w.id];
     if (p) {
       levelCounts[p.level]++;
     }
   }
 
-  return { dueCount, newCount, masteredCount, total: allWords.length, levelCounts };
+  return { dueCount, newCount, masteredCount, total: words.length, levelCounts };
 }
 
 // ===== RENDERING =====
@@ -630,7 +631,9 @@ function renderSettings() {
 
   // Level toggle interaction
   document.querySelectorAll('#level-toggles .level-toggle').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', (event) => {
+      // Prevent native <label> behavior from toggling checkbox twice.
+      event.preventDefault();
       const lvl = el.dataset.level;
       const checkbox = el.querySelector('input[type=checkbox]');
       checkbox.checked = !checkbox.checked;

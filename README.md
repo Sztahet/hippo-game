@@ -13,7 +13,6 @@ Aplikacja do nauki angielskich słówek metodą spaced repetition (SRS), z synch
 - **Synchronizacja postępu** przez Google Sheets — działa na wielu urządzeniach
 - **Zabezpieczenie hasłem** — dostęp tylko dla uprawnionej osoby
 - **Mobile-friendly** — działa na telefonie i tablecie
-- **Offline bundle** — `bundle.html` działa bez serwera, podwójnym klikiem
 
 ---
 
@@ -25,8 +24,8 @@ hippo-game/
 ├── app.js              # Cała logika aplikacji (vanilla JS)
 ├── style.css           # Style (mobile-first)
 ├── words.json          # Baza słówek (~10 000 par PL→EN z poziomami CEFR)
-├── bundle.html         # Samodzielny plik HTML (CSS+JS+dane wbudowane)
-├── build.js            # Skrypt budujący bundle.html
+├── build.js            # (Opcjonalnie) skrypt budujący bundle offline
+├── words_20k_pipeline.js # Czyszczenie i import slow z 20k.txt
 ├── generate_words.py   # Pierwotny skrypt generujący słówka A1 (Python)
 ├── generate_words_v2.js # Skrypt generujący pełną bazę A1-C2 (Node.js)
 └── google-apps-script.js # Backend Google Apps Script (synchronizacja)
@@ -100,10 +99,9 @@ Aby zmienić hasło, edytuj w `app.js`:
 const ACCESS_PASSWORD = 'hippo123';
 ```
 
-Następnie przebuduj bundle i pushuj:
+Nastepnie zrob commit i push:
 
 ```powershell
-node build.js
 git add .
 git commit -m "zmiana hasla"
 git push
@@ -125,7 +123,7 @@ python3 -m http.server 8080
 # → http://localhost:8080
 ```
 
-## Budowanie bundle (plik offline)
+## Budowanie bundle (opcjonalnie, offline)
 
 ```powershell
 node build.js
@@ -134,13 +132,21 @@ node build.js
 
 ## Dodawanie słówek
 
-Edytuj `generate_words_v2.js` (sekcje A2_WORDS, B1_WORDS itd.) i uruchom:
+Import i cleanup z listy `20k.txt`:
 
 ```powershell
-node generate_words_v2.js
-node build.js
-git add . ; git commit -m "nowe slowa" ; git push
+# Sam cleanup (duplikaty, szum, PL==EN)
+node words_20k_pipeline.js --clean-only --import-start-id=3327
+
+# Cleanup + dodanie np. 3000 nowych slow
+node words_20k_pipeline.js --target=3000 --import-start-id=3327
+
+git add .
+git commit -m "cleanup i import slow"
+git push
 ```
+
+`bundle.html` nie jest potrzebny do GitHub Pages. Wystarcza `index.html` + `app.js` + `style.css` + `words.json`.
 
 ---
 
