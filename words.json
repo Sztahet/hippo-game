@@ -1,0 +1,5002 @@
+[
+  {
+    "id": 1,
+    "pl": "dom",
+    "en": "house"
+  },
+  {
+    "id": 2,
+    "pl": "kot",
+    "en": "cat"
+  },
+  {
+    "id": 3,
+    "pl": "pies",
+    "en": "dog"
+  },
+  {
+    "id": 4,
+    "pl": "woda",
+    "en": "water"
+  },
+  {
+    "id": 5,
+    "pl": "chleb",
+    "en": "bread"
+  },
+  {
+    "id": 6,
+    "pl": "mleko",
+    "en": "milk"
+  },
+  {
+    "id": 7,
+    "pl": "jabłko",
+    "en": "apple"
+  },
+  {
+    "id": 8,
+    "pl": "książka",
+    "en": "book"
+  },
+  {
+    "id": 9,
+    "pl": "stół",
+    "en": "table"
+  },
+  {
+    "id": 10,
+    "pl": "krzesło",
+    "en": "chair"
+  },
+  {
+    "id": 11,
+    "pl": "okno",
+    "en": "window"
+  },
+  {
+    "id": 12,
+    "pl": "drzwi",
+    "en": "door"
+  },
+  {
+    "id": 13,
+    "pl": "samochód",
+    "en": "car"
+  },
+  {
+    "id": 14,
+    "pl": "droga",
+    "en": "road"
+  },
+  {
+    "id": 15,
+    "pl": "ulica",
+    "en": "street"
+  },
+  {
+    "id": 16,
+    "pl": "miasto",
+    "en": "city"
+  },
+  {
+    "id": 17,
+    "pl": "wieś",
+    "en": "village"
+  },
+  {
+    "id": 18,
+    "pl": "szkoła",
+    "en": "school"
+  },
+  {
+    "id": 19,
+    "pl": "praca",
+    "en": "work"
+  },
+  {
+    "id": 20,
+    "pl": "pieniądze",
+    "en": "money"
+  },
+  {
+    "id": 21,
+    "pl": "czas",
+    "en": "time"
+  },
+  {
+    "id": 22,
+    "pl": "dzień",
+    "en": "day"
+  },
+  {
+    "id": 23,
+    "pl": "noc",
+    "en": "night"
+  },
+  {
+    "id": 24,
+    "pl": "rano",
+    "en": "morning"
+  },
+  {
+    "id": 25,
+    "pl": "wieczór",
+    "en": "evening"
+  },
+  {
+    "id": 26,
+    "pl": "rok",
+    "en": "year"
+  },
+  {
+    "id": 27,
+    "pl": "miesiąc",
+    "en": "month"
+  },
+  {
+    "id": 28,
+    "pl": "tydzień",
+    "en": "week"
+  },
+  {
+    "id": 29,
+    "pl": "godzina",
+    "en": "hour"
+  },
+  {
+    "id": 30,
+    "pl": "minuta",
+    "en": "minute"
+  },
+  {
+    "id": 31,
+    "pl": "człowiek",
+    "en": "human"
+  },
+  {
+    "id": 32,
+    "pl": "mężczyzna",
+    "en": "man"
+  },
+  {
+    "id": 33,
+    "pl": "kobieta",
+    "en": "woman"
+  },
+  {
+    "id": 34,
+    "pl": "dziecko",
+    "en": "child"
+  },
+  {
+    "id": 35,
+    "pl": "chłopiec",
+    "en": "boy"
+  },
+  {
+    "id": 36,
+    "pl": "dziewczyna",
+    "en": "girl"
+  },
+  {
+    "id": 37,
+    "pl": "przyjaciel",
+    "en": "friend"
+  },
+  {
+    "id": 38,
+    "pl": "rodzina",
+    "en": "family"
+  },
+  {
+    "id": 39,
+    "pl": "matka",
+    "en": "mother"
+  },
+  {
+    "id": 40,
+    "pl": "ojciec",
+    "en": "father"
+  },
+  {
+    "id": 41,
+    "pl": "syn",
+    "en": "son"
+  },
+  {
+    "id": 42,
+    "pl": "córka",
+    "en": "daughter"
+  },
+  {
+    "id": 43,
+    "pl": "brat",
+    "en": "brother"
+  },
+  {
+    "id": 44,
+    "pl": "siostra",
+    "en": "sister"
+  },
+  {
+    "id": 45,
+    "pl": "babcia",
+    "en": "grandmother"
+  },
+  {
+    "id": 46,
+    "pl": "dziadek",
+    "en": "grandfather"
+  },
+  {
+    "id": 47,
+    "pl": "mąż",
+    "en": "husband"
+  },
+  {
+    "id": 48,
+    "pl": "żona",
+    "en": "wife"
+  },
+  {
+    "id": 49,
+    "pl": "imię",
+    "en": "name"
+  },
+  {
+    "id": 50,
+    "pl": "głowa",
+    "en": "head"
+  },
+  {
+    "id": 51,
+    "pl": "ręka",
+    "en": "hand"
+  },
+  {
+    "id": 52,
+    "pl": "noga",
+    "en": "leg"
+  },
+  {
+    "id": 53,
+    "pl": "oko",
+    "en": "eye"
+  },
+  {
+    "id": 54,
+    "pl": "ucho",
+    "en": "ear"
+  },
+  {
+    "id": 55,
+    "pl": "nos",
+    "en": "nose"
+  },
+  {
+    "id": 56,
+    "pl": "usta",
+    "en": "mouth"
+  },
+  {
+    "id": 57,
+    "pl": "ząb",
+    "en": "tooth"
+  },
+  {
+    "id": 58,
+    "pl": "włosy",
+    "en": "hair"
+  },
+  {
+    "id": 59,
+    "pl": "serce",
+    "en": "heart"
+  },
+  {
+    "id": 60,
+    "pl": "krew",
+    "en": "blood"
+  },
+  {
+    "id": 61,
+    "pl": "słońce",
+    "en": "sun"
+  },
+  {
+    "id": 62,
+    "pl": "księżyc",
+    "en": "moon"
+  },
+  {
+    "id": 63,
+    "pl": "gwiazda",
+    "en": "star"
+  },
+  {
+    "id": 64,
+    "pl": "niebo",
+    "en": "sky"
+  },
+  {
+    "id": 65,
+    "pl": "ziemia",
+    "en": "earth"
+  },
+  {
+    "id": 66,
+    "pl": "ogień",
+    "en": "fire"
+  },
+  {
+    "id": 67,
+    "pl": "powietrze",
+    "en": "air"
+  },
+  {
+    "id": 68,
+    "pl": "las",
+    "en": "forest"
+  },
+  {
+    "id": 69,
+    "pl": "drzewo",
+    "en": "tree"
+  },
+  {
+    "id": 70,
+    "pl": "kwiat",
+    "en": "flower"
+  },
+  {
+    "id": 71,
+    "pl": "trawa",
+    "en": "grass"
+  },
+  {
+    "id": 72,
+    "pl": "rzeka",
+    "en": "river"
+  },
+  {
+    "id": 73,
+    "pl": "morze",
+    "en": "sea"
+  },
+  {
+    "id": 74,
+    "pl": "góra",
+    "en": "mountain"
+  },
+  {
+    "id": 75,
+    "pl": "deszcz",
+    "en": "rain"
+  },
+  {
+    "id": 76,
+    "pl": "śnieg",
+    "en": "snow"
+  },
+  {
+    "id": 77,
+    "pl": "wiatr",
+    "en": "wind"
+  },
+  {
+    "id": 78,
+    "pl": "chmura",
+    "en": "cloud"
+  },
+  {
+    "id": 79,
+    "pl": "kamień",
+    "en": "stone"
+  },
+  {
+    "id": 80,
+    "pl": "piasek",
+    "en": "sand"
+  },
+  {
+    "id": 81,
+    "pl": "klucz",
+    "en": "key"
+  },
+  {
+    "id": 82,
+    "pl": "telefon",
+    "en": "phone"
+  },
+  {
+    "id": 83,
+    "pl": "komputer",
+    "en": "computer"
+  },
+  {
+    "id": 84,
+    "pl": "telewizor",
+    "en": "television"
+  },
+  {
+    "id": 85,
+    "pl": "radio",
+    "en": "radio"
+  },
+  {
+    "id": 86,
+    "pl": "zegar",
+    "en": "clock"
+  },
+  {
+    "id": 87,
+    "pl": "lampa",
+    "en": "lamp"
+  },
+  {
+    "id": 88,
+    "pl": "łóżko",
+    "en": "bed"
+  },
+  {
+    "id": 89,
+    "pl": "poduszka",
+    "en": "pillow"
+  },
+  {
+    "id": 90,
+    "pl": "koc",
+    "en": "blanket"
+  },
+  {
+    "id": 91,
+    "pl": "kubek",
+    "en": "mug"
+  },
+  {
+    "id": 92,
+    "pl": "talerz",
+    "en": "plate"
+  },
+  {
+    "id": 93,
+    "pl": "nóż",
+    "en": "knife"
+  },
+  {
+    "id": 94,
+    "pl": "widelec",
+    "en": "fork"
+  },
+  {
+    "id": 95,
+    "pl": "łyżka",
+    "en": "spoon"
+  },
+  {
+    "id": 96,
+    "pl": "garnek",
+    "en": "pot"
+  },
+  {
+    "id": 97,
+    "pl": "butelka",
+    "en": "bottle"
+  },
+  {
+    "id": 98,
+    "pl": "szklanka",
+    "en": "glass"
+  },
+  {
+    "id": 99,
+    "pl": "torba",
+    "en": "bag"
+  },
+  {
+    "id": 100,
+    "pl": "parasol",
+    "en": "umbrella"
+  },
+  {
+    "id": 101,
+    "pl": "mięso",
+    "en": "meat"
+  },
+  {
+    "id": 102,
+    "pl": "kurczak",
+    "en": "chicken"
+  },
+  {
+    "id": 103,
+    "pl": "ryba",
+    "en": "fish"
+  },
+  {
+    "id": 104,
+    "pl": "jajko",
+    "en": "egg"
+  },
+  {
+    "id": 105,
+    "pl": "ser",
+    "en": "cheese"
+  },
+  {
+    "id": 106,
+    "pl": "masło",
+    "en": "butter"
+  },
+  {
+    "id": 107,
+    "pl": "ryż",
+    "en": "rice"
+  },
+  {
+    "id": 108,
+    "pl": "makaron",
+    "en": "pasta"
+  },
+  {
+    "id": 109,
+    "pl": "ziemniak",
+    "en": "potato"
+  },
+  {
+    "id": 110,
+    "pl": "pomidor",
+    "en": "tomato"
+  },
+  {
+    "id": 111,
+    "pl": "ogórek",
+    "en": "cucumber"
+  },
+  {
+    "id": 112,
+    "pl": "marchew",
+    "en": "carrot"
+  },
+  {
+    "id": 113,
+    "pl": "cebula",
+    "en": "onion"
+  },
+  {
+    "id": 114,
+    "pl": "czosnek",
+    "en": "garlic"
+  },
+  {
+    "id": 115,
+    "pl": "sałata",
+    "en": "lettuce"
+  },
+  {
+    "id": 116,
+    "pl": "kapusta",
+    "en": "cabbage"
+  },
+  {
+    "id": 117,
+    "pl": "grzyb",
+    "en": "mushroom"
+  },
+  {
+    "id": 118,
+    "pl": "fasola",
+    "en": "bean"
+  },
+  {
+    "id": 119,
+    "pl": "groszek",
+    "en": "pea"
+  },
+  {
+    "id": 120,
+    "pl": "kukurydza",
+    "en": "corn"
+  },
+  {
+    "id": 121,
+    "pl": "banan",
+    "en": "banana"
+  },
+  {
+    "id": 122,
+    "pl": "pomarańcza",
+    "en": "orange"
+  },
+  {
+    "id": 123,
+    "pl": "cytryna",
+    "en": "lemon"
+  },
+  {
+    "id": 124,
+    "pl": "truskawka",
+    "en": "strawberry"
+  },
+  {
+    "id": 125,
+    "pl": "winogrono",
+    "en": "grape"
+  },
+  {
+    "id": 126,
+    "pl": "arbuz",
+    "en": "watermelon"
+  },
+  {
+    "id": 127,
+    "pl": "brzoskwinia",
+    "en": "peach"
+  },
+  {
+    "id": 128,
+    "pl": "gruszka",
+    "en": "pear"
+  },
+  {
+    "id": 129,
+    "pl": "śliwka",
+    "en": "plum"
+  },
+  {
+    "id": 130,
+    "pl": "wiśnia",
+    "en": "cherry"
+  },
+  {
+    "id": 131,
+    "pl": "herbata",
+    "en": "tea"
+  },
+  {
+    "id": 132,
+    "pl": "kawa",
+    "en": "coffee"
+  },
+  {
+    "id": 133,
+    "pl": "sok",
+    "en": "juice"
+  },
+  {
+    "id": 134,
+    "pl": "piwo",
+    "en": "beer"
+  },
+  {
+    "id": 135,
+    "pl": "wino",
+    "en": "wine"
+  },
+  {
+    "id": 136,
+    "pl": "zupa",
+    "en": "soup"
+  },
+  {
+    "id": 137,
+    "pl": "sól",
+    "en": "salt"
+  },
+  {
+    "id": 138,
+    "pl": "pieprz",
+    "en": "pepper"
+  },
+  {
+    "id": 139,
+    "pl": "cukier",
+    "en": "sugar"
+  },
+  {
+    "id": 140,
+    "pl": "mąka",
+    "en": "flour"
+  },
+  {
+    "id": 141,
+    "pl": "olej",
+    "en": "oil"
+  },
+  {
+    "id": 142,
+    "pl": "ocet",
+    "en": "vinegar"
+  },
+  {
+    "id": 143,
+    "pl": "miód",
+    "en": "honey"
+  },
+  {
+    "id": 144,
+    "pl": "dżem",
+    "en": "jam"
+  },
+  {
+    "id": 145,
+    "pl": "czekolada",
+    "en": "chocolate"
+  },
+  {
+    "id": 146,
+    "pl": "ciastko",
+    "en": "cookie"
+  },
+  {
+    "id": 147,
+    "pl": "ciasto",
+    "en": "cake"
+  },
+  {
+    "id": 148,
+    "pl": "lody",
+    "en": "ice cream"
+  },
+  {
+    "id": 149,
+    "pl": "kanapka",
+    "en": "sandwich"
+  },
+  {
+    "id": 150,
+    "pl": "pizza",
+    "en": "pizza"
+  },
+  {
+    "id": 151,
+    "pl": "śniadanie",
+    "en": "breakfast"
+  },
+  {
+    "id": 152,
+    "pl": "obiad",
+    "en": "lunch"
+  },
+  {
+    "id": 153,
+    "pl": "kolacja",
+    "en": "dinner"
+  },
+  {
+    "id": 154,
+    "pl": "przekąska",
+    "en": "snack"
+  },
+  {
+    "id": 155,
+    "pl": "deser",
+    "en": "dessert"
+  },
+  {
+    "id": 156,
+    "pl": "przepis",
+    "en": "recipe"
+  },
+  {
+    "id": 157,
+    "pl": "smak",
+    "en": "taste"
+  },
+  {
+    "id": 158,
+    "pl": "głód",
+    "en": "hunger"
+  },
+  {
+    "id": 159,
+    "pl": "pragnienie",
+    "en": "thirst"
+  },
+  {
+    "id": 160,
+    "pl": "dieta",
+    "en": "diet"
+  },
+  {
+    "id": 161,
+    "pl": "restauracja",
+    "en": "restaurant"
+  },
+  {
+    "id": 162,
+    "pl": "kelner",
+    "en": "waiter"
+  },
+  {
+    "id": 163,
+    "pl": "menu",
+    "en": "menu"
+  },
+  {
+    "id": 164,
+    "pl": "rachunek",
+    "en": "bill"
+  },
+  {
+    "id": 165,
+    "pl": "napiwek",
+    "en": "tip"
+  },
+  {
+    "id": 166,
+    "pl": "piekarnia",
+    "en": "bakery"
+  },
+  {
+    "id": 167,
+    "pl": "sklep",
+    "en": "shop"
+  },
+  {
+    "id": 168,
+    "pl": "rynek",
+    "en": "market"
+  },
+  {
+    "id": 169,
+    "pl": "koszyk",
+    "en": "basket"
+  },
+  {
+    "id": 170,
+    "pl": "kolejka",
+    "en": "queue"
+  },
+  {
+    "id": 171,
+    "pl": "kiełbasa",
+    "en": "sausage"
+  },
+  {
+    "id": 172,
+    "pl": "szynka",
+    "en": "ham"
+  },
+  {
+    "id": 173,
+    "pl": "bułka",
+    "en": "roll"
+  },
+  {
+    "id": 174,
+    "pl": "tost",
+    "en": "toast"
+  },
+  {
+    "id": 175,
+    "pl": "płatki",
+    "en": "cereal"
+  },
+  {
+    "id": 176,
+    "pl": "jogurt",
+    "en": "yogurt"
+  },
+  {
+    "id": 177,
+    "pl": "śmietana",
+    "en": "cream"
+  },
+  {
+    "id": 178,
+    "pl": "majonez",
+    "en": "mayonnaise"
+  },
+  {
+    "id": 179,
+    "pl": "musztarda",
+    "en": "mustard"
+  },
+  {
+    "id": 180,
+    "pl": "ketchup",
+    "en": "ketchup"
+  },
+  {
+    "id": 181,
+    "pl": "koszula",
+    "en": "shirt"
+  },
+  {
+    "id": 182,
+    "pl": "spodnie",
+    "en": "trousers"
+  },
+  {
+    "id": 183,
+    "pl": "sukienka",
+    "en": "dress"
+  },
+  {
+    "id": 184,
+    "pl": "spódnica",
+    "en": "skirt"
+  },
+  {
+    "id": 185,
+    "pl": "kurtka",
+    "en": "jacket"
+  },
+  {
+    "id": 186,
+    "pl": "płaszcz",
+    "en": "coat"
+  },
+  {
+    "id": 187,
+    "pl": "sweter",
+    "en": "sweater"
+  },
+  {
+    "id": 188,
+    "pl": "bluza",
+    "en": "hoodie"
+  },
+  {
+    "id": 189,
+    "pl": "krawat",
+    "en": "tie"
+  },
+  {
+    "id": 190,
+    "pl": "czapka",
+    "en": "cap"
+  },
+  {
+    "id": 191,
+    "pl": "kapelusz",
+    "en": "hat"
+  },
+  {
+    "id": 192,
+    "pl": "rękawiczki",
+    "en": "gloves"
+  },
+  {
+    "id": 193,
+    "pl": "szalik",
+    "en": "scarf"
+  },
+  {
+    "id": 194,
+    "pl": "buty",
+    "en": "shoes"
+  },
+  {
+    "id": 195,
+    "pl": "skarpetki",
+    "en": "socks"
+  },
+  {
+    "id": 196,
+    "pl": "pasek",
+    "en": "belt"
+  },
+  {
+    "id": 197,
+    "pl": "torebka",
+    "en": "purse"
+  },
+  {
+    "id": 198,
+    "pl": "plecak",
+    "en": "backpack"
+  },
+  {
+    "id": 199,
+    "pl": "okulary",
+    "en": "glasses"
+  },
+  {
+    "id": 200,
+    "pl": "zegarek",
+    "en": "watch"
+  },
+  {
+    "id": 201,
+    "pl": "pierścionek",
+    "en": "ring"
+  },
+  {
+    "id": 202,
+    "pl": "kolczyki",
+    "en": "earrings"
+  },
+  {
+    "id": 203,
+    "pl": "naszyjnik",
+    "en": "necklace"
+  },
+  {
+    "id": 204,
+    "pl": "bransoletka",
+    "en": "bracelet"
+  },
+  {
+    "id": 205,
+    "pl": "biżuteria",
+    "en": "jewelry"
+  },
+  {
+    "id": 206,
+    "pl": "bielizna",
+    "en": "underwear"
+  },
+  {
+    "id": 207,
+    "pl": "piżama",
+    "en": "pajamas"
+  },
+  {
+    "id": 208,
+    "pl": "kostium",
+    "en": "costume"
+  },
+  {
+    "id": 209,
+    "pl": "mundur",
+    "en": "uniform"
+  },
+  {
+    "id": 210,
+    "pl": "garnitur",
+    "en": "suit"
+  },
+  {
+    "id": 211,
+    "pl": "materiał",
+    "en": "fabric"
+  },
+  {
+    "id": 212,
+    "pl": "bawełna",
+    "en": "cotton"
+  },
+  {
+    "id": 213,
+    "pl": "wełna",
+    "en": "wool"
+  },
+  {
+    "id": 214,
+    "pl": "jedwab",
+    "en": "silk"
+  },
+  {
+    "id": 215,
+    "pl": "skóra",
+    "en": "leather"
+  },
+  {
+    "id": 216,
+    "pl": "guzik",
+    "en": "button"
+  },
+  {
+    "id": 217,
+    "pl": "zamek",
+    "en": "zipper"
+  },
+  {
+    "id": 218,
+    "pl": "kieszeń",
+    "en": "pocket"
+  },
+  {
+    "id": 219,
+    "pl": "rozmiar",
+    "en": "size"
+  },
+  {
+    "id": 220,
+    "pl": "moda",
+    "en": "fashion"
+  },
+  {
+    "id": 221,
+    "pl": "kolor",
+    "en": "color"
+  },
+  {
+    "id": 222,
+    "pl": "czerwony",
+    "en": "red"
+  },
+  {
+    "id": 223,
+    "pl": "niebieski",
+    "en": "blue"
+  },
+  {
+    "id": 224,
+    "pl": "zielony",
+    "en": "green"
+  },
+  {
+    "id": 225,
+    "pl": "żółty",
+    "en": "yellow"
+  },
+  {
+    "id": 226,
+    "pl": "biały",
+    "en": "white"
+  },
+  {
+    "id": 227,
+    "pl": "czarny",
+    "en": "black"
+  },
+  {
+    "id": 228,
+    "pl": "szary",
+    "en": "gray"
+  },
+  {
+    "id": 229,
+    "pl": "brązowy",
+    "en": "brown"
+  },
+  {
+    "id": 230,
+    "pl": "różowy",
+    "en": "pink"
+  },
+  {
+    "id": 231,
+    "pl": "mieszkanie",
+    "en": "apartment"
+  },
+  {
+    "id": 232,
+    "pl": "pokój",
+    "en": "room"
+  },
+  {
+    "id": 233,
+    "pl": "kuchnia",
+    "en": "kitchen"
+  },
+  {
+    "id": 234,
+    "pl": "łazienka",
+    "en": "bathroom"
+  },
+  {
+    "id": 235,
+    "pl": "sypialnia",
+    "en": "bedroom"
+  },
+  {
+    "id": 236,
+    "pl": "salon",
+    "en": "living room"
+  },
+  {
+    "id": 237,
+    "pl": "korytarz",
+    "en": "hallway"
+  },
+  {
+    "id": 238,
+    "pl": "garaż",
+    "en": "garage"
+  },
+  {
+    "id": 239,
+    "pl": "ogród",
+    "en": "garden"
+  },
+  {
+    "id": 240,
+    "pl": "balkon",
+    "en": "balcony"
+  },
+  {
+    "id": 241,
+    "pl": "piwnica",
+    "en": "basement"
+  },
+  {
+    "id": 242,
+    "pl": "strych",
+    "en": "attic"
+  },
+  {
+    "id": 243,
+    "pl": "dach",
+    "en": "roof"
+  },
+  {
+    "id": 244,
+    "pl": "ściana",
+    "en": "wall"
+  },
+  {
+    "id": 245,
+    "pl": "podłoga",
+    "en": "floor"
+  },
+  {
+    "id": 246,
+    "pl": "sufit",
+    "en": "ceiling"
+  },
+  {
+    "id": 247,
+    "pl": "schody",
+    "en": "stairs"
+  },
+  {
+    "id": 248,
+    "pl": "winda",
+    "en": "elevator"
+  },
+  {
+    "id": 249,
+    "pl": "płot",
+    "en": "fence"
+  },
+  {
+    "id": 250,
+    "pl": "brama",
+    "en": "gate"
+  },
+  {
+    "id": 251,
+    "pl": "prysznic",
+    "en": "shower"
+  },
+  {
+    "id": 252,
+    "pl": "wanna",
+    "en": "bathtub"
+  },
+  {
+    "id": 253,
+    "pl": "umywalka",
+    "en": "sink"
+  },
+  {
+    "id": 254,
+    "pl": "toaleta",
+    "en": "toilet"
+  },
+  {
+    "id": 255,
+    "pl": "lustro",
+    "en": "mirror"
+  },
+  {
+    "id": 256,
+    "pl": "ręcznik",
+    "en": "towel"
+  },
+  {
+    "id": 257,
+    "pl": "mydło",
+    "en": "soap"
+  },
+  {
+    "id": 258,
+    "pl": "szampon",
+    "en": "shampoo"
+  },
+  {
+    "id": 259,
+    "pl": "szczoteczka",
+    "en": "toothbrush"
+  },
+  {
+    "id": 260,
+    "pl": "pasta",
+    "en": "toothpaste"
+  },
+  {
+    "id": 261,
+    "pl": "pralka",
+    "en": "washing machine"
+  },
+  {
+    "id": 262,
+    "pl": "lodówka",
+    "en": "fridge"
+  },
+  {
+    "id": 263,
+    "pl": "piekarnik",
+    "en": "oven"
+  },
+  {
+    "id": 264,
+    "pl": "kuchenka",
+    "en": "stove"
+  },
+  {
+    "id": 265,
+    "pl": "zmywarka",
+    "en": "dishwasher"
+  },
+  {
+    "id": 266,
+    "pl": "odkurzacz",
+    "en": "vacuum cleaner"
+  },
+  {
+    "id": 267,
+    "pl": "żelazko",
+    "en": "iron"
+  },
+  {
+    "id": 268,
+    "pl": "szafa",
+    "en": "wardrobe"
+  },
+  {
+    "id": 269,
+    "pl": "półka",
+    "en": "shelf"
+  },
+  {
+    "id": 270,
+    "pl": "szuflada",
+    "en": "drawer"
+  },
+  {
+    "id": 271,
+    "pl": "dywan",
+    "en": "carpet"
+  },
+  {
+    "id": 272,
+    "pl": "zasłona",
+    "en": "curtain"
+  },
+  {
+    "id": 273,
+    "pl": "obraz",
+    "en": "painting"
+  },
+  {
+    "id": 274,
+    "pl": "wazon",
+    "en": "vase"
+  },
+  {
+    "id": 275,
+    "pl": "świeca",
+    "en": "candle"
+  },
+  {
+    "id": 276,
+    "pl": "meble",
+    "en": "furniture"
+  },
+  {
+    "id": 277,
+    "pl": "kanapa",
+    "en": "sofa"
+  },
+  {
+    "id": 278,
+    "pl": "fotel",
+    "en": "armchair"
+  },
+  {
+    "id": 279,
+    "pl": "biurko",
+    "en": "desk"
+  },
+  {
+    "id": 280,
+    "pl": "telewizja",
+    "en": "television"
+  },
+  {
+    "id": 281,
+    "pl": "gniazdko",
+    "en": "socket"
+  },
+  {
+    "id": 282,
+    "pl": "kontakt",
+    "en": "switch"
+  },
+  {
+    "id": 283,
+    "pl": "żarówka",
+    "en": "light bulb"
+  },
+  {
+    "id": 284,
+    "pl": "kaloryfer",
+    "en": "radiator"
+  },
+  {
+    "id": 285,
+    "pl": "klimatyzacja",
+    "en": "air conditioning"
+  },
+  {
+    "id": 286,
+    "pl": "remont",
+    "en": "renovation"
+  },
+  {
+    "id": 287,
+    "pl": "farba",
+    "en": "paint"
+  },
+  {
+    "id": 288,
+    "pl": "młotek",
+    "en": "hammer"
+  },
+  {
+    "id": 289,
+    "pl": "gwóźdź",
+    "en": "nail"
+  },
+  {
+    "id": 290,
+    "pl": "śrubokręt",
+    "en": "screwdriver"
+  },
+  {
+    "id": 291,
+    "pl": "klej",
+    "en": "glue"
+  },
+  {
+    "id": 292,
+    "pl": "taśma",
+    "en": "tape"
+  },
+  {
+    "id": 293,
+    "pl": "lina",
+    "en": "rope"
+  },
+  {
+    "id": 294,
+    "pl": "drut",
+    "en": "wire"
+  },
+  {
+    "id": 295,
+    "pl": "narzędzie",
+    "en": "tool"
+  },
+  {
+    "id": 296,
+    "pl": "zamek do drzwi",
+    "en": "lock"
+  },
+  {
+    "id": 297,
+    "pl": "dzwonek",
+    "en": "doorbell"
+  },
+  {
+    "id": 298,
+    "pl": "skrzynka",
+    "en": "mailbox"
+  },
+  {
+    "id": 299,
+    "pl": "śmietnik",
+    "en": "trash can"
+  },
+  {
+    "id": 300,
+    "pl": "nauczyciel",
+    "en": "teacher"
+  },
+  {
+    "id": 301,
+    "pl": "uczeń",
+    "en": "student"
+  },
+  {
+    "id": 302,
+    "pl": "lekarz",
+    "en": "doctor"
+  },
+  {
+    "id": 303,
+    "pl": "pielęgniarka",
+    "en": "nurse"
+  },
+  {
+    "id": 304,
+    "pl": "prawnik",
+    "en": "lawyer"
+  },
+  {
+    "id": 305,
+    "pl": "inżynier",
+    "en": "engineer"
+  },
+  {
+    "id": 306,
+    "pl": "kucharz",
+    "en": "cook"
+  },
+  {
+    "id": 307,
+    "pl": "kierowca",
+    "en": "driver"
+  },
+  {
+    "id": 308,
+    "pl": "policjant",
+    "en": "policeman"
+  },
+  {
+    "id": 309,
+    "pl": "strażak",
+    "en": "firefighter"
+  },
+  {
+    "id": 310,
+    "pl": "sprzedawca",
+    "en": "seller"
+  },
+  {
+    "id": 311,
+    "pl": "artysta",
+    "en": "artist"
+  },
+  {
+    "id": 312,
+    "pl": "muzyk",
+    "en": "musician"
+  },
+  {
+    "id": 313,
+    "pl": "pisarz",
+    "en": "writer"
+  },
+  {
+    "id": 314,
+    "pl": "aktor",
+    "en": "actor"
+  },
+  {
+    "id": 315,
+    "pl": "dentysta",
+    "en": "dentist"
+  },
+  {
+    "id": 316,
+    "pl": "aptekarz",
+    "en": "pharmacist"
+  },
+  {
+    "id": 317,
+    "pl": "mechanik",
+    "en": "mechanic"
+  },
+  {
+    "id": 318,
+    "pl": "elektryk",
+    "en": "electrician"
+  },
+  {
+    "id": 319,
+    "pl": "hydraulik",
+    "en": "plumber"
+  },
+  {
+    "id": 320,
+    "pl": "fryzjer",
+    "en": "hairdresser"
+  },
+  {
+    "id": 321,
+    "pl": "programista",
+    "en": "programmer"
+  },
+  {
+    "id": 322,
+    "pl": "księgowy",
+    "en": "accountant"
+  },
+  {
+    "id": 323,
+    "pl": "architekt",
+    "en": "architect"
+  },
+  {
+    "id": 324,
+    "pl": "dziennikarz",
+    "en": "journalist"
+  },
+  {
+    "id": 325,
+    "pl": "biuro",
+    "en": "office"
+  },
+  {
+    "id": 326,
+    "pl": "fabryka",
+    "en": "factory"
+  },
+  {
+    "id": 327,
+    "pl": "szpital",
+    "en": "hospital"
+  },
+  {
+    "id": 328,
+    "pl": "apteka",
+    "en": "pharmacy"
+  },
+  {
+    "id": 329,
+    "pl": "biblioteka",
+    "en": "library"
+  },
+  {
+    "id": 330,
+    "pl": "uniwersytet",
+    "en": "university"
+  },
+  {
+    "id": 331,
+    "pl": "lekcja",
+    "en": "lesson"
+  },
+  {
+    "id": 332,
+    "pl": "egzamin",
+    "en": "exam"
+  },
+  {
+    "id": 333,
+    "pl": "ocena",
+    "en": "grade"
+  },
+  {
+    "id": 334,
+    "pl": "zadanie",
+    "en": "task"
+  },
+  {
+    "id": 335,
+    "pl": "projekt",
+    "en": "project"
+  },
+  {
+    "id": 336,
+    "pl": "spotkanie",
+    "en": "meeting"
+  },
+  {
+    "id": 337,
+    "pl": "rozmowa",
+    "en": "conversation"
+  },
+  {
+    "id": 338,
+    "pl": "prezentacja",
+    "en": "presentation"
+  },
+  {
+    "id": 339,
+    "pl": "raport",
+    "en": "report"
+  },
+  {
+    "id": 340,
+    "pl": "pensja",
+    "en": "salary"
+  },
+  {
+    "id": 341,
+    "pl": "umowa",
+    "en": "contract"
+  },
+  {
+    "id": 342,
+    "pl": "szef",
+    "en": "boss"
+  },
+  {
+    "id": 343,
+    "pl": "kolega",
+    "en": "colleague"
+  },
+  {
+    "id": 344,
+    "pl": "klient",
+    "en": "client"
+  },
+  {
+    "id": 345,
+    "pl": "firma",
+    "en": "company"
+  },
+  {
+    "id": 346,
+    "pl": "zawód",
+    "en": "profession"
+  },
+  {
+    "id": 347,
+    "pl": "doświadczenie",
+    "en": "experience"
+  },
+  {
+    "id": 348,
+    "pl": "kariera",
+    "en": "career"
+  },
+  {
+    "id": 349,
+    "pl": "awans",
+    "en": "promotion"
+  },
+  {
+    "id": 350,
+    "pl": "ołówek",
+    "en": "pencil"
+  },
+  {
+    "id": 351,
+    "pl": "długopis",
+    "en": "pen"
+  },
+  {
+    "id": 352,
+    "pl": "zeszyt",
+    "en": "notebook"
+  },
+  {
+    "id": 353,
+    "pl": "papier",
+    "en": "paper"
+  },
+  {
+    "id": 354,
+    "pl": "kartka",
+    "en": "sheet"
+  },
+  {
+    "id": 355,
+    "pl": "kreda",
+    "en": "chalk"
+  },
+  {
+    "id": 356,
+    "pl": "tablica",
+    "en": "board"
+  },
+  {
+    "id": 357,
+    "pl": "mapa",
+    "en": "map"
+  },
+  {
+    "id": 358,
+    "pl": "atlas",
+    "en": "atlas"
+  },
+  {
+    "id": 359,
+    "pl": "słownik",
+    "en": "dictionary"
+  },
+  {
+    "id": 360,
+    "pl": "matematyka",
+    "en": "mathematics"
+  },
+  {
+    "id": 361,
+    "pl": "fizyka",
+    "en": "physics"
+  },
+  {
+    "id": 362,
+    "pl": "chemia",
+    "en": "chemistry"
+  },
+  {
+    "id": 363,
+    "pl": "biologia",
+    "en": "biology"
+  },
+  {
+    "id": 364,
+    "pl": "historia",
+    "en": "history"
+  },
+  {
+    "id": 365,
+    "pl": "geografia",
+    "en": "geography"
+  },
+  {
+    "id": 366,
+    "pl": "język",
+    "en": "language"
+  },
+  {
+    "id": 367,
+    "pl": "literatura",
+    "en": "literature"
+  },
+  {
+    "id": 368,
+    "pl": "sztuka",
+    "en": "art"
+  },
+  {
+    "id": 369,
+    "pl": "muzyka",
+    "en": "music"
+  },
+  {
+    "id": 370,
+    "pl": "informatyka",
+    "en": "computer science"
+  },
+  {
+    "id": 371,
+    "pl": "ekonomia",
+    "en": "economics"
+  },
+  {
+    "id": 372,
+    "pl": "filozofia",
+    "en": "philosophy"
+  },
+  {
+    "id": 373,
+    "pl": "psychologia",
+    "en": "psychology"
+  },
+  {
+    "id": 374,
+    "pl": "prawo",
+    "en": "law"
+  },
+  {
+    "id": 375,
+    "pl": "wiedza",
+    "en": "knowledge"
+  },
+  {
+    "id": 376,
+    "pl": "nauka",
+    "en": "science"
+  },
+  {
+    "id": 377,
+    "pl": "badanie",
+    "en": "research"
+  },
+  {
+    "id": 378,
+    "pl": "teoria",
+    "en": "theory"
+  },
+  {
+    "id": 379,
+    "pl": "praktyka",
+    "en": "practice"
+  },
+  {
+    "id": 380,
+    "pl": "pytanie",
+    "en": "question"
+  },
+  {
+    "id": 381,
+    "pl": "odpowiedź",
+    "en": "answer"
+  },
+  {
+    "id": 382,
+    "pl": "błąd",
+    "en": "mistake"
+  },
+  {
+    "id": 383,
+    "pl": "sukces",
+    "en": "success"
+  },
+  {
+    "id": 384,
+    "pl": "porażka",
+    "en": "failure"
+  },
+  {
+    "id": 385,
+    "pl": "cel",
+    "en": "goal"
+  },
+  {
+    "id": 386,
+    "pl": "plan",
+    "en": "plan"
+  },
+  {
+    "id": 387,
+    "pl": "pomysł",
+    "en": "idea"
+  },
+  {
+    "id": 388,
+    "pl": "problem",
+    "en": "problem"
+  },
+  {
+    "id": 389,
+    "pl": "rozwiązanie",
+    "en": "solution"
+  },
+  {
+    "id": 390,
+    "pl": "zasada",
+    "en": "rule"
+  },
+  {
+    "id": 391,
+    "pl": "przykład",
+    "en": "example"
+  },
+  {
+    "id": 392,
+    "pl": "ćwiczenie",
+    "en": "exercise"
+  },
+  {
+    "id": 393,
+    "pl": "test",
+    "en": "test"
+  },
+  {
+    "id": 394,
+    "pl": "wynik",
+    "en": "result"
+  },
+  {
+    "id": 395,
+    "pl": "dyplom",
+    "en": "diploma"
+  },
+  {
+    "id": 396,
+    "pl": "certyfikat",
+    "en": "certificate"
+  },
+  {
+    "id": 397,
+    "pl": "stypendium",
+    "en": "scholarship"
+  },
+  {
+    "id": 398,
+    "pl": "urlop",
+    "en": "vacation"
+  },
+  {
+    "id": 399,
+    "pl": "emerytura",
+    "en": "retirement"
+  },
+  {
+    "id": 400,
+    "pl": "samolot",
+    "en": "airplane"
+  },
+  {
+    "id": 401,
+    "pl": "pociąg",
+    "en": "train"
+  },
+  {
+    "id": 402,
+    "pl": "autobus",
+    "en": "bus"
+  },
+  {
+    "id": 403,
+    "pl": "rower",
+    "en": "bicycle"
+  },
+  {
+    "id": 404,
+    "pl": "motocykl",
+    "en": "motorcycle"
+  },
+  {
+    "id": 405,
+    "pl": "taksówka",
+    "en": "taxi"
+  },
+  {
+    "id": 406,
+    "pl": "tramwaj",
+    "en": "tram"
+  },
+  {
+    "id": 407,
+    "pl": "metro",
+    "en": "subway"
+  },
+  {
+    "id": 408,
+    "pl": "statek",
+    "en": "ship"
+  },
+  {
+    "id": 409,
+    "pl": "łódź",
+    "en": "boat"
+  },
+  {
+    "id": 410,
+    "pl": "lotnisko",
+    "en": "airport"
+  },
+  {
+    "id": 411,
+    "pl": "dworzec",
+    "en": "station"
+  },
+  {
+    "id": 412,
+    "pl": "przystanek",
+    "en": "stop"
+  },
+  {
+    "id": 413,
+    "pl": "bilet",
+    "en": "ticket"
+  },
+  {
+    "id": 414,
+    "pl": "paszport",
+    "en": "passport"
+  },
+  {
+    "id": 415,
+    "pl": "wiza",
+    "en": "visa"
+  },
+  {
+    "id": 416,
+    "pl": "walizka",
+    "en": "suitcase"
+  },
+  {
+    "id": 417,
+    "pl": "mapa",
+    "en": "map"
+  },
+  {
+    "id": 418,
+    "pl": "podróż",
+    "en": "journey"
+  },
+  {
+    "id": 419,
+    "pl": "wycieczka",
+    "en": "trip"
+  },
+  {
+    "id": 420,
+    "pl": "hotel",
+    "en": "hotel"
+  },
+  {
+    "id": 421,
+    "pl": "pokój hotelowy",
+    "en": "hotel room"
+  },
+  {
+    "id": 422,
+    "pl": "rezerwacja",
+    "en": "reservation"
+  },
+  {
+    "id": 423,
+    "pl": "recepcja",
+    "en": "reception"
+  },
+  {
+    "id": 424,
+    "pl": "bagaż",
+    "en": "luggage"
+  },
+  {
+    "id": 425,
+    "pl": "kierunek",
+    "en": "direction"
+  },
+  {
+    "id": 426,
+    "pl": "północ",
+    "en": "north"
+  },
+  {
+    "id": 427,
+    "pl": "południe",
+    "en": "south"
+  },
+  {
+    "id": 428,
+    "pl": "wschód",
+    "en": "east"
+  },
+  {
+    "id": 429,
+    "pl": "zachód",
+    "en": "west"
+  },
+  {
+    "id": 430,
+    "pl": "prawo",
+    "en": "right"
+  },
+  {
+    "id": 431,
+    "pl": "lewo",
+    "en": "left"
+  },
+  {
+    "id": 432,
+    "pl": "prosto",
+    "en": "straight"
+  },
+  {
+    "id": 433,
+    "pl": "skrzyżowanie",
+    "en": "crossroads"
+  },
+  {
+    "id": 434,
+    "pl": "most",
+    "en": "bridge"
+  },
+  {
+    "id": 435,
+    "pl": "tunel",
+    "en": "tunnel"
+  },
+  {
+    "id": 436,
+    "pl": "autostrada",
+    "en": "highway"
+  },
+  {
+    "id": 437,
+    "pl": "chodnik",
+    "en": "sidewalk"
+  },
+  {
+    "id": 438,
+    "pl": "parking",
+    "en": "parking"
+  },
+  {
+    "id": 439,
+    "pl": "stacja benzynowa",
+    "en": "gas station"
+  },
+  {
+    "id": 440,
+    "pl": "opona",
+    "en": "tire"
+  },
+  {
+    "id": 441,
+    "pl": "silnik",
+    "en": "engine"
+  },
+  {
+    "id": 442,
+    "pl": "hamulec",
+    "en": "brake"
+  },
+  {
+    "id": 443,
+    "pl": "kierownica",
+    "en": "steering wheel"
+  },
+  {
+    "id": 444,
+    "pl": "lusterko",
+    "en": "mirror"
+  },
+  {
+    "id": 445,
+    "pl": "paliwo",
+    "en": "fuel"
+  },
+  {
+    "id": 446,
+    "pl": "olej silnikowy",
+    "en": "engine oil"
+  },
+  {
+    "id": 447,
+    "pl": "prędkość",
+    "en": "speed"
+  },
+  {
+    "id": 448,
+    "pl": "wypadek",
+    "en": "accident"
+  },
+  {
+    "id": 449,
+    "pl": "mandat",
+    "en": "fine"
+  },
+  {
+    "id": 450,
+    "pl": "plaża",
+    "en": "beach"
+  },
+  {
+    "id": 451,
+    "pl": "wyspa",
+    "en": "island"
+  },
+  {
+    "id": 452,
+    "pl": "jezioro",
+    "en": "lake"
+  },
+  {
+    "id": 453,
+    "pl": "wodospad",
+    "en": "waterfall"
+  },
+  {
+    "id": 454,
+    "pl": "jaskinia",
+    "en": "cave"
+  },
+  {
+    "id": 455,
+    "pl": "zamek",
+    "en": "castle"
+  },
+  {
+    "id": 456,
+    "pl": "kościół",
+    "en": "church"
+  },
+  {
+    "id": 457,
+    "pl": "muzeum",
+    "en": "museum"
+  },
+  {
+    "id": 458,
+    "pl": "pomnik",
+    "en": "monument"
+  },
+  {
+    "id": 459,
+    "pl": "park",
+    "en": "park"
+  },
+  {
+    "id": 460,
+    "pl": "zoo",
+    "en": "zoo"
+  },
+  {
+    "id": 461,
+    "pl": "kino",
+    "en": "cinema"
+  },
+  {
+    "id": 462,
+    "pl": "teatr",
+    "en": "theater"
+  },
+  {
+    "id": 463,
+    "pl": "stadion",
+    "en": "stadium"
+  },
+  {
+    "id": 464,
+    "pl": "basen",
+    "en": "swimming pool"
+  },
+  {
+    "id": 465,
+    "pl": "granica",
+    "en": "border"
+  },
+  {
+    "id": 466,
+    "pl": "ambasada",
+    "en": "embassy"
+  },
+  {
+    "id": 467,
+    "pl": "obywatel",
+    "en": "citizen"
+  },
+  {
+    "id": 468,
+    "pl": "turysta",
+    "en": "tourist"
+  },
+  {
+    "id": 469,
+    "pl": "przewodnik",
+    "en": "guide"
+  },
+  {
+    "id": 470,
+    "pl": "zdrowie",
+    "en": "health"
+  },
+  {
+    "id": 471,
+    "pl": "choroba",
+    "en": "disease"
+  },
+  {
+    "id": 472,
+    "pl": "ból",
+    "en": "pain"
+  },
+  {
+    "id": 473,
+    "pl": "gorączka",
+    "en": "fever"
+  },
+  {
+    "id": 474,
+    "pl": "kaszel",
+    "en": "cough"
+  },
+  {
+    "id": 475,
+    "pl": "katar",
+    "en": "runny nose"
+  },
+  {
+    "id": 476,
+    "pl": "grypa",
+    "en": "flu"
+  },
+  {
+    "id": 477,
+    "pl": "przeziębienie",
+    "en": "cold"
+  },
+  {
+    "id": 478,
+    "pl": "alergia",
+    "en": "allergy"
+  },
+  {
+    "id": 479,
+    "pl": "rana",
+    "en": "wound"
+  },
+  {
+    "id": 480,
+    "pl": "plaster",
+    "en": "bandage"
+  },
+  {
+    "id": 481,
+    "pl": "tabletka",
+    "en": "pill"
+  },
+  {
+    "id": 482,
+    "pl": "zastrzyk",
+    "en": "injection"
+  },
+  {
+    "id": 483,
+    "pl": "recepta",
+    "en": "prescription"
+  },
+  {
+    "id": 484,
+    "pl": "badanie",
+    "en": "examination"
+  },
+  {
+    "id": 485,
+    "pl": "operacja",
+    "en": "surgery"
+  },
+  {
+    "id": 486,
+    "pl": "szpital",
+    "en": "hospital"
+  },
+  {
+    "id": 487,
+    "pl": "karetka",
+    "en": "ambulance"
+  },
+  {
+    "id": 488,
+    "pl": "lekarz",
+    "en": "doctor"
+  },
+  {
+    "id": 489,
+    "pl": "pacjent",
+    "en": "patient"
+  },
+  {
+    "id": 490,
+    "pl": "ramię",
+    "en": "arm"
+  },
+  {
+    "id": 491,
+    "pl": "łokieć",
+    "en": "elbow"
+  },
+  {
+    "id": 492,
+    "pl": "nadgarstek",
+    "en": "wrist"
+  },
+  {
+    "id": 493,
+    "pl": "palec",
+    "en": "finger"
+  },
+  {
+    "id": 494,
+    "pl": "kciuk",
+    "en": "thumb"
+  },
+  {
+    "id": 495,
+    "pl": "kolano",
+    "en": "knee"
+  },
+  {
+    "id": 496,
+    "pl": "stopa",
+    "en": "foot"
+  },
+  {
+    "id": 497,
+    "pl": "kostka",
+    "en": "ankle"
+  },
+  {
+    "id": 498,
+    "pl": "plecy",
+    "en": "back"
+  },
+  {
+    "id": 499,
+    "pl": "brzuch",
+    "en": "stomach"
+  },
+  {
+    "id": 500,
+    "pl": "klatka piersiowa",
+    "en": "chest"
+  },
+  {
+    "id": 501,
+    "pl": "szyja",
+    "en": "neck"
+  },
+  {
+    "id": 502,
+    "pl": "czoło",
+    "en": "forehead"
+  },
+  {
+    "id": 503,
+    "pl": "policzek",
+    "en": "cheek"
+  },
+  {
+    "id": 504,
+    "pl": "broda",
+    "en": "chin"
+  },
+  {
+    "id": 505,
+    "pl": "brew",
+    "en": "eyebrow"
+  },
+  {
+    "id": 506,
+    "pl": "rzęsa",
+    "en": "eyelash"
+  },
+  {
+    "id": 507,
+    "pl": "powieka",
+    "en": "eyelid"
+  },
+  {
+    "id": 508,
+    "pl": "warga",
+    "en": "lip"
+  },
+  {
+    "id": 509,
+    "pl": "język",
+    "en": "tongue"
+  },
+  {
+    "id": 510,
+    "pl": "gardło",
+    "en": "throat"
+  },
+  {
+    "id": 511,
+    "pl": "płuco",
+    "en": "lung"
+  },
+  {
+    "id": 512,
+    "pl": "wątroba",
+    "en": "liver"
+  },
+  {
+    "id": 513,
+    "pl": "nerka",
+    "en": "kidney"
+  },
+  {
+    "id": 514,
+    "pl": "żołądek",
+    "en": "stomach"
+  },
+  {
+    "id": 515,
+    "pl": "mózg",
+    "en": "brain"
+  },
+  {
+    "id": 516,
+    "pl": "kość",
+    "en": "bone"
+  },
+  {
+    "id": 517,
+    "pl": "mięsień",
+    "en": "muscle"
+  },
+  {
+    "id": 518,
+    "pl": "skóra",
+    "en": "skin"
+  },
+  {
+    "id": 519,
+    "pl": "paznokieć",
+    "en": "fingernail"
+  },
+  {
+    "id": 520,
+    "pl": "wzrok",
+    "en": "sight"
+  },
+  {
+    "id": 521,
+    "pl": "słuch",
+    "en": "hearing"
+  },
+  {
+    "id": 522,
+    "pl": "dotyk",
+    "en": "touch"
+  },
+  {
+    "id": 523,
+    "pl": "smak",
+    "en": "taste"
+  },
+  {
+    "id": 524,
+    "pl": "węch",
+    "en": "smell"
+  },
+  {
+    "id": 525,
+    "pl": "sen",
+    "en": "sleep"
+  },
+  {
+    "id": 526,
+    "pl": "marzenie",
+    "en": "dream"
+  },
+  {
+    "id": 527,
+    "pl": "zmęczenie",
+    "en": "fatigue"
+  },
+  {
+    "id": 528,
+    "pl": "energia",
+    "en": "energy"
+  },
+  {
+    "id": 529,
+    "pl": "siła",
+    "en": "strength"
+  },
+  {
+    "id": 530,
+    "pl": "waga",
+    "en": "weight"
+  },
+  {
+    "id": 531,
+    "pl": "wzrost",
+    "en": "height"
+  },
+  {
+    "id": 532,
+    "pl": "tętno",
+    "en": "pulse"
+  },
+  {
+    "id": 533,
+    "pl": "ciśnienie",
+    "en": "pressure"
+  },
+  {
+    "id": 534,
+    "pl": "temperatura",
+    "en": "temperature"
+  },
+  {
+    "id": 535,
+    "pl": "szczęście",
+    "en": "happiness"
+  },
+  {
+    "id": 536,
+    "pl": "smutek",
+    "en": "sadness"
+  },
+  {
+    "id": 537,
+    "pl": "złość",
+    "en": "anger"
+  },
+  {
+    "id": 538,
+    "pl": "strach",
+    "en": "fear"
+  },
+  {
+    "id": 539,
+    "pl": "zaskoczenie",
+    "en": "surprise"
+  },
+  {
+    "id": 540,
+    "pl": "miłość",
+    "en": "love"
+  },
+  {
+    "id": 541,
+    "pl": "nienawiść",
+    "en": "hatred"
+  },
+  {
+    "id": 542,
+    "pl": "radość",
+    "en": "joy"
+  },
+  {
+    "id": 543,
+    "pl": "nadzieja",
+    "en": "hope"
+  },
+  {
+    "id": 544,
+    "pl": "rozpacz",
+    "en": "despair"
+  },
+  {
+    "id": 545,
+    "pl": "duma",
+    "en": "pride"
+  },
+  {
+    "id": 546,
+    "pl": "wstyd",
+    "en": "shame"
+  },
+  {
+    "id": 547,
+    "pl": "zazdrość",
+    "en": "jealousy"
+  },
+  {
+    "id": 548,
+    "pl": "litość",
+    "en": "pity"
+  },
+  {
+    "id": 549,
+    "pl": "wdzięczność",
+    "en": "gratitude"
+  },
+  {
+    "id": 550,
+    "pl": "cierpliwość",
+    "en": "patience"
+  },
+  {
+    "id": 551,
+    "pl": "odwaga",
+    "en": "courage"
+  },
+  {
+    "id": 552,
+    "pl": "lenistwo",
+    "en": "laziness"
+  },
+  {
+    "id": 553,
+    "pl": "ciekawość",
+    "en": "curiosity"
+  },
+  {
+    "id": 554,
+    "pl": "nuda",
+    "en": "boredom"
+  },
+  {
+    "id": 555,
+    "pl": "spokój",
+    "en": "peace"
+  },
+  {
+    "id": 556,
+    "pl": "stres",
+    "en": "stress"
+  },
+  {
+    "id": 557,
+    "pl": "niepokój",
+    "en": "anxiety"
+  },
+  {
+    "id": 558,
+    "pl": "samotność",
+    "en": "loneliness"
+  },
+  {
+    "id": 559,
+    "pl": "tęsknota",
+    "en": "longing"
+  },
+  {
+    "id": 560,
+    "pl": "zaufanie",
+    "en": "trust"
+  },
+  {
+    "id": 561,
+    "pl": "szacunek",
+    "en": "respect"
+  },
+  {
+    "id": 562,
+    "pl": "troska",
+    "en": "care"
+  },
+  {
+    "id": 563,
+    "pl": "współczucie",
+    "en": "compassion"
+  },
+  {
+    "id": 564,
+    "pl": "przyjaźń",
+    "en": "friendship"
+  },
+  {
+    "id": 565,
+    "pl": "wesele",
+    "en": "wedding"
+  },
+  {
+    "id": 566,
+    "pl": "rozwód",
+    "en": "divorce"
+  },
+  {
+    "id": 567,
+    "pl": "kłótnia",
+    "en": "argument"
+  },
+  {
+    "id": 568,
+    "pl": "przeprosiny",
+    "en": "apology"
+  },
+  {
+    "id": 569,
+    "pl": "przebaczenie",
+    "en": "forgiveness"
+  },
+  {
+    "id": 570,
+    "pl": "obietnica",
+    "en": "promise"
+  },
+  {
+    "id": 571,
+    "pl": "tajemnica",
+    "en": "secret"
+  },
+  {
+    "id": 572,
+    "pl": "prawda",
+    "en": "truth"
+  },
+  {
+    "id": 573,
+    "pl": "kłamstwo",
+    "en": "lie"
+  },
+  {
+    "id": 574,
+    "pl": "żart",
+    "en": "joke"
+  },
+  {
+    "id": 575,
+    "pl": "uśmiech",
+    "en": "smile"
+  },
+  {
+    "id": 576,
+    "pl": "śmiech",
+    "en": "laughter"
+  },
+  {
+    "id": 577,
+    "pl": "płacz",
+    "en": "cry"
+  },
+  {
+    "id": 578,
+    "pl": "krzyk",
+    "en": "scream"
+  },
+  {
+    "id": 579,
+    "pl": "szept",
+    "en": "whisper"
+  },
+  {
+    "id": 580,
+    "pl": "pocałunek",
+    "en": "kiss"
+  },
+  {
+    "id": 581,
+    "pl": "uścisk",
+    "en": "hug"
+  },
+  {
+    "id": 582,
+    "pl": "gest",
+    "en": "gesture"
+  },
+  {
+    "id": 583,
+    "pl": "mina",
+    "en": "expression"
+  },
+  {
+    "id": 584,
+    "pl": "nastrój",
+    "en": "mood"
+  },
+  {
+    "id": 585,
+    "pl": "charakter",
+    "en": "character"
+  },
+  {
+    "id": 586,
+    "pl": "osobowość",
+    "en": "personality"
+  },
+  {
+    "id": 587,
+    "pl": "temperament",
+    "en": "temperament"
+  },
+  {
+    "id": 588,
+    "pl": "humor",
+    "en": "humor"
+  },
+  {
+    "id": 589,
+    "pl": "wrażliwość",
+    "en": "sensitivity"
+  },
+  {
+    "id": 590,
+    "pl": "pewność siebie",
+    "en": "confidence"
+  },
+  {
+    "id": 591,
+    "pl": "nieśmiałość",
+    "en": "shyness"
+  },
+  {
+    "id": 592,
+    "pl": "uprzejmość",
+    "en": "kindness"
+  },
+  {
+    "id": 593,
+    "pl": "okrucieństwo",
+    "en": "cruelty"
+  },
+  {
+    "id": 594,
+    "pl": "hojność",
+    "en": "generosity"
+  },
+  {
+    "id": 595,
+    "pl": "być",
+    "en": "be"
+  },
+  {
+    "id": 596,
+    "pl": "mieć",
+    "en": "have"
+  },
+  {
+    "id": 597,
+    "pl": "robić",
+    "en": "do"
+  },
+  {
+    "id": 598,
+    "pl": "iść",
+    "en": "go"
+  },
+  {
+    "id": 599,
+    "pl": "przychodzić",
+    "en": "come"
+  },
+  {
+    "id": 600,
+    "pl": "widzieć",
+    "en": "see"
+  },
+  {
+    "id": 601,
+    "pl": "słyszeć",
+    "en": "hear"
+  },
+  {
+    "id": 602,
+    "pl": "mówić",
+    "en": "speak"
+  },
+  {
+    "id": 603,
+    "pl": "czytać",
+    "en": "read"
+  },
+  {
+    "id": 604,
+    "pl": "pisać",
+    "en": "write"
+  },
+  {
+    "id": 605,
+    "pl": "jeść",
+    "en": "eat"
+  },
+  {
+    "id": 606,
+    "pl": "pić",
+    "en": "drink"
+  },
+  {
+    "id": 607,
+    "pl": "spać",
+    "en": "sleep"
+  },
+  {
+    "id": 608,
+    "pl": "budzić się",
+    "en": "wake up"
+  },
+  {
+    "id": 609,
+    "pl": "myć się",
+    "en": "wash"
+  },
+  {
+    "id": 610,
+    "pl": "ubierać się",
+    "en": "dress"
+  },
+  {
+    "id": 611,
+    "pl": "gotować",
+    "en": "cook"
+  },
+  {
+    "id": 612,
+    "pl": "sprzątać",
+    "en": "clean"
+  },
+  {
+    "id": 613,
+    "pl": "prać",
+    "en": "wash"
+  },
+  {
+    "id": 614,
+    "pl": "prasować",
+    "en": "iron"
+  },
+  {
+    "id": 615,
+    "pl": "kupować",
+    "en": "buy"
+  },
+  {
+    "id": 616,
+    "pl": "sprzedawać",
+    "en": "sell"
+  },
+  {
+    "id": 617,
+    "pl": "płacić",
+    "en": "pay"
+  },
+  {
+    "id": 618,
+    "pl": "zarabiać",
+    "en": "earn"
+  },
+  {
+    "id": 619,
+    "pl": "oszczędzać",
+    "en": "save"
+  },
+  {
+    "id": 620,
+    "pl": "dawać",
+    "en": "give"
+  },
+  {
+    "id": 621,
+    "pl": "brać",
+    "en": "take"
+  },
+  {
+    "id": 622,
+    "pl": "nosić",
+    "en": "carry"
+  },
+  {
+    "id": 623,
+    "pl": "kłaść",
+    "en": "put"
+  },
+  {
+    "id": 624,
+    "pl": "trzymać",
+    "en": "hold"
+  },
+  {
+    "id": 625,
+    "pl": "otwierać",
+    "en": "open"
+  },
+  {
+    "id": 626,
+    "pl": "zamykać",
+    "en": "close"
+  },
+  {
+    "id": 627,
+    "pl": "włączać",
+    "en": "turn on"
+  },
+  {
+    "id": 628,
+    "pl": "wyłączać",
+    "en": "turn off"
+  },
+  {
+    "id": 629,
+    "pl": "ciągnąć",
+    "en": "pull"
+  },
+  {
+    "id": 630,
+    "pl": "pchać",
+    "en": "push"
+  },
+  {
+    "id": 631,
+    "pl": "rzucać",
+    "en": "throw"
+  },
+  {
+    "id": 632,
+    "pl": "łapać",
+    "en": "catch"
+  },
+  {
+    "id": 633,
+    "pl": "ciąć",
+    "en": "cut"
+  },
+  {
+    "id": 634,
+    "pl": "łamać",
+    "en": "break"
+  },
+  {
+    "id": 635,
+    "pl": "budować",
+    "en": "build"
+  },
+  {
+    "id": 636,
+    "pl": "naprawiać",
+    "en": "repair"
+  },
+  {
+    "id": 637,
+    "pl": "niszczyć",
+    "en": "destroy"
+  },
+  {
+    "id": 638,
+    "pl": "tworzyć",
+    "en": "create"
+  },
+  {
+    "id": 639,
+    "pl": "rysować",
+    "en": "draw"
+  },
+  {
+    "id": 640,
+    "pl": "malować",
+    "en": "paint"
+  },
+  {
+    "id": 641,
+    "pl": "śpiewać",
+    "en": "sing"
+  },
+  {
+    "id": 642,
+    "pl": "tańczyć",
+    "en": "dance"
+  },
+  {
+    "id": 643,
+    "pl": "grać",
+    "en": "play"
+  },
+  {
+    "id": 644,
+    "pl": "biegać",
+    "en": "run"
+  },
+  {
+    "id": 645,
+    "pl": "chodzić",
+    "en": "walk"
+  },
+  {
+    "id": 646,
+    "pl": "skakać",
+    "en": "jump"
+  },
+  {
+    "id": 647,
+    "pl": "pływać",
+    "en": "swim"
+  },
+  {
+    "id": 648,
+    "pl": "latać",
+    "en": "fly"
+  },
+  {
+    "id": 649,
+    "pl": "jeździć",
+    "en": "ride"
+  },
+  {
+    "id": 650,
+    "pl": "prowadzić",
+    "en": "drive"
+  },
+  {
+    "id": 651,
+    "pl": "parkować",
+    "en": "park"
+  },
+  {
+    "id": 652,
+    "pl": "zatrzymać się",
+    "en": "stop"
+  },
+  {
+    "id": 653,
+    "pl": "czekać",
+    "en": "wait"
+  },
+  {
+    "id": 654,
+    "pl": "szukać",
+    "en": "search"
+  },
+  {
+    "id": 655,
+    "pl": "znajdować",
+    "en": "find"
+  },
+  {
+    "id": 656,
+    "pl": "tracić",
+    "en": "lose"
+  },
+  {
+    "id": 657,
+    "pl": "wygrywać",
+    "en": "win"
+  },
+  {
+    "id": 658,
+    "pl": "próbować",
+    "en": "try"
+  },
+  {
+    "id": 659,
+    "pl": "kończyć",
+    "en": "finish"
+  },
+  {
+    "id": 660,
+    "pl": "zaczynać",
+    "en": "start"
+  },
+  {
+    "id": 661,
+    "pl": "kontynuować",
+    "en": "continue"
+  },
+  {
+    "id": 662,
+    "pl": "powtarzać",
+    "en": "repeat"
+  },
+  {
+    "id": 663,
+    "pl": "zmieniać",
+    "en": "change"
+  },
+  {
+    "id": 664,
+    "pl": "wybierać",
+    "en": "choose"
+  },
+  {
+    "id": 665,
+    "pl": "decydować",
+    "en": "decide"
+  },
+  {
+    "id": 666,
+    "pl": "planować",
+    "en": "plan"
+  },
+  {
+    "id": 667,
+    "pl": "organizować",
+    "en": "organize"
+  },
+  {
+    "id": 668,
+    "pl": "pomagać",
+    "en": "help"
+  },
+  {
+    "id": 669,
+    "pl": "potrzebować",
+    "en": "need"
+  },
+  {
+    "id": 670,
+    "pl": "chcieć",
+    "en": "want"
+  },
+  {
+    "id": 671,
+    "pl": "lubić",
+    "en": "like"
+  },
+  {
+    "id": 672,
+    "pl": "kochać",
+    "en": "love"
+  },
+  {
+    "id": 673,
+    "pl": "nienawidzić",
+    "en": "hate"
+  },
+  {
+    "id": 674,
+    "pl": "preferować",
+    "en": "prefer"
+  },
+  {
+    "id": 675,
+    "pl": "wierzyć",
+    "en": "believe"
+  },
+  {
+    "id": 676,
+    "pl": "myśleć",
+    "en": "think"
+  },
+  {
+    "id": 677,
+    "pl": "wiedzieć",
+    "en": "know"
+  },
+  {
+    "id": 678,
+    "pl": "rozumieć",
+    "en": "understand"
+  },
+  {
+    "id": 679,
+    "pl": "pamiętać",
+    "en": "remember"
+  },
+  {
+    "id": 680,
+    "pl": "zapominać",
+    "en": "forget"
+  },
+  {
+    "id": 681,
+    "pl": "uczyć się",
+    "en": "learn"
+  },
+  {
+    "id": 682,
+    "pl": "uczyć",
+    "en": "teach"
+  },
+  {
+    "id": 683,
+    "pl": "studiować",
+    "en": "study"
+  },
+  {
+    "id": 684,
+    "pl": "tłumaczyć",
+    "en": "translate"
+  },
+  {
+    "id": 685,
+    "pl": "pytać",
+    "en": "ask"
+  },
+  {
+    "id": 686,
+    "pl": "odpowiadać",
+    "en": "answer"
+  },
+  {
+    "id": 687,
+    "pl": "dziękować",
+    "en": "thank"
+  },
+  {
+    "id": 688,
+    "pl": "przepraszać",
+    "en": "apologize"
+  },
+  {
+    "id": 689,
+    "pl": "zapraszać",
+    "en": "invite"
+  },
+  {
+    "id": 690,
+    "pl": "odwiedzać",
+    "en": "visit"
+  },
+  {
+    "id": 691,
+    "pl": "spotykać",
+    "en": "meet"
+  },
+  {
+    "id": 692,
+    "pl": "żegnać się",
+    "en": "say goodbye"
+  },
+  {
+    "id": 693,
+    "pl": "witać",
+    "en": "greet"
+  },
+  {
+    "id": 694,
+    "pl": "przedstawiać",
+    "en": "introduce"
+  },
+  {
+    "id": 695,
+    "pl": "dzwonić",
+    "en": "call"
+  },
+  {
+    "id": 696,
+    "pl": "wysyłać",
+    "en": "send"
+  },
+  {
+    "id": 697,
+    "pl": "otrzymywać",
+    "en": "receive"
+  },
+  {
+    "id": 698,
+    "pl": "dostarczać",
+    "en": "deliver"
+  },
+  {
+    "id": 699,
+    "pl": "zamawiać",
+    "en": "order"
+  },
+  {
+    "id": 700,
+    "pl": "rezerwować",
+    "en": "book"
+  },
+  {
+    "id": 701,
+    "pl": "anulować",
+    "en": "cancel"
+  },
+  {
+    "id": 702,
+    "pl": "potwierdzać",
+    "en": "confirm"
+  },
+  {
+    "id": 703,
+    "pl": "sprawdzać",
+    "en": "check"
+  },
+  {
+    "id": 704,
+    "pl": "porównywać",
+    "en": "compare"
+  },
+  {
+    "id": 705,
+    "pl": "liczyć",
+    "en": "count"
+  },
+  {
+    "id": 706,
+    "pl": "mierzyć",
+    "en": "measure"
+  },
+  {
+    "id": 707,
+    "pl": "ważyć",
+    "en": "weigh"
+  },
+  {
+    "id": 708,
+    "pl": "dodawać",
+    "en": "add"
+  },
+  {
+    "id": 709,
+    "pl": "odejmować",
+    "en": "subtract"
+  },
+  {
+    "id": 710,
+    "pl": "mnożyć",
+    "en": "multiply"
+  },
+  {
+    "id": 711,
+    "pl": "dzielić",
+    "en": "divide"
+  },
+  {
+    "id": 712,
+    "pl": "rosnąć",
+    "en": "grow"
+  },
+  {
+    "id": 713,
+    "pl": "spadać",
+    "en": "fall"
+  },
+  {
+    "id": 714,
+    "pl": "podnosić",
+    "en": "lift"
+  },
+  {
+    "id": 715,
+    "pl": "wstawać",
+    "en": "stand up"
+  },
+  {
+    "id": 716,
+    "pl": "siadać",
+    "en": "sit down"
+  },
+  {
+    "id": 717,
+    "pl": "leżeć",
+    "en": "lie down"
+  },
+  {
+    "id": 718,
+    "pl": "opierać się",
+    "en": "lean"
+  },
+  {
+    "id": 719,
+    "pl": "kucać",
+    "en": "squat"
+  },
+  {
+    "id": 720,
+    "pl": "oddychać",
+    "en": "breathe"
+  },
+  {
+    "id": 721,
+    "pl": "kichać",
+    "en": "sneeze"
+  },
+  {
+    "id": 722,
+    "pl": "ziewać",
+    "en": "yawn"
+  },
+  {
+    "id": 723,
+    "pl": "krzyczeć",
+    "en": "shout"
+  },
+  {
+    "id": 724,
+    "pl": "szeptać",
+    "en": "whisper"
+  },
+  {
+    "id": 725,
+    "pl": "obiecywać",
+    "en": "promise"
+  },
+  {
+    "id": 726,
+    "pl": "kłamać",
+    "en": "lie"
+  },
+  {
+    "id": 727,
+    "pl": "marzyć",
+    "en": "dream"
+  },
+  {
+    "id": 728,
+    "pl": "planować",
+    "en": "plan"
+  },
+  {
+    "id": 729,
+    "pl": "martwić się",
+    "en": "worry"
+  },
+  {
+    "id": 730,
+    "pl": "bać się",
+    "en": "be afraid"
+  },
+  {
+    "id": 731,
+    "pl": "cieszyć się",
+    "en": "enjoy"
+  },
+  {
+    "id": 732,
+    "pl": "nudzić się",
+    "en": "be bored"
+  },
+  {
+    "id": 733,
+    "pl": "denerwować się",
+    "en": "be nervous"
+  },
+  {
+    "id": 734,
+    "pl": "relaksować się",
+    "en": "relax"
+  },
+  {
+    "id": 735,
+    "pl": "śmiać się",
+    "en": "laugh"
+  },
+  {
+    "id": 736,
+    "pl": "płakać",
+    "en": "cry"
+  },
+  {
+    "id": 737,
+    "pl": "przytulać",
+    "en": "hug"
+  },
+  {
+    "id": 738,
+    "pl": "całować",
+    "en": "kiss"
+  },
+  {
+    "id": 739,
+    "pl": "machać",
+    "en": "wave"
+  },
+  {
+    "id": 740,
+    "pl": "duży",
+    "en": "big"
+  },
+  {
+    "id": 741,
+    "pl": "mały",
+    "en": "small"
+  },
+  {
+    "id": 742,
+    "pl": "wysoki",
+    "en": "tall"
+  },
+  {
+    "id": 743,
+    "pl": "niski",
+    "en": "short"
+  },
+  {
+    "id": 744,
+    "pl": "długi",
+    "en": "long"
+  },
+  {
+    "id": 745,
+    "pl": "krótki",
+    "en": "short"
+  },
+  {
+    "id": 746,
+    "pl": "szeroki",
+    "en": "wide"
+  },
+  {
+    "id": 747,
+    "pl": "wąski",
+    "en": "narrow"
+  },
+  {
+    "id": 748,
+    "pl": "gruby",
+    "en": "thick"
+  },
+  {
+    "id": 749,
+    "pl": "cienki",
+    "en": "thin"
+  },
+  {
+    "id": 750,
+    "pl": "ciężki",
+    "en": "heavy"
+  },
+  {
+    "id": 751,
+    "pl": "lekki",
+    "en": "light"
+  },
+  {
+    "id": 752,
+    "pl": "szybki",
+    "en": "fast"
+  },
+  {
+    "id": 753,
+    "pl": "wolny",
+    "en": "slow"
+  },
+  {
+    "id": 754,
+    "pl": "nowy",
+    "en": "new"
+  },
+  {
+    "id": 755,
+    "pl": "stary",
+    "en": "old"
+  },
+  {
+    "id": 756,
+    "pl": "młody",
+    "en": "young"
+  },
+  {
+    "id": 757,
+    "pl": "dobry",
+    "en": "good"
+  },
+  {
+    "id": 758,
+    "pl": "zły",
+    "en": "bad"
+  },
+  {
+    "id": 759,
+    "pl": "ładny",
+    "en": "pretty"
+  },
+  {
+    "id": 760,
+    "pl": "brzydki",
+    "en": "ugly"
+  },
+  {
+    "id": 761,
+    "pl": "piękny",
+    "en": "beautiful"
+  },
+  {
+    "id": 762,
+    "pl": "silny",
+    "en": "strong"
+  },
+  {
+    "id": 763,
+    "pl": "słaby",
+    "en": "weak"
+  },
+  {
+    "id": 764,
+    "pl": "twardy",
+    "en": "hard"
+  },
+  {
+    "id": 765,
+    "pl": "miękki",
+    "en": "soft"
+  },
+  {
+    "id": 766,
+    "pl": "mokry",
+    "en": "wet"
+  },
+  {
+    "id": 767,
+    "pl": "suchy",
+    "en": "dry"
+  },
+  {
+    "id": 768,
+    "pl": "gorący",
+    "en": "hot"
+  },
+  {
+    "id": 769,
+    "pl": "zimny",
+    "en": "cold"
+  },
+  {
+    "id": 770,
+    "pl": "ciepły",
+    "en": "warm"
+  },
+  {
+    "id": 771,
+    "pl": "chłodny",
+    "en": "cool"
+  },
+  {
+    "id": 772,
+    "pl": "jasny",
+    "en": "bright"
+  },
+  {
+    "id": 773,
+    "pl": "ciemny",
+    "en": "dark"
+  },
+  {
+    "id": 774,
+    "pl": "głośny",
+    "en": "loud"
+  },
+  {
+    "id": 775,
+    "pl": "cichy",
+    "en": "quiet"
+  },
+  {
+    "id": 776,
+    "pl": "czysty",
+    "en": "clean"
+  },
+  {
+    "id": 777,
+    "pl": "brudny",
+    "en": "dirty"
+  },
+  {
+    "id": 778,
+    "pl": "pusty",
+    "en": "empty"
+  },
+  {
+    "id": 779,
+    "pl": "pełny",
+    "en": "full"
+  },
+  {
+    "id": 780,
+    "pl": "bogaty",
+    "en": "rich"
+  },
+  {
+    "id": 781,
+    "pl": "biedny",
+    "en": "poor"
+  },
+  {
+    "id": 782,
+    "pl": "drogi",
+    "en": "expensive"
+  },
+  {
+    "id": 783,
+    "pl": "tani",
+    "en": "cheap"
+  },
+  {
+    "id": 784,
+    "pl": "wolny",
+    "en": "free"
+  },
+  {
+    "id": 785,
+    "pl": "zajęty",
+    "en": "busy"
+  },
+  {
+    "id": 786,
+    "pl": "łatwy",
+    "en": "easy"
+  },
+  {
+    "id": 787,
+    "pl": "trudny",
+    "en": "difficult"
+  },
+  {
+    "id": 788,
+    "pl": "prosty",
+    "en": "simple"
+  },
+  {
+    "id": 789,
+    "pl": "skomplikowany",
+    "en": "complicated"
+  },
+  {
+    "id": 790,
+    "pl": "ważny",
+    "en": "important"
+  },
+  {
+    "id": 791,
+    "pl": "możliwy",
+    "en": "possible"
+  },
+  {
+    "id": 792,
+    "pl": "niemożliwy",
+    "en": "impossible"
+  },
+  {
+    "id": 793,
+    "pl": "konieczny",
+    "en": "necessary"
+  },
+  {
+    "id": 794,
+    "pl": "gotowy",
+    "en": "ready"
+  },
+  {
+    "id": 795,
+    "pl": "otwarty",
+    "en": "open"
+  },
+  {
+    "id": 796,
+    "pl": "zamknięty",
+    "en": "closed"
+  },
+  {
+    "id": 797,
+    "pl": "bezpieczny",
+    "en": "safe"
+  },
+  {
+    "id": 798,
+    "pl": "niebezpieczny",
+    "en": "dangerous"
+  },
+  {
+    "id": 799,
+    "pl": "zdrowy",
+    "en": "healthy"
+  },
+  {
+    "id": 800,
+    "pl": "chory",
+    "en": "sick"
+  },
+  {
+    "id": 801,
+    "pl": "zmęczony",
+    "en": "tired"
+  },
+  {
+    "id": 802,
+    "pl": "głodny",
+    "en": "hungry"
+  },
+  {
+    "id": 803,
+    "pl": "spragniony",
+    "en": "thirsty"
+  },
+  {
+    "id": 804,
+    "pl": "szczęśliwy",
+    "en": "happy"
+  },
+  {
+    "id": 805,
+    "pl": "smutny",
+    "en": "sad"
+  },
+  {
+    "id": 806,
+    "pl": "zły",
+    "en": "angry"
+  },
+  {
+    "id": 807,
+    "pl": "spokojny",
+    "en": "calm"
+  },
+  {
+    "id": 808,
+    "pl": "nerwowy",
+    "en": "nervous"
+  },
+  {
+    "id": 809,
+    "pl": "dumny",
+    "en": "proud"
+  },
+  {
+    "id": 810,
+    "pl": "pewny",
+    "en": "certain"
+  },
+  {
+    "id": 811,
+    "pl": "niepewny",
+    "en": "uncertain"
+  },
+  {
+    "id": 812,
+    "pl": "ciekawy",
+    "en": "interesting"
+  },
+  {
+    "id": 813,
+    "pl": "nudny",
+    "en": "boring"
+  },
+  {
+    "id": 814,
+    "pl": "zabawny",
+    "en": "funny"
+  },
+  {
+    "id": 815,
+    "pl": "poważny",
+    "en": "serious"
+  },
+  {
+    "id": 816,
+    "pl": "miły",
+    "en": "nice"
+  },
+  {
+    "id": 817,
+    "pl": "uprzejmy",
+    "en": "polite"
+  },
+  {
+    "id": 818,
+    "pl": "niegrzeczny",
+    "en": "rude"
+  },
+  {
+    "id": 819,
+    "pl": "uczciwy",
+    "en": "honest"
+  },
+  {
+    "id": 820,
+    "pl": "mądry",
+    "en": "wise"
+  },
+  {
+    "id": 821,
+    "pl": "głupi",
+    "en": "stupid"
+  },
+  {
+    "id": 822,
+    "pl": "odważny",
+    "en": "brave"
+  },
+  {
+    "id": 823,
+    "pl": "tchórzliwy",
+    "en": "cowardly"
+  },
+  {
+    "id": 824,
+    "pl": "leniwy",
+    "en": "lazy"
+  },
+  {
+    "id": 825,
+    "pl": "pracowity",
+    "en": "hardworking"
+  },
+  {
+    "id": 826,
+    "pl": "cierpliwy",
+    "en": "patient"
+  },
+  {
+    "id": 827,
+    "pl": "niecierpliwy",
+    "en": "impatient"
+  },
+  {
+    "id": 828,
+    "pl": "samodzielny",
+    "en": "independent"
+  },
+  {
+    "id": 829,
+    "pl": "odpowiedzialny",
+    "en": "responsible"
+  },
+  {
+    "id": 830,
+    "pl": "wspaniały",
+    "en": "wonderful"
+  },
+  {
+    "id": 831,
+    "pl": "okropny",
+    "en": "terrible"
+  },
+  {
+    "id": 832,
+    "pl": "doskonały",
+    "en": "perfect"
+  },
+  {
+    "id": 833,
+    "pl": "zwykły",
+    "en": "ordinary"
+  },
+  {
+    "id": 834,
+    "pl": "wyjątkowy",
+    "en": "exceptional"
+  },
+  {
+    "id": 835,
+    "pl": "podobny",
+    "en": "similar"
+  },
+  {
+    "id": 836,
+    "pl": "różny",
+    "en": "different"
+  },
+  {
+    "id": 837,
+    "pl": "jednakowy",
+    "en": "identical"
+  },
+  {
+    "id": 838,
+    "pl": "przeciwny",
+    "en": "opposite"
+  },
+  {
+    "id": 839,
+    "pl": "główny",
+    "en": "main"
+  },
+  {
+    "id": 840,
+    "pl": "pierwszy",
+    "en": "first"
+  },
+  {
+    "id": 841,
+    "pl": "ostatni",
+    "en": "last"
+  },
+  {
+    "id": 842,
+    "pl": "następny",
+    "en": "next"
+  },
+  {
+    "id": 843,
+    "pl": "poprzedni",
+    "en": "previous"
+  },
+  {
+    "id": 844,
+    "pl": "środkowy",
+    "en": "middle"
+  },
+  {
+    "id": 845,
+    "pl": "prawy",
+    "en": "right"
+  },
+  {
+    "id": 846,
+    "pl": "lewy",
+    "en": "left"
+  },
+  {
+    "id": 847,
+    "pl": "górny",
+    "en": "upper"
+  },
+  {
+    "id": 848,
+    "pl": "dolny",
+    "en": "lower"
+  },
+  {
+    "id": 849,
+    "pl": "wewnętrzny",
+    "en": "inner"
+  },
+  {
+    "id": 850,
+    "pl": "zewnętrzny",
+    "en": "outer"
+  },
+  {
+    "id": 851,
+    "pl": "blisko",
+    "en": "near"
+  },
+  {
+    "id": 852,
+    "pl": "daleko",
+    "en": "far"
+  },
+  {
+    "id": 853,
+    "pl": "głęboki",
+    "en": "deep"
+  },
+  {
+    "id": 854,
+    "pl": "płytki",
+    "en": "shallow"
+  },
+  {
+    "id": 855,
+    "pl": "okrągły",
+    "en": "round"
+  },
+  {
+    "id": 856,
+    "pl": "kwadratowy",
+    "en": "square"
+  },
+  {
+    "id": 857,
+    "pl": "ostry",
+    "en": "sharp"
+  },
+  {
+    "id": 858,
+    "pl": "tępy",
+    "en": "blunt"
+  },
+  {
+    "id": 859,
+    "pl": "gładki",
+    "en": "smooth"
+  },
+  {
+    "id": 860,
+    "pl": "zero",
+    "en": "zero"
+  },
+  {
+    "id": 861,
+    "pl": "jeden",
+    "en": "one"
+  },
+  {
+    "id": 862,
+    "pl": "dwa",
+    "en": "two"
+  },
+  {
+    "id": 863,
+    "pl": "trzy",
+    "en": "three"
+  },
+  {
+    "id": 864,
+    "pl": "cztery",
+    "en": "four"
+  },
+  {
+    "id": 865,
+    "pl": "pięć",
+    "en": "five"
+  },
+  {
+    "id": 866,
+    "pl": "sześć",
+    "en": "six"
+  },
+  {
+    "id": 867,
+    "pl": "siedem",
+    "en": "seven"
+  },
+  {
+    "id": 868,
+    "pl": "osiem",
+    "en": "eight"
+  },
+  {
+    "id": 869,
+    "pl": "dziewięć",
+    "en": "nine"
+  },
+  {
+    "id": 870,
+    "pl": "dziesięć",
+    "en": "ten"
+  },
+  {
+    "id": 871,
+    "pl": "dwadzieścia",
+    "en": "twenty"
+  },
+  {
+    "id": 872,
+    "pl": "trzydzieści",
+    "en": "thirty"
+  },
+  {
+    "id": 873,
+    "pl": "czterdzieści",
+    "en": "forty"
+  },
+  {
+    "id": 874,
+    "pl": "pięćdziesiąt",
+    "en": "fifty"
+  },
+  {
+    "id": 875,
+    "pl": "sto",
+    "en": "hundred"
+  },
+  {
+    "id": 876,
+    "pl": "tysiąc",
+    "en": "thousand"
+  },
+  {
+    "id": 877,
+    "pl": "milion",
+    "en": "million"
+  },
+  {
+    "id": 878,
+    "pl": "połowa",
+    "en": "half"
+  },
+  {
+    "id": 879,
+    "pl": "ćwierć",
+    "en": "quarter"
+  },
+  {
+    "id": 880,
+    "pl": "poniedziałek",
+    "en": "Monday"
+  },
+  {
+    "id": 881,
+    "pl": "wtorek",
+    "en": "Tuesday"
+  },
+  {
+    "id": 882,
+    "pl": "środa",
+    "en": "Wednesday"
+  },
+  {
+    "id": 883,
+    "pl": "czwartek",
+    "en": "Thursday"
+  },
+  {
+    "id": 884,
+    "pl": "piątek",
+    "en": "Friday"
+  },
+  {
+    "id": 885,
+    "pl": "sobota",
+    "en": "Saturday"
+  },
+  {
+    "id": 886,
+    "pl": "niedziela",
+    "en": "Sunday"
+  },
+  {
+    "id": 887,
+    "pl": "styczeń",
+    "en": "January"
+  },
+  {
+    "id": 888,
+    "pl": "luty",
+    "en": "February"
+  },
+  {
+    "id": 889,
+    "pl": "marzec",
+    "en": "March"
+  },
+  {
+    "id": 890,
+    "pl": "kwiecień",
+    "en": "April"
+  },
+  {
+    "id": 891,
+    "pl": "maj",
+    "en": "May"
+  },
+  {
+    "id": 892,
+    "pl": "czerwiec",
+    "en": "June"
+  },
+  {
+    "id": 893,
+    "pl": "lipiec",
+    "en": "July"
+  },
+  {
+    "id": 894,
+    "pl": "sierpień",
+    "en": "August"
+  },
+  {
+    "id": 895,
+    "pl": "wrzesień",
+    "en": "September"
+  },
+  {
+    "id": 896,
+    "pl": "październik",
+    "en": "October"
+  },
+  {
+    "id": 897,
+    "pl": "listopad",
+    "en": "November"
+  },
+  {
+    "id": 898,
+    "pl": "grudzień",
+    "en": "December"
+  },
+  {
+    "id": 899,
+    "pl": "wiosna",
+    "en": "spring"
+  },
+  {
+    "id": 900,
+    "pl": "lato",
+    "en": "summer"
+  },
+  {
+    "id": 901,
+    "pl": "jesień",
+    "en": "autumn"
+  },
+  {
+    "id": 902,
+    "pl": "zima",
+    "en": "winter"
+  },
+  {
+    "id": 903,
+    "pl": "wczoraj",
+    "en": "yesterday"
+  },
+  {
+    "id": 904,
+    "pl": "dzisiaj",
+    "en": "today"
+  },
+  {
+    "id": 905,
+    "pl": "jutro",
+    "en": "tomorrow"
+  },
+  {
+    "id": 906,
+    "pl": "teraz",
+    "en": "now"
+  },
+  {
+    "id": 907,
+    "pl": "potem",
+    "en": "later"
+  },
+  {
+    "id": 908,
+    "pl": "zawsze",
+    "en": "always"
+  },
+  {
+    "id": 909,
+    "pl": "nigdy",
+    "en": "never"
+  },
+  {
+    "id": 910,
+    "pl": "internet",
+    "en": "internet"
+  },
+  {
+    "id": 911,
+    "pl": "strona",
+    "en": "website"
+  },
+  {
+    "id": 912,
+    "pl": "hasło",
+    "en": "password"
+  },
+  {
+    "id": 913,
+    "pl": "email",
+    "en": "email"
+  },
+  {
+    "id": 914,
+    "pl": "wiadomość",
+    "en": "message"
+  },
+  {
+    "id": 915,
+    "pl": "zdjęcie",
+    "en": "photo"
+  },
+  {
+    "id": 916,
+    "pl": "film",
+    "en": "movie"
+  },
+  {
+    "id": 917,
+    "pl": "piosenka",
+    "en": "song"
+  },
+  {
+    "id": 918,
+    "pl": "gra",
+    "en": "game"
+  },
+  {
+    "id": 919,
+    "pl": "aplikacja",
+    "en": "application"
+  },
+  {
+    "id": 920,
+    "pl": "ekran",
+    "en": "screen"
+  },
+  {
+    "id": 921,
+    "pl": "klawiatura",
+    "en": "keyboard"
+  },
+  {
+    "id": 922,
+    "pl": "mysz",
+    "en": "mouse"
+  },
+  {
+    "id": 923,
+    "pl": "drukarka",
+    "en": "printer"
+  },
+  {
+    "id": 924,
+    "pl": "słuchawki",
+    "en": "headphones"
+  },
+  {
+    "id": 925,
+    "pl": "ładowarka",
+    "en": "charger"
+  },
+  {
+    "id": 926,
+    "pl": "bateria",
+    "en": "battery"
+  },
+  {
+    "id": 927,
+    "pl": "kabel",
+    "en": "cable"
+  },
+  {
+    "id": 928,
+    "pl": "wtyczka",
+    "en": "plug"
+  },
+  {
+    "id": 929,
+    "pl": "dane",
+    "en": "data"
+  },
+  {
+    "id": 930,
+    "pl": "plik",
+    "en": "file"
+  },
+  {
+    "id": 931,
+    "pl": "folder",
+    "en": "folder"
+  },
+  {
+    "id": 932,
+    "pl": "program",
+    "en": "program"
+  },
+  {
+    "id": 933,
+    "pl": "system",
+    "en": "system"
+  },
+  {
+    "id": 934,
+    "pl": "sieć",
+    "en": "network"
+  },
+  {
+    "id": 935,
+    "pl": "pobierać",
+    "en": "download"
+  },
+  {
+    "id": 936,
+    "pl": "przesyłać",
+    "en": "upload"
+  },
+  {
+    "id": 937,
+    "pl": "instalować",
+    "en": "install"
+  },
+  {
+    "id": 938,
+    "pl": "aktualizować",
+    "en": "update"
+  },
+  {
+    "id": 939,
+    "pl": "usuwać",
+    "en": "delete"
+  },
+  {
+    "id": 940,
+    "pl": "kopiować",
+    "en": "copy"
+  },
+  {
+    "id": 941,
+    "pl": "wklejać",
+    "en": "paste"
+  },
+  {
+    "id": 942,
+    "pl": "zapisywać",
+    "en": "save"
+  },
+  {
+    "id": 943,
+    "pl": "drukować",
+    "en": "print"
+  },
+  {
+    "id": 944,
+    "pl": "skanować",
+    "en": "scan"
+  },
+  {
+    "id": 945,
+    "pl": "wyszukiwać",
+    "en": "search"
+  },
+  {
+    "id": 946,
+    "pl": "logować się",
+    "en": "log in"
+  },
+  {
+    "id": 947,
+    "pl": "wylogować się",
+    "en": "log out"
+  },
+  {
+    "id": 948,
+    "pl": "udostępniać",
+    "en": "share"
+  },
+  {
+    "id": 949,
+    "pl": "blokować",
+    "en": "block"
+  },
+  {
+    "id": 950,
+    "pl": "pogoda",
+    "en": "weather"
+  },
+  {
+    "id": 951,
+    "pl": "temperatura",
+    "en": "temperature"
+  },
+  {
+    "id": 952,
+    "pl": "stopień",
+    "en": "degree"
+  },
+  {
+    "id": 953,
+    "pl": "prognoza",
+    "en": "forecast"
+  },
+  {
+    "id": 954,
+    "pl": "burza",
+    "en": "storm"
+  },
+  {
+    "id": 955,
+    "pl": "błyskawica",
+    "en": "lightning"
+  },
+  {
+    "id": 956,
+    "pl": "grzmot",
+    "en": "thunder"
+  },
+  {
+    "id": 957,
+    "pl": "tęcza",
+    "en": "rainbow"
+  },
+  {
+    "id": 958,
+    "pl": "mgła",
+    "en": "fog"
+  },
+  {
+    "id": 959,
+    "pl": "lód",
+    "en": "ice"
+  },
+  {
+    "id": 960,
+    "pl": "grad",
+    "en": "hail"
+  },
+  {
+    "id": 961,
+    "pl": "susza",
+    "en": "drought"
+  },
+  {
+    "id": 962,
+    "pl": "powódź",
+    "en": "flood"
+  },
+  {
+    "id": 963,
+    "pl": "trzęsienie ziemi",
+    "en": "earthquake"
+  },
+  {
+    "id": 964,
+    "pl": "wulkan",
+    "en": "volcano"
+  },
+  {
+    "id": 965,
+    "pl": "ocean",
+    "en": "ocean"
+  },
+  {
+    "id": 966,
+    "pl": "zatoka",
+    "en": "bay"
+  },
+  {
+    "id": 967,
+    "pl": "dolina",
+    "en": "valley"
+  },
+  {
+    "id": 968,
+    "pl": "pustynia",
+    "en": "desert"
+  },
+  {
+    "id": 969,
+    "pl": "dżungla",
+    "en": "jungle"
+  },
+  {
+    "id": 970,
+    "pl": "zwierzę",
+    "en": "animal"
+  },
+  {
+    "id": 971,
+    "pl": "ptak",
+    "en": "bird"
+  },
+  {
+    "id": 972,
+    "pl": "ryba",
+    "en": "fish"
+  },
+  {
+    "id": 973,
+    "pl": "owad",
+    "en": "insect"
+  },
+  {
+    "id": 974,
+    "pl": "motyl",
+    "en": "butterfly"
+  },
+  {
+    "id": 975,
+    "pl": "pszczoła",
+    "en": "bee"
+  },
+  {
+    "id": 976,
+    "pl": "mrówka",
+    "en": "ant"
+  },
+  {
+    "id": 977,
+    "pl": "pająk",
+    "en": "spider"
+  },
+  {
+    "id": 978,
+    "pl": "mysz",
+    "en": "mouse"
+  },
+  {
+    "id": 979,
+    "pl": "królik",
+    "en": "rabbit"
+  },
+  {
+    "id": 980,
+    "pl": "koń",
+    "en": "horse"
+  },
+  {
+    "id": 981,
+    "pl": "krowa",
+    "en": "cow"
+  },
+  {
+    "id": 982,
+    "pl": "świnia",
+    "en": "pig"
+  },
+  {
+    "id": 983,
+    "pl": "owca",
+    "en": "sheep"
+  },
+  {
+    "id": 984,
+    "pl": "koza",
+    "en": "goat"
+  },
+  {
+    "id": 985,
+    "pl": "kura",
+    "en": "hen"
+  },
+  {
+    "id": 986,
+    "pl": "kaczka",
+    "en": "duck"
+  },
+  {
+    "id": 987,
+    "pl": "wilk",
+    "en": "wolf"
+  },
+  {
+    "id": 988,
+    "pl": "niedźwiedź",
+    "en": "bear"
+  },
+  {
+    "id": 989,
+    "pl": "lis",
+    "en": "fox"
+  },
+  {
+    "id": 990,
+    "pl": "żaba",
+    "en": "frog"
+  },
+  {
+    "id": 991,
+    "pl": "wąż",
+    "en": "snake"
+  },
+  {
+    "id": 992,
+    "pl": "orzeł",
+    "en": "eagle"
+  },
+  {
+    "id": 993,
+    "pl": "rekin",
+    "en": "shark"
+  },
+  {
+    "id": 994,
+    "pl": "wieloryb",
+    "en": "whale"
+  },
+  {
+    "id": 995,
+    "pl": "słoń",
+    "en": "elephant"
+  },
+  {
+    "id": 996,
+    "pl": "tygrys",
+    "en": "tiger"
+  },
+  {
+    "id": 997,
+    "pl": "lew",
+    "en": "lion"
+  },
+  {
+    "id": 998,
+    "pl": "małpa",
+    "en": "monkey"
+  },
+  {
+    "id": 999,
+    "pl": "żyrafa",
+    "en": "giraffe"
+  },
+  {
+    "id": 1000,
+    "pl": "pingwin",
+    "en": "penguin"
+  }
+]
