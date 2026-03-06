@@ -98,6 +98,19 @@ function saveProgress() {
 }
 
 // ===== GOOGLE SHEETS SYNC =====
+/**
+ * Normalizes a date value that may arrive as a full Date string
+ * (e.g. "Mon Jun 05 2025 00:00:00 GMT+0200") to ISO "yyyy-MM-dd".
+ * Passes through values that are already in the correct format.
+ */
+function toISODate(val) {
+  if (!val) return val;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(val))) return String(val);
+  const d = new Date(val);
+  if (!isNaN(d)) return d.toISOString().slice(0, 10);
+  return String(val);
+}
+
 function getSyncUrl() {
   return localStorage.getItem(SYNC_URL_KEY) || '';
 }
@@ -171,10 +184,14 @@ async function pullFromSheets() {
           }
         } catch {}
       }
-      // Return only real word-progress entries
+      // Return only real word-progress entries (with normalized dates)
       const cleaned = {};
       for (const [k, v] of Object.entries(raw)) {
-        if (k !== '_settings') cleaned[k] = v;
+        if (k !== '_settings') cleaned[k] = {
+          ...v,
+          nextReview: toISODate(v.nextReview),
+          lastReview: toISODate(v.lastReview),
+        };
       }
       return cleaned;
     }

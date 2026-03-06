@@ -28,6 +28,18 @@ function getSheet() {
   return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
 }
 
+/**
+ * Formats a cell value that may be a Date object (Sheets auto-converts date-like strings)
+ * back to ISO yyyy-MM-dd format so the app can compare dates correctly.
+ */
+function formatISODate(val) {
+  if (!val && val !== 0) return '';
+  if (Object.prototype.toString.call(val) === '[object Date]') {
+    return Utilities.formatDate(val, 'UTC', 'yyyy-MM-dd');
+  }
+  return String(val);
+}
+
 function unauthorized() {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: false, error: 'Unauthorized — nieprawidłowy token' }))
@@ -62,8 +74,8 @@ function doGet(e) {
       } else {
         progress[key] = {
           level: Number(level),
-          nextReview: String(nextReview),
-          lastReview: String(lastReview)
+          nextReview: formatISODate(nextReview),
+          lastReview: formatISODate(lastReview)
         };
       }
     }
