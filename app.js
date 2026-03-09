@@ -324,6 +324,27 @@ function advanceLevel(wordId, status) {
   const today = getToday();
   const entry = progress[wordId] || { level: 0, nextReview: today, lastReview: null };
 
+  if (status === 'hint-correct') {
+    // Hint mode: do not promote the word, schedule repeat for tomorrow.
+    entry.nextReview = addDays(today, 1);
+    entry.lastReview = today;
+    progress[wordId] = entry;
+    saveProgress();
+    pushToSheets([wordId]);
+    return;
+  }
+
+  if (status === 'hint-wrong') {
+    // Hint mode wrong answer: hard reset.
+    entry.level = 0;
+    entry.nextReview = addDays(today, Math.max(1, INTERVALS[entry.level]));
+    entry.lastReview = today;
+    progress[wordId] = entry;
+    saveProgress();
+    pushToSheets([wordId]);
+    return;
+  }
+
   if (status === 'correct') {
     entry.level = Math.min(8, entry.level + 1);
   } else if (status === 'typo') {
@@ -338,6 +359,32 @@ function advanceLevel(wordId, status) {
   progress[wordId] = entry;
   saveProgress();
   pushToSheets([wordId]);
+}
+
+function getHintChoices(correctWord) {
+  const uniquePool = [];
+  const seen = new Set([normalize(correctWord.en)]);
+
+  for (const w of allWords) {
+    const normalized = normalize(w.en);
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    uniquePool.push(w.en);
+  }
+
+  for (let i = uniquePool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [uniquePool[i], uniquePool[j]] = [uniquePool[j], uniquePool[i]];
+  }
+
+  const options = [correctWord.en, ...uniquePool.slice(0, 14)];
+
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+
+  return options;
 }
 
 // ===== SESSION BUILDER =====
@@ -506,9 +553,11 @@ function startSession() {
   renderCard();
 }
 
-function renderCard() {
+function renderCard(mode = 'input') {
   const word = session[currentIndex];
   const pct = Math.round((currentIndex / session.length) * 100);
+  const isHintMode = mode === 'hint';
+  const hintChoices = isHintMode ? getHintChoices(word) : [];
 
   app.innerHTML = `
     <div class="screen">
@@ -518,33 +567,66 @@ function renderCard() {
       </div>
       <div class="card">
         <div class="word-pl">${escapeHtml(word.pl)}</div>
-        <div class="word-hint">Wpisz tłumaczenie po angielsku</div>
-        <div class="input-group">
-          <input type="text" class="input-answer" id="input-answer" autocomplete="off" autofocus>
+        <div class="word-hint">${isHintMode ? 'Wybierz poprawne tłumaczenie (tryb podpowiedzi)' : 'Wpisz tłumaczenie po angielsku'}</div>
+        <div class="input-group" ${isHintMode ? 'style="display:none;"' : ''}>
+          <input type="text" class="input-answer" id="input-answer" autocomplete="off" ${isHintMode ? '' : 'autofocus'}>
           <button class="btn-submit" id="btn-check">→</button>
         </div>
+        ${isHintMode ? `
+        <div class="hint-options" id="hint-options">
+          ${hintChoices.map((choice, idx) => `
+            <button class="hint-option-btn" data-choice-index="${idx}">${escapeHtml(choice)}</button>
+          `).join('')}
+        </div>
+        <button class="btn btn-secondary" id="btn-hint-cancel" style="margin-top:0.75rem;">Wróć do wpisywania</button>
+        ` : '<button class="btn btn-secondary" id="btn-hint" style="margin-top:0.75rem;">Podpowiedź (15 opcji)</button>'}
       </div>
     </div>
   `;
 
-  const input = document.getElementById('input-answer');
-  const btnCheck = document.getElementById('btn-check');
+  if (!isHintMode) {
+    const input = document.getElementById('input-answer');
+    const btnCheck = document.getElementById('btn-check');
+    const btnHint = document.getElementById('btn-hint');
 
-  input.focus();
+    input.focus();
 
-  const submit = () => {
-    const answer = input.value;
-    if (!answer.trim()) return;
-    const status = checkAnswer(answer, word.en);
-    sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: word.en, pl: word.pl });
-    advanceLevel(word.id, status);
-    renderFeedback(word, status, answer);
-  };
+    const submit = () => {
+      const answer = input.value;
+      if (!answer.trim()) return;
+      const status = checkAnswer(answer, word.en);
+      sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: word.en, pl: word.pl, mode: 'typed' });
+      advanceLevel(word.id, status);
+      renderFeedback(word, status, answer);
+    };
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') submit();
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submit();
+    });
+    btnCheck.addEventListener('click', submit);
+    btnHint.addEventListener('click', () => renderCard('hint'));
+    return;
+  }
+
+  document.querySelectorAll('.hint-option-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const choiceIndex = Number(btn.dataset.choiceIndex);
+      const choice = hintChoices[choiceIndex] || '';
+      const status = normalize(choice) === normalize(word.en) ? 'hint-correct' : 'hint-wrong';
+      sessionResults.push({
+        wordId: word.id,
+        status,
+        userAnswer: choice,
+        correctAnswer: word.en,
+        pl: word.pl,
+        mode: 'hint'
+      });
+      advanceLevel(word.id, status);
+      renderFeedback(word, status, choice);
+    });
   });
-  btnCheck.addEventListener('click', submit);
+
+  document.getElementById('btn-hint-cancel').addEventListener('click', () => renderCard('input'));
 }
 
 function renderFeedback(word, status, userAnswer) {
@@ -553,6 +635,14 @@ function renderFeedback(word, status, userAnswer) {
     icon = '✓';
     cls = 'feedback-correct';
     text = 'Poprawnie!';
+  } else if (status === 'hint-correct') {
+    icon = '💡';
+    cls = 'feedback-typo';
+    text = 'Poprawnie z podpowiedzią — poziom bez zmian, powtórka jutro';
+  } else if (status === 'hint-wrong') {
+    icon = '✗';
+    cls = 'feedback-wrong';
+    text = 'Błąd w trybie podpowiedzi — resetuję poziom';
   } else if (status === 'typo') {
     icon = '~';
     cls = 'feedback-typo';
@@ -587,21 +677,27 @@ function renderFeedback(word, status, userAnswer) {
 
 function renderSummary() {
   const correct = sessionResults.filter(r => r.status === 'correct').length;
+  const hintCorrect = sessionResults.filter(r => r.status === 'hint-correct').length;
   const typos = sessionResults.filter(r => r.status === 'typo').length;
-  const wrong = sessionResults.filter(r => r.status === 'wrong').length;
+  const wrong = sessionResults.filter(r => r.status === 'wrong' || r.status === 'hint-wrong').length;
   const total = sessionResults.length;
-  const pct = Math.round((correct / total) * 100);
-  const isPerfectSession = total === SESSION_SIZE && correct === SESSION_SIZE;
+  const pct = Math.round(((correct + hintCorrect) / total) * 100);
+  const isPerfectSession = total === SESSION_SIZE && (correct + hintCorrect) === SESSION_SIZE;
 
   const ignoredSet = new Set(ignoredWordIds);
   const wordRows = sessionResults.map(r => {
-    const dotClass = r.status === 'correct' ? 'dot-correct' : r.status === 'typo' ? 'dot-typo' : 'dot-wrong';
+    const dotClass = (r.status === 'correct' || r.status === 'hint-correct') ? 'dot-correct' : r.status === 'typo' ? 'dot-typo' : 'dot-wrong';
+    const statusLabel = r.status === 'hint-correct'
+      ? '<span class="word-result-note">(podpowiedź: bez awansu)</span>'
+      : r.status === 'hint-wrong'
+        ? '<span class="word-result-note">(podpowiedź: reset)</span>'
+        : '';
     const isIgnored = ignoredSet.has(Number(r.wordId));
     return `
       <div class="word-result">
         <div style="display:flex;align-items:center;">
           <div class="word-result-status ${dotClass}"></div>
-          <span>${escapeHtml(r.pl)}</span>
+          <span>${escapeHtml(r.pl)} ${statusLabel}</span>
         </div>
         <div class="word-result-right">
           <span>${escapeHtml(r.correctAnswer)}</span>
@@ -628,6 +724,10 @@ function renderSummary() {
         <div class="summary-row">
           <span>Poprawne</span>
           <span class="summary-correct">${correct}</span>
+        </div>
+        <div class="summary-row">
+          <span>Poprawne z podpowiedzią (bez awansu)</span>
+          <span class="summary-correct">${hintCorrect}</span>
         </div>
         <div class="summary-row">
           <span>Literówki (−1 poziom)</span>
@@ -711,6 +811,19 @@ function showHappyHippoPopup() {
 function renderSettings() {
   const currentUrl = getSyncUrl();
   const ignoredCount = ignoredWordIds.length;
+  const ignoredSet = new Set(ignoredWordIds);
+  const ignoredWords = allWords.filter(w => ignoredSet.has(Number(w.id)));
+  const ignoredListHtml = ignoredWords.length
+    ? ignoredWords.map(w => `
+      <div class="ignored-word-row">
+        <div>
+          <div class="ignored-word-pl">${escapeHtml(w.pl)}</div>
+          <div class="ignored-word-en">${escapeHtml(w.en)}</div>
+        </div>
+        <button class="btn-unignore-word" data-word-id="${w.id}">Przywróć</button>
+      </div>
+    `).join('')
+    : '<p style="font-size:0.9rem;color:#6b7280;">Brak ignorowanych słówek.</p>';
 
   // Build word counts per level for display
   const levelCounts = {};
@@ -752,6 +865,7 @@ function renderSettings() {
         <h2 style="font-size:1rem;margin-bottom:0.75rem;">Ignorowane słówka</h2>
         <p style="font-size:0.9rem;color:#555;">Aktualnie ignorowane: <strong id="ignored-count">${ignoredCount}</strong></p>
         <p style="font-size:0.85rem;color:#6b7280;margin:0.5rem 0 1rem;">Słówka oznaczysz jako ignorowane w podsumowaniu sesji. Ignorowane nie trafiają do kolejnych sesji.</p>
+        <div class="ignored-words-list" id="ignored-words-list">${ignoredListHtml}</div>
         <button class="btn btn-secondary" id="btn-clear-ignored" ${ignoredCount === 0 ? 'disabled' : ''}>Wyczyść listę ignorowanych</button>
       </div>
 
@@ -841,10 +955,20 @@ function renderSettings() {
       ignoredWordIds = [];
       saveIgnoredWordIds();
       if (syncUrl) pushSettingsToSheets();
-      btnClearIgnored.disabled = true;
-      document.getElementById('ignored-count').textContent = '0';
+      renderSettings();
     });
   }
+
+  document.querySelectorAll('.btn-unignore-word').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.dataset.wordId);
+      if (!Number.isFinite(id)) return;
+      ignoredWordIds = ignoredWordIds.filter((wordId) => wordId !== id);
+      saveIgnoredWordIds();
+      if (syncUrl) pushSettingsToSheets();
+      renderSettings();
+    });
+  });
 
   document.getElementById('btn-test-sync').addEventListener('click', async () => {
     const url = document.getElementById('input-sync-url').value.trim();
