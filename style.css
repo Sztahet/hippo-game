@@ -295,6 +295,28 @@ h2 {
   background: #1d4ed8;
 }
 
+.hint-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.hint-option-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 0.55rem 0.4rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hint-option-btn:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
 /* ===== FEEDBACK ===== */
 .feedback {
   text-align: center;
@@ -460,6 +482,58 @@ h2 {
 .dot-typo { background: #eab308; }
 .dot-wrong { background: #ef4444; }
 
+.word-result-note {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.ignored-words-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 0.25rem 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.ignored-word-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ignored-word-row:last-child {
+  border-bottom: none;
+}
+
+.ignored-word-pl {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+}
+
+.ignored-word-en {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.btn-unignore-word {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.btn-unignore-word:hover {
+  background: #f9fafb;
+}
+
 /* ===== SYNC INDICATOR ===== */
 .sync-indicator {
   text-align: center;
@@ -550,6 +624,7 @@ h2 {
   .word-pl { font-size: 1.5rem; }
   .stat-box { padding: 0.75rem 1rem; min-width: 80px; }
   .stat-number { font-size: 1.5rem; }
+  .hint-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ===== SYNC SPINNER ===== */
