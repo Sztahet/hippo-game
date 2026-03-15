@@ -214,6 +214,91 @@ h2 {
   color: #2563eb;
 }
 
+.daily-stats-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1rem 0.8rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 1.5rem;
+}
+
+.daily-stats-card h2 {
+  margin-bottom: 0.55rem;
+}
+
+.streak-row {
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 0.85rem;
+  font-size: 0.92rem;
+}
+
+.daily-bars {
+  height: 160px;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.45rem;
+  align-items: end;
+}
+
+.daily-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0.12rem;
+  min-height: 0;
+}
+
+.daily-bar-score,
+.daily-bar-sessions {
+  width: 100%;
+  border-radius: 5px;
+  min-height: 4px;
+}
+
+.daily-bar-score {
+  background: #93c5fd;
+}
+
+.daily-bar-sessions {
+  background: #2563eb;
+}
+
+.daily-bar-label {
+  font-size: 0.66rem;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 0.18rem;
+}
+
+.daily-legend {
+  margin-top: 0.7rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.legend-dot-sessions {
+  background: #2563eb;
+}
+
+.legend-dot-score {
+  background: #93c5fd;
+}
+
 /* ===== FLASHCARD SCREEN ===== */
 .progress-bar-container {
   background: #e5e7eb;
@@ -625,6 +710,8 @@ h2 {
   .stat-box { padding: 0.75rem 1rem; min-width: 80px; }
   .stat-number { font-size: 1.5rem; }
   .hint-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daily-bars { gap: 0.25rem; }
+  .daily-bar-label { font-size: 0.58rem; }
 }
 
 /* ===== SYNC SPINNER ===== */

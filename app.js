@@ -1,12 +1,12 @@
 // ===== CONSTANTS =====
 const INTERVALS = [0, 1, 3, 7, 14, 30, 90, 180, 730]; // days per level
-const SESSION_SIZE = 20;
-const DUE_RATIO = 0.7;
+const SESSION_SIZE = 25;
 const STORAGE_KEY = 'vocab_progress';
 const SYNC_URL_KEY = 'vocab_sync_url';
 const SYNC_TOKEN_KEY = 'vocab_sync_token';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
 const IGNORED_WORD_IDS_KEY = 'vocab_ignored_word_ids';
+const DAILY_STATS_KEY = 'vocab_daily_stats';
 
 const ALL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const LEVEL_DESCRIPTIONS = {
@@ -34,6 +34,7 @@ let syncToken = localStorage.getItem(SYNC_TOKEN_KEY) || '';
 let syncStatus = 'idle'; // 'idle' | 'syncing' | 'ok' | 'error'
 let activeLevels = loadActiveLevels();
 let ignoredWordIds = loadIgnoredWordIds();
+let dailyStats = loadDailyStats();
 
 // ===== DATA =====
 function loadProgress() {
@@ -77,6 +78,44 @@ function saveIgnoredWordIds() {
   localStorage.setItem(IGNORED_WORD_IDS_KEY, JSON.stringify(ignoredWordIds));
 }
 
+function sanitizeDailyStatsMap(parsed) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+  const cleaned = {};
+  for (const [dateKey, entry] of Object.entries(parsed)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
+    if (!entry || typeof entry !== 'object') continue;
+    const sessionsRaw = Number(entry.sessions);
+    const sessions = Math.floor(sessionsRaw);
+    const sumPctRaw = Number(entry.sumPct);
+    const avgPctRaw = Number(entry.avgPct);
+    const sumPct = Number.isFinite(sumPctRaw)
+      ? sumPctRaw
+      : (Number.isFinite(avgPctRaw) ? avgPctRaw * sessions : 0);
+    if (!Number.isFinite(sessions) || sessions <= 0) continue;
+    if (!Number.isFinite(sumPct) || sumPct < 0) continue;
+    cleaned[dateKey] = {
+      sessions,
+      sumPct,
+      avgPct: Math.round(sumPct / sessions)
+    };
+  }
+  return cleaned;
+}
+
+function loadDailyStats() {
+  try {
+    const raw = localStorage.getItem(DAILY_STATS_KEY);
+    if (!raw) return {};
+    return sanitizeDailyStatsMap(JSON.parse(raw));
+  } catch {
+    return {};
+  }
+}
+
+function saveDailyStats() {
+  localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(dailyStats));
+}
+
 function buildSettingsPayload() {
   // Backward-compatible payload: older Apps Script deployments persist only activeLevels.
   return {
@@ -84,7 +123,8 @@ function buildSettingsPayload() {
       levels: activeLevels,
       ignoredWordIds: ignoredWordIds
     }),
-    ignoredWordIds: JSON.stringify(ignoredWordIds)
+    ignoredWordIds: JSON.stringify(ignoredWordIds),
+    dailyStats: JSON.stringify(dailyStats)
   };
 }
 
@@ -184,6 +224,15 @@ async function pullFromSheets() {
           }
         } catch {}
       }
+      if (raw._settings && raw._settings.dailyStats) {
+        try {
+          const remoteDailyStatsRaw = JSON.parse(raw._settings.dailyStats);
+          if (remoteDailyStatsRaw && typeof remoteDailyStatsRaw === 'object' && !Array.isArray(remoteDailyStatsRaw)) {
+            dailyStats = sanitizeDailyStatsMap(remoteDailyStatsRaw);
+            saveDailyStats();
+          }
+        } catch {}
+      }
       // Return only real word-progress entries (with normalized dates)
       const cleaned = {};
       for (const [k, v] of Object.entries(raw)) {
@@ -203,6 +252,53 @@ async function pullFromSheets() {
     updateSyncIndicator();
     return null;
   }
+}
+
+function recordDailySession(sessionPct) {
+  const today = getToday();
+  const existing = dailyStats[today] || { sessions: 0, sumPct: 0, avgPct: 0 };
+  const sessions = Math.max(0, Number(existing.sessions) || 0) + 1;
+  const sumPct = Math.max(0, Number(existing.sumPct) || 0) + sessionPct;
+  dailyStats[today] = {
+    sessions,
+    sumPct,
+    avgPct: Math.round(sumPct / sessions)
+  };
+  saveDailyStats();
+  if (syncUrl) pushSettingsToSheets();
+}
+
+function getRecentDailyStats(days = 10) {
+  const labels = [];
+  const rows = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const iso = date.toISOString().slice(0, 10);
+    const entry = dailyStats[iso] || { sessions: 0, avgPct: 0 };
+    const label = iso.slice(5);
+    labels.push(label);
+    rows.push({
+      date: iso,
+      label,
+      sessions: Number(entry.sessions) || 0,
+      avgPct: Number(entry.avgPct) || 0
+    });
+  }
+  return { labels, rows };
+}
+
+function getCurrentStreak() {
+  let streak = 0;
+  const cursor = new Date();
+  while (true) {
+    const iso = cursor.toISOString().slice(0, 10);
+    const entry = dailyStats[iso];
+    if (!entry || !(Number(entry.sessions) > 0)) break;
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
 }
 
 async function pushToSheets(changedIds) {
@@ -400,19 +496,10 @@ function buildSession(words, progress) {
 
   const newWords = words.filter(w => !progress[w.id]);
 
-  const maxDue = Math.min(Math.ceil(SESSION_SIZE * DUE_RATIO), due.length);
-  const maxNew = Math.min(SESSION_SIZE - maxDue, newWords.length);
-
-  const selected = [
-    ...due.slice(0, maxDue),
-    ...newWords.slice(0, maxNew)
-  ];
-
-  // If still under 20 and there are more due words, fill with them
-  if (selected.length < SESSION_SIZE && due.length > maxDue) {
-    const extra = due.slice(maxDue, maxDue + SESSION_SIZE - selected.length);
-    selected.push(...extra);
-  }
+  // New rule: if any due words exist, session is 100% due words.
+  // Only when there are no due words, use new words.
+  const selectedSource = due.length > 0 ? due : newWords;
+  const selected = selectedSource.slice(0, SESSION_SIZE);
 
   // Shuffle
   for (let i = selected.length - 1; i > 0; i--) {
@@ -461,6 +548,20 @@ const app = document.getElementById('app');
 
 function renderHome() {
   const stats = getStats();
+  const recent = getRecentDailyStats(10);
+  const streak = getCurrentStreak();
+  const maxSessions = Math.max(1, ...recent.rows.map(r => r.sessions));
+  const dailyBars = recent.rows.map(r => {
+    const sessionsHeight = Math.max(4, Math.round((r.sessions / maxSessions) * 100));
+    const scoreHeight = Math.max(4, Math.round(r.avgPct));
+    return `
+      <div class="daily-bar-wrap" title="${r.date}: ${r.sessions} sesji, ${r.avgPct}%">
+        <div class="daily-bar-score" style="height:${scoreHeight}%;"></div>
+        <div class="daily-bar-sessions" style="height:${sessionsHeight}%;"></div>
+        <div class="daily-bar-label">${r.label}</div>
+      </div>
+    `;
+  }).join('');
   app.innerHTML = `
     <div class="screen">
       <h1>Nauka Słówek PL → EN</h1>
@@ -507,6 +608,15 @@ function renderHome() {
             <span>${label}</span>
             <span class="level-count">${stats.levelCounts[parseInt(lvl)]}</span>
           </div>`).join('')}
+        </div>
+      </div>
+      <div class="daily-stats-card">
+        <h2>Dzienne statystyki</h2>
+        <div class="streak-row">Seria: <strong>${streak}</strong> dni z rzędu</div>
+        <div class="daily-bars">${dailyBars}</div>
+        <div class="daily-legend">
+          <span><i class="legend-dot legend-dot-sessions"></i> liczba sesji</span>
+          <span><i class="legend-dot legend-dot-score"></i> średni wynik %</span>
         </div>
       </div>
       ${stats.dueCount + stats.newCount > 0
@@ -578,7 +688,6 @@ function renderCard(mode = 'input') {
             <button class="hint-option-btn" data-choice-index="${idx}">${escapeHtml(choice)}</button>
           `).join('')}
         </div>
-        <button class="btn btn-secondary" id="btn-hint-cancel" style="margin-top:0.75rem;">Wróć do wpisywania</button>
         ` : '<button class="btn btn-secondary" id="btn-hint" style="margin-top:0.75rem;">Podpowiedź (15 opcji)</button>'}
       </div>
     </div>
@@ -625,8 +734,6 @@ function renderCard(mode = 'input') {
       renderFeedback(word, status, choice);
     });
   });
-
-  document.getElementById('btn-hint-cancel').addEventListener('click', () => renderCard('input'));
 }
 
 function renderFeedback(word, status, userAnswer) {
@@ -682,7 +789,9 @@ function renderSummary() {
   const wrong = sessionResults.filter(r => r.status === 'wrong' || r.status === 'hint-wrong').length;
   const total = sessionResults.length;
   const pct = Math.round(((correct + hintCorrect) / total) * 100);
-  const isPerfectSession = total === SESSION_SIZE && (correct + hintCorrect) === SESSION_SIZE;
+  const isPerfectSession = total > 0 && (correct + hintCorrect) === total;
+
+  recordDailySession(pct);
 
   const ignoredSet = new Set(ignoredWordIds);
   const wordRows = sessionResults.map(r => {
@@ -716,7 +825,7 @@ function renderSummary() {
       <div class="perfect-session-banner">
         <div class="perfect-session-hippo">🦛✨</div>
         <div class="perfect-session-title">Szczęśliwy Hipek!</div>
-        <div class="perfect-session-text">20/20, sesja zaliczona na 100%!</div>
+        <div class="perfect-session-text">${total}/${total}, sesja zaliczona na 100%!</div>
       </div>` : ''}
       <div class="summary-card">
         <div class="summary-score">${pct}%</div>
@@ -790,7 +899,7 @@ function showHappyHippoPopup() {
     <div class="hippo-popup-card" role="dialog" aria-live="polite" aria-label="Perfect session celebration">
       <div class="hippo-popup-emoji">🦛🎉</div>
       <h2>Szczęśliwy Hipek!</h2>
-      <p>Perfekcyjna sesja: 20/20 poprawnych odpowiedzi.</p>
+      <p>Perfekcyjna sesja: ${sessionResults.length}/${sessionResults.length} poprawnych odpowiedzi.</p>
       <button class="btn btn-primary" id="btn-close-hippo-popup">Super!</button>
     </div>
   `;
