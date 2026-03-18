@@ -394,14 +394,36 @@ function normalize(s) {
   return s.trim().toLowerCase();
 }
 
+/** Returns the en field as an array, whether it's a string or already an array. */
+function getEnArray(word) {
+  if (Array.isArray(word.en)) return word.en;
+  return [word.en];
+}
+
+/** Returns the primary (first) English translation for display. */
+function getEnDisplay(word) {
+  return Array.isArray(word.en) ? word.en[0] : word.en;
+}
+
+/** Returns all English translations joined for display (e.g. "repair / fix"). */
+function getEnAllDisplay(word) {
+  const arr = getEnArray(word);
+  return arr.join(' / ');
+}
+
 /**
  * Returns 'correct' | 'typo' | 'wrong'
+ * Checks input against all accepted translations.
  */
-function checkAnswer(input, expected) {
+function checkAnswer(input, word) {
   const a = normalize(input);
-  const b = normalize(expected);
-  if (a === b) return 'correct';
-  if (levenshtein(a, b) <= 1) return 'typo';
+  const answers = getEnArray(word);
+  for (const ans of answers) {
+    if (a === normalize(ans)) return 'correct';
+  }
+  for (const ans of answers) {
+    if (levenshtein(a, normalize(ans)) <= 1) return 'typo';
+  }
   return 'wrong';
 }
 
@@ -458,14 +480,15 @@ function advanceLevel(wordId, status) {
 }
 
 function getHintChoices(correctWord) {
+  const primaryEn = getEnDisplay(correctWord);
   const uniquePool = [];
-  const seen = new Set([normalize(correctWord.en)]);
+  const seen = new Set(getEnArray(correctWord).map(normalize));
 
   for (const w of allWords) {
-    const normalized = normalize(w.en);
+    const normalized = normalize(getEnDisplay(w));
     if (seen.has(normalized)) continue;
     seen.add(normalized);
-    uniquePool.push(w.en);
+    uniquePool.push(getEnDisplay(w));
   }
 
   for (let i = uniquePool.length - 1; i > 0; i--) {
@@ -473,7 +496,7 @@ function getHintChoices(correctWord) {
     [uniquePool[i], uniquePool[j]] = [uniquePool[j], uniquePool[i]];
   }
 
-  const options = [correctWord.en, ...uniquePool.slice(0, 14)];
+  const options = [primaryEn, ...uniquePool.slice(0, 14)];
 
   for (let i = options.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -703,8 +726,8 @@ function renderCard(mode = 'input') {
     const submit = () => {
       const answer = input.value;
       if (!answer.trim()) return;
-      const status = checkAnswer(answer, word.en);
-      sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: word.en, pl: word.pl, mode: 'typed' });
+      const status = checkAnswer(answer, word);
+      sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: getEnAllDisplay(word), pl: word.pl, mode: 'typed' });
       advanceLevel(word.id, status);
       renderFeedback(word, status, answer);
     };
@@ -721,12 +744,12 @@ function renderCard(mode = 'input') {
     btn.addEventListener('click', () => {
       const choiceIndex = Number(btn.dataset.choiceIndex);
       const choice = hintChoices[choiceIndex] || '';
-      const status = normalize(choice) === normalize(word.en) ? 'hint-correct' : 'hint-wrong';
+      const status = getEnArray(word).some(ans => normalize(choice) === normalize(ans)) ? 'hint-correct' : 'hint-wrong';
       sessionResults.push({
         wordId: word.id,
         status,
         userAnswer: choice,
-        correctAnswer: word.en,
+        correctAnswer: getEnAllDisplay(word),
         pl: word.pl,
         mode: 'hint'
       });
@@ -766,7 +789,7 @@ function renderFeedback(word, status, userAnswer) {
       <div class="feedback ${cls}">
         <div class="feedback-icon">${icon}</div>
         <div class="feedback-text">${text}</div>
-        <div class="feedback-answer">${escapeHtml(word.en)}</div>
+        <div class="feedback-answer">${escapeHtml(getEnAllDisplay(word))}</div>
         ${status !== 'correct' ? `<div class="feedback-text" style="margin-top:0.5rem;">Twoja odpowiedź: <strong>${escapeHtml(userAnswer)}</strong></div>` : ''}
       </div>
     </div>
@@ -927,7 +950,7 @@ function renderSettings() {
       <div class="ignored-word-row">
         <div>
           <div class="ignored-word-pl">${escapeHtml(w.pl)}</div>
-          <div class="ignored-word-en">${escapeHtml(w.en)}</div>
+          <div class="ignored-word-en">${escapeHtml(getEnAllDisplay(w))}</div>
         </div>
         <button class="btn-unignore-word" data-word-id="${w.id}">Przywróć</button>
       </div>
