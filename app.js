@@ -35,6 +35,7 @@ let syncStatus = 'idle'; // 'idle' | 'syncing' | 'ok' | 'error'
 let activeLevels = loadActiveLevels();
 let ignoredWordIds = loadIgnoredWordIds();
 let dailyStats = loadDailyStats();
+let letterHintState = null; // { wordId, answer, revealed: bool[], count }
 
 // ===== DATA =====
 function loadProgress() {
@@ -496,7 +497,7 @@ function getHintChoices(correctWord) {
     [uniquePool[i], uniquePool[j]] = [uniquePool[j], uniquePool[i]];
   }
 
-  const options = [primaryEn, ...uniquePool.slice(0, 14)];
+  const options = [primaryEn, ...uniquePool.slice(0, 4)];
 
   for (let i = options.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -574,14 +575,22 @@ function renderHome() {
   const recent = getRecentDailyStats(10);
   const streak = getCurrentStreak();
   const maxSessions = Math.max(1, ...recent.rows.map(r => r.sessions));
+  const BAR_MAX_PX = 108;
   const dailyBars = recent.rows.map(r => {
-    const sessionsHeight = Math.max(4, Math.round((r.sessions / maxSessions) * 100));
-    const scoreHeight = Math.max(4, Math.round(r.avgPct));
+    const hasData = r.sessions > 0;
+    const barH = hasData ? Math.max(14, Math.round((r.sessions / maxSessions) * BAR_MAX_PX)) : 0;
+    let barBg = '#e2e8f0';
+    if (hasData) {
+      if (r.avgPct >= 80) barBg = 'linear-gradient(to top, #16a34a, #4ade80)';
+      else if (r.avgPct >= 60) barBg = 'linear-gradient(to top, #2563eb, #60a5fa)';
+      else if (r.avgPct >= 40) barBg = 'linear-gradient(to top, #b45309, #fbbf24)';
+      else barBg = 'linear-gradient(to top, #b91c1c, #f87171)';
+    }
     return `
-      <div class="daily-bar-wrap" title="${r.date}: ${r.sessions} sesji, ${r.avgPct}%">
-        <div class="daily-bar-score" style="height:${scoreHeight}%;"></div>
-        <div class="daily-bar-sessions" style="height:${sessionsHeight}%;"></div>
-        <div class="daily-bar-label">${r.label}</div>
+      <div class="daily-col" title="${r.date}${hasData ? ': ' + r.sessions + ' sesji, wynik ' + r.avgPct + '%' : ': brak danych'}">
+        <div class="daily-col-pct">${hasData ? r.avgPct + '%' : ''}</div>
+        <div class="daily-col-bar" style="height:${barH}px;background:${barBg};"></div>
+        <div class="daily-col-date">${r.label}</div>
       </div>
     `;
   }).join('');
@@ -590,15 +599,15 @@ function renderHome() {
       <h1>Nauka Słówek PL → EN</h1>
       <div class="stats">
         <div class="stat-box">
-          <div class="stat-number">${stats.dueCount}</div>
+          <div class="stat-number stat-due">${stats.dueCount}</div>
           <div class="stat-label">Do powtórki</div>
         </div>
         <div class="stat-box">
-          <div class="stat-number">${stats.newCount}</div>
+          <div class="stat-number stat-new">${stats.newCount}</div>
           <div class="stat-label">Nowych</div>
         </div>
         <div class="stat-box">
-          <div class="stat-number">${stats.masteredCount}</div>
+          <div class="stat-number stat-mastered">${stats.masteredCount}</div>
           <div class="stat-label">Opanowanych</div>
         </div>
       </div>
@@ -635,11 +644,14 @@ function renderHome() {
       </div>
       <div class="daily-stats-card">
         <h2>Dzienne statystyki</h2>
-        <div class="streak-row">Seria: <strong>${streak}</strong> dni z rzędu</div>
+        <div class="streak-row">${streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '📅'} Seria: <strong class="streak-count">${streak}</strong> ${streak === 1 ? 'dzień' : 'dni'} z rzędu</div>
         <div class="daily-bars">${dailyBars}</div>
         <div class="daily-legend">
-          <span><i class="legend-dot legend-dot-sessions"></i> liczba sesji</span>
-          <span><i class="legend-dot legend-dot-score"></i> średni wynik %</span>
+          <span><i class="legend-dot" style="background:#4ade80;"></i> ≥80%</span>
+          <span><i class="legend-dot" style="background:#60a5fa;"></i> ≥60%</span>
+          <span><i class="legend-dot" style="background:#fbbf24;"></i> ≥40%</span>
+          <span><i class="legend-dot" style="background:#f87171;"></i> &lt;40%</span>
+          <span class="legend-note">• wys. = sesje</span>
         </div>
       </div>
       ${stats.dueCount + stats.newCount > 0
@@ -690,7 +702,35 @@ function renderCard(mode = 'input') {
   const word = session[currentIndex];
   const pct = Math.round((currentIndex / session.length) * 100);
   const isHintMode = mode === 'hint';
+  const isLetterHintMode = mode === 'letter-hint';
+
+  // Reset letter hint state when entering a fresh card
+  if (mode === 'input') {
+    letterHintState = null;
+  }
+
+  // Initialize letter hint state when entering that mode
+  if (isLetterHintMode && (!letterHintState || letterHintState.wordId !== word.id)) {
+    const answer = getEnDisplay(word);
+    letterHintState = {
+      wordId: word.id,
+      answer,
+      revealed: answer.split('').map(c => c === ' '),
+      count: 0
+    };
+  }
+
   const hintChoices = isHintMode ? getHintChoices(word) : [];
+
+  const buildLetterBoxes = () => letterHintState.answer.split('').map((c, i) => {
+    if (c === ' ') return `<span class="letter-box letter-space"> </span>`;
+    if (letterHintState.revealed[i]) return `<span class="letter-box letter-revealed">${escapeHtml(c)}</span>`;
+    return `<span class="letter-box letter-hidden"></span>`;
+  }).join('');
+
+  const unrevealedCount = isLetterHintMode
+    ? letterHintState.answer.split('').filter((c, i) => c !== ' ' && !letterHintState.revealed[i]).length
+    : 0;
 
   app.innerHTML = `
     <div class="screen">
@@ -700,63 +740,122 @@ function renderCard(mode = 'input') {
       </div>
       <div class="card">
         <div class="word-pl">${escapeHtml(word.pl)}</div>
-        <div class="word-hint">${isHintMode ? 'Wybierz poprawne tłumaczenie (tryb podpowiedzi)' : 'Wpisz tłumaczenie po angielsku'}</div>
-        <div class="input-group" ${isHintMode ? 'style="display:none;"' : ''}>
-          <input type="text" class="input-answer" id="input-answer" autocomplete="off" ${isHintMode ? '' : 'autofocus'}>
-          <button class="btn-submit" id="btn-check">→</button>
-        </div>
         ${isHintMode ? `
-        <div class="hint-options" id="hint-options">
-          ${hintChoices.map((choice, idx) => `
-            <button class="hint-option-btn" data-choice-index="${idx}">${escapeHtml(choice)}</button>
-          `).join('')}
-        </div>
-        ` : '<button class="btn btn-secondary" id="btn-hint" style="margin-top:0.75rem;">Podpowiedź (15 opcji)</button>'}
+          <div class="word-hint">Wybierz poprawne tłumaczenie (tryb podpowiedzi)</div>
+          <div class="hint-options" id="hint-options">
+            ${hintChoices.map((choice, idx) => `
+              <button class="hint-option-btn" data-choice-index="${idx}">${escapeHtml(choice)}</button>
+            `).join('')}
+          </div>
+        ` : isLetterHintMode ? `
+          <div class="word-hint" id="letter-hint-subtitle">🔤 Podpowiedź literowa — ${letterHintState.answer.length} liter${unrevealedCount > 0 ? ` · ${unrevealedCount} ukrytych` : ''}</div>
+          <div class="letter-hint-display" id="letter-hint-display">${buildLetterBoxes()}</div>
+          <div class="input-group" style="margin-top:0.75rem;">
+            <input type="text" class="input-answer" id="input-answer" autocomplete="off" autofocus>
+            <button class="btn-submit" id="btn-check">→</button>
+          </div>
+          ${unrevealedCount > 0 ? `<button class="btn btn-secondary" id="btn-reveal-letter" style="margin-top:0.6rem;">🔍 Odkryj losową literę</button>` : ''}
+        ` : `
+          <div class="word-hint">Wpisz tłumaczenie po angielsku</div>
+          <div class="input-group">
+            <input type="text" class="input-answer" id="input-answer" autocomplete="off" autofocus>
+            <button class="btn-submit" id="btn-check">→</button>
+          </div>
+          <button class="btn btn-secondary" id="btn-hint" style="margin-top:0.75rem;">🃏 Podpowiedź (5 opcji)</button>
+          <button class="btn btn-secondary" id="btn-letter-hint" style="margin-top:0.5rem;">🔤 Podpowiedź literowa</button>
+        `}
       </div>
     </div>
   `;
 
-  if (!isHintMode) {
+  if (isHintMode) {
+    document.querySelectorAll('.hint-option-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const choiceIndex = Number(btn.dataset.choiceIndex);
+        const choice = hintChoices[choiceIndex] || '';
+        const status = getEnArray(word).some(ans => normalize(choice) === normalize(ans)) ? 'hint-correct' : 'hint-wrong';
+        sessionResults.push({
+          wordId: word.id,
+          status,
+          userAnswer: choice,
+          correctAnswer: getEnAllDisplay(word),
+          pl: word.pl,
+          mode: 'hint'
+        });
+        advanceLevel(word.id, status);
+        renderFeedback(word, status, choice);
+      });
+    });
+    return;
+  }
+
+  if (isLetterHintMode) {
     const input = document.getElementById('input-answer');
     const btnCheck = document.getElementById('btn-check');
-    const btnHint = document.getElementById('btn-hint');
-
+    const btnReveal = document.getElementById('btn-reveal-letter');
     input.focus();
 
     const submit = () => {
       const answer = input.value;
       if (!answer.trim()) return;
-      const status = checkAnswer(answer, word);
-      sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: getEnAllDisplay(word), pl: word.pl, mode: 'typed' });
+      const correctness = checkAnswer(answer, word);
+      const status = correctness === 'wrong' ? 'hint-wrong' : 'hint-correct';
+      sessionResults.push({
+        wordId: word.id, status, userAnswer: answer,
+        correctAnswer: getEnAllDisplay(word), pl: word.pl, mode: 'letter-hint'
+      });
+      letterHintState = null;
       advanceLevel(word.id, status);
       renderFeedback(word, status, answer);
     };
 
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') submit();
-    });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
     btnCheck.addEventListener('click', submit);
-    btnHint.addEventListener('click', () => renderCard('hint'));
+
+    if (btnReveal) {
+      btnReveal.addEventListener('click', () => {
+        const unrevealed = [];
+        for (let i = 0; i < letterHintState.answer.length; i++) {
+          if (letterHintState.answer[i] !== ' ' && !letterHintState.revealed[i]) unrevealed.push(i);
+        }
+        if (unrevealed.length === 0) return;
+        const idx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+        letterHintState.revealed[idx] = true;
+        letterHintState.count++;
+
+        // Update display in-place (preserves input focus)
+        const displayEl = document.getElementById('letter-hint-display');
+        if (displayEl) displayEl.innerHTML = buildLetterBoxes();
+
+        const newUnrevealed = letterHintState.answer.split('').filter((c, i) => c !== ' ' && !letterHintState.revealed[i]).length;
+        const subtitleEl = document.getElementById('letter-hint-subtitle');
+        if (subtitleEl) subtitleEl.textContent = `🔤 Podpowiedź literowa — ${letterHintState.answer.length} liter${newUnrevealed > 0 ? ` · ${newUnrevealed} ukrytych` : ''}`;
+        if (newUnrevealed === 0) btnReveal.style.display = 'none';
+      });
+    }
     return;
   }
 
-  document.querySelectorAll('.hint-option-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const choiceIndex = Number(btn.dataset.choiceIndex);
-      const choice = hintChoices[choiceIndex] || '';
-      const status = getEnArray(word).some(ans => normalize(choice) === normalize(ans)) ? 'hint-correct' : 'hint-wrong';
-      sessionResults.push({
-        wordId: word.id,
-        status,
-        userAnswer: choice,
-        correctAnswer: getEnAllDisplay(word),
-        pl: word.pl,
-        mode: 'hint'
-      });
-      advanceLevel(word.id, status);
-      renderFeedback(word, status, choice);
-    });
-  });
+  // Normal input mode
+  const input = document.getElementById('input-answer');
+  const btnCheck = document.getElementById('btn-check');
+  const btnHint = document.getElementById('btn-hint');
+  const btnLetterHint = document.getElementById('btn-letter-hint');
+  input.focus();
+
+  const submit = () => {
+    const answer = input.value;
+    if (!answer.trim()) return;
+    const status = checkAnswer(answer, word);
+    sessionResults.push({ wordId: word.id, status, userAnswer: answer, correctAnswer: getEnAllDisplay(word), pl: word.pl, mode: 'typed' });
+    advanceLevel(word.id, status);
+    renderFeedback(word, status, answer);
+  };
+
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  btnCheck.addEventListener('click', submit);
+  btnHint.addEventListener('click', () => renderCard('hint'));
+  btnLetterHint.addEventListener('click', () => renderCard('letter-hint'));
 }
 
 function renderFeedback(word, status, userAnswer) {
