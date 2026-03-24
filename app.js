@@ -871,16 +871,32 @@ function renderFeedback(word, status, userAnswer) {
   } else if (status === 'hint-wrong') {
     icon = '✗';
     cls = 'feedback-wrong';
-    text = 'Błąd w trybie podpowiedzi — resetuję poziom';
+    text = 'Błąd w trybie podpowiedzi — reset poziomu';
   } else if (status === 'typo') {
-    icon = '~';
+    icon = '≈';
     cls = 'feedback-typo';
     text = 'Literówka — cofam o 1 poziom';
   } else {
     icon = '✗';
     cls = 'feedback-wrong';
-    text = 'Źle — resetuję poziom';
+    text = 'Źle — reset poziomu';
   }
+
+  const isError = status !== 'correct' && status !== 'hint-correct';
+  const delayMs = status === 'correct' ? 1000 : status === 'hint-correct' ? 1200 : 6000;
+
+  const comparisonHtml = isError ? `
+    <div class="answer-comparison">
+      <div class="answer-row answer-row--wrong">
+        <span class="answer-row-label">Twoja odpowiedź</span>
+        <span class="answer-row-value">${escapeHtml(userAnswer)}</span>
+      </div>
+      <div class="answer-row answer-row--correct">
+        <span class="answer-row-label">Poprawna odpowiedź</span>
+        <span class="answer-row-value">${escapeHtml(getEnAllDisplay(word))}</span>
+      </div>
+    </div>
+  ` : `<div class="feedback-answer">${escapeHtml(getEnAllDisplay(word))}</div>`;
 
   app.innerHTML = `
     <div class="screen">
@@ -888,20 +904,39 @@ function renderFeedback(word, status, userAnswer) {
       <div class="feedback ${cls}">
         <div class="feedback-icon">${icon}</div>
         <div class="feedback-text">${text}</div>
-        <div class="feedback-answer">${escapeHtml(getEnAllDisplay(word))}</div>
-        ${status !== 'correct' ? `<div class="feedback-text" style="margin-top:0.5rem;">Twoja odpowiedź: <strong>${escapeHtml(userAnswer)}</strong></div>` : ''}
+        ${comparisonHtml}
+        ${isError ? `
+        <div class="feedback-timer-row">
+          <button class="btn-skip-feedback" id="btn-skip">Przejdź dalej <span class="skip-countdown" id="skip-countdown"></span></button>
+        </div>` : ''}
       </div>
     </div>
   `;
 
-  setTimeout(() => {
+  const advance = () => {
+    clearInterval(timerHandle);
     currentIndex++;
-    if (currentIndex < session.length) {
-      renderCard();
-    } else {
-      renderSummary();
-    }
-  }, status === 'correct' ? 1000 : 2000);
+    if (currentIndex < session.length) renderCard();
+    else renderSummary();
+  };
+
+  let timerHandle;
+  if (isError) {
+    const totalSecs = Math.round(delayMs / 1000);
+    let remaining = totalSecs;
+    const countdownEl = document.getElementById('skip-countdown');
+    if (countdownEl) countdownEl.textContent = `(${remaining}s)`;
+    timerHandle = setInterval(() => {
+      remaining--;
+      const el = document.getElementById('skip-countdown');
+      if (el) el.textContent = remaining > 0 ? `(${remaining}s)` : '';
+      if (remaining <= 0) advance();
+    }, 1000);
+    const skipBtn = document.getElementById('btn-skip');
+    if (skipBtn) skipBtn.addEventListener('click', advance);
+  } else {
+    timerHandle = setTimeout(advance, delayMs);
+  }
 }
 
 function renderSummary() {
@@ -917,25 +952,38 @@ function renderSummary() {
 
   const ignoredSet = new Set(ignoredWordIds);
   const wordRows = sessionResults.map(r => {
-    const dotClass = (r.status === 'correct' || r.status === 'hint-correct') ? 'dot-correct' : r.status === 'typo' ? 'dot-typo' : 'dot-wrong';
+    const isCorrect = r.status === 'correct' || r.status === 'hint-correct';
+    const isTypo = r.status === 'typo';
+    const dotClass = isCorrect ? 'dot-correct' : isTypo ? 'dot-typo' : 'dot-wrong';
     const statusLabel = r.status === 'hint-correct'
-      ? '<span class="word-result-note">(podpowiedź: bez awansu)</span>'
+      ? '<span class="word-result-note">(podpowiedź)</span>'
       : r.status === 'hint-wrong'
         ? '<span class="word-result-note">(podpowiedź: reset)</span>'
-        : '';
+        : isTypo
+          ? '<span class="word-result-note">(literówka)</span>'
+          : '';
     const isIgnored = ignoredSet.has(Number(r.wordId));
+    const showComparison = !isCorrect && r.userAnswer;
     return `
-      <div class="word-result">
-        <div style="display:flex;align-items:center;">
-          <div class="word-result-status ${dotClass}"></div>
-          <span>${escapeHtml(r.pl)} ${statusLabel}</span>
+      <div class="word-result ${showComparison ? 'word-result--error' : ''}">
+        <div class="word-result-top">
+          <div style="display:flex;align-items:center;flex:1;min-width:0;">
+            <div class="word-result-status ${dotClass}"></div>
+            <span class="word-result-pl">${escapeHtml(r.pl)} ${statusLabel}</span>
+          </div>
+          <div class="word-result-right">
+            <span class="word-result-en">${escapeHtml(r.correctAnswer)}</span>
+            <button class="btn-ignore-word" data-word-id="${r.wordId}" ${isIgnored ? 'disabled' : ''}>
+              ${isIgnored ? 'Ignorowane' : 'Ignoruj'}
+            </button>
+          </div>
         </div>
-        <div class="word-result-right">
-          <span>${escapeHtml(r.correctAnswer)}</span>
-          <button class="btn-ignore-word" data-word-id="${r.wordId}" ${isIgnored ? 'disabled' : ''}>
-            ${isIgnored ? 'Ignorowane' : 'Ignoruj'}
-          </button>
-        </div>
+        ${showComparison ? `
+        <div class="word-result-comparison">
+          <span class="wrc-wrong">${escapeHtml(r.userAnswer)}</span>
+          <span class="wrc-arrow">→</span>
+          <span class="wrc-correct">${escapeHtml(r.correctAnswer)}</span>
+        </div>` : ''}
       </div>
     `;
   }).join('');
