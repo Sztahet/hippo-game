@@ -12,6 +12,7 @@ Aplikacja do nauki angielskich słówek metodą spaced repetition (SRS), z synch
 - **~10 000 słów** w 6 poziomach trudności CEFR: A1, A2, B1, B2, C1, C2
 - **Synchronizacja postępu** przez Google Sheets — działa na wielu urządzeniach
 - **Zabezpieczenie hasłem** — dostęp tylko dla uprawnionej osoby
+- **Super Hipcio po sesji** — po powrocie na home rzuca family-friendly żart po angielsku
 - **Mobile-friendly** — działa na telefonie i tablecie
 
 ---
@@ -23,6 +24,7 @@ hippo-game/
 ├── index.html          # Strona główna (wymaga serwera HTTP)
 ├── app.js              # Cała logika aplikacji (vanilla JS)
 ├── style.css           # Style (mobile-first)
+├── assets/super-hipcio.png # Lokalna maskotka Hipcia do karty z żartem
 ├── words.json          # Baza słówek (~10 000 par PL→EN z poziomami CEFR)
 ├── build.js            # (Opcjonalnie) skrypt budujący bundle offline
 ├── words_20k_pipeline.js # Czyszczenie i import slow z 20k.txt

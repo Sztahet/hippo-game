@@ -7,6 +7,69 @@ const SYNC_TOKEN_KEY = 'vocab_sync_token';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
 const IGNORED_WORD_IDS_KEY = 'vocab_ignored_word_ids';
 const DAILY_STATS_KEY = 'vocab_daily_stats';
+const HIPPO_MASCOT_SRC = 'assets/super-hipcio.png';
+const HIPPO_JOKE_API_URL = 'https://v2.jokeapi.dev/joke/Misc,Pun?lang=en&safe-mode&amount=6&blacklistFlags=nsfw,religious,political,racist,sexist,explicit';
+const HIPPO_JOKE_BLOCKLIST = [
+  /\b(?:nsfw|sex|sexy|nude|naked|porn|fetish|explicit)\b/i,
+  /\b(?:kill|killed|murder|suicide|corpse|gore|blood|bloody|weapon|gun|bomb|terror)\b/i,
+  /\b(?:drug|drugs|weed|cocaine|meth|vodka|whiskey|drunk)\b/i,
+  /\b(?:racist|sexist|slur|hate)\b/i
+];
+
+const FALLBACK_HIPPO_JOKES = [
+  {
+    type: 'single',
+    joke: 'What is Super Hipcio best at? Big smiles and short English jokes.'
+  },
+  {
+    type: 'twopart',
+    setup: 'Why does Super Hipcio like easy English?',
+    delivery: 'Because clear words are easier to catch.'
+  },
+  {
+    type: 'twopart',
+    setup: 'What did Super Hipcio say after a good lesson?',
+    delivery: 'One more word, one more smile.'
+  },
+  {
+    type: 'twopart',
+    setup: 'Why is Super Hipcio happy at school?',
+    delivery: 'He can catch one new word every day.'
+  },
+  {
+    type: 'twopart',
+    setup: 'What is in Super Hipcio\'s bag?',
+    delivery: 'Snacks, books, and one more joke.'
+  },
+  {
+    type: 'single',
+    joke: 'Super Hipcio likes easy English. Short words make big smiles.'
+  },
+  {
+    type: 'twopart',
+    setup: 'Why does Super Hipcio read every day?',
+    delivery: 'Books help him catch new words.'
+  },
+  {
+    type: 'twopart',
+    setup: 'What does Super Hipcio eat after class?',
+    delivery: 'A smart cookie and a small cake.'
+  },
+  {
+    type: 'twopart',
+    setup: 'Why does Super Hipcio carry a red hat?',
+    delivery: 'It helps him look bright and brave.'
+  },
+  {
+    type: 'single',
+    joke: 'Super Hipcio knows one secret: easy words can still be fun.'
+  },
+  {
+    type: 'twopart',
+    setup: 'What does Super Hipcio do with a new word?',
+    delivery: 'He says it once, then smiles twice.'
+  }
+];
 
 const ALL_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const LEVEL_DESCRIPTIONS = {
@@ -36,6 +99,10 @@ let activeLevels = loadActiveLevels();
 let ignoredWordIds = loadIgnoredWordIds();
 let dailyStats = loadDailyStats();
 let letterHintState = null; // { wordId, answer, revealed: bool[], count }
+let currentScreen = 'boot';
+let homeHippoJoke = null;
+let hippoJokeRequestId = 0;
+let lastHippoJokeKey = '';
 
 // ===== DATA =====
 function loadProgress() {
@@ -372,6 +439,218 @@ async function loadWords() {
   return resp.json();
 }
 
+function getRandomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function buildHippoJokeKey(joke) {
+  return [joke.type, joke.joke || '', joke.setup || '', joke.delivery || ''].join('|').toLowerCase();
+}
+
+function getFallbackHippoJoke() {
+  return {
+    ...getRandomItem(FALLBACK_HIPPO_JOKES),
+    source: 'local'
+  };
+}
+
+function getHippoJokeText(joke) {
+  if (!joke) return '';
+  return [joke.joke, joke.setup, joke.delivery].filter(Boolean).join(' ').trim();
+}
+
+function isReadableHippoJoke(joke) {
+  const text = getHippoJokeText(joke);
+  if (!text) return false;
+  if (HIPPO_JOKE_BLOCKLIST.some((pattern) => pattern.test(text))) return false;
+  if (/[A-Z]{5,}/.test(text)) return false;
+
+  const normalized = text.replace(/[^a-zA-Z'\s]/g, ' ');
+  const words = normalized.split(/\s+/).filter(Boolean);
+  if (words.length < 3 || words.length > 40) return false;
+
+  const avgWordLength = words.join('').length / words.length;
+  if (avgWordLength > 7.2) return false;
+
+  return true;
+}
+
+function normalizeApiHippoJoke(entry) {
+  if (entry.type === 'single' && typeof entry.joke === 'string' && entry.joke.trim()) {
+    return {
+      type: 'single',
+      joke: entry.joke.trim(),
+      source: 'api'
+    };
+  }
+
+  if (
+    entry.type === 'twopart'
+    && typeof entry.setup === 'string' && entry.setup.trim()
+    && typeof entry.delivery === 'string' && entry.delivery.trim()
+  ) {
+    return {
+      type: 'twopart',
+      setup: entry.setup.trim(),
+      delivery: entry.delivery.trim(),
+      source: 'api'
+    };
+  }
+
+  return null;
+}
+
+async function fetchHippoApiJokes() {
+  const resp = await fetch(HIPPO_JOKE_API_URL, {
+    headers: { Accept: 'application/json' }
+  });
+
+  if (!resp.ok) {
+    throw new Error('Hippo joke request failed');
+  }
+
+  const data = await resp.json();
+  if (data.error) {
+    throw new Error(data.message || 'Hippo joke API returned an error');
+  }
+
+  const jokes = Array.isArray(data.jokes) ? data.jokes : [data];
+  return jokes
+    .map(normalizeApiHippoJoke)
+    .filter(Boolean)
+    .filter(isReadableHippoJoke);
+}
+
+function pickHippoJoke(pool) {
+  if (!pool.length) return null;
+
+  const withoutRepeat = pool.filter((joke) => buildHippoJokeKey(joke) !== lastHippoJokeKey);
+  const source = withoutRepeat.length ? withoutRepeat : pool;
+  return { ...getRandomItem(source) };
+}
+
+function getNextHippoJoke(apiJokes = []) {
+  const apiPool = apiJokes.map((joke) => ({ ...joke, source: 'api' }));
+  const localPool = FALLBACK_HIPPO_JOKES.map((joke) => ({ ...joke, source: 'local' }));
+
+  let selected = pickHippoJoke(apiPool);
+  if (!selected) {
+    selected = pickHippoJoke(localPool) || getFallbackHippoJoke();
+  }
+
+  lastHippoJokeKey = buildHippoJokeKey(selected);
+  return selected;
+}
+
+function getHippoMascotHtml() {
+  return `
+    <div class="hippo-joke-mascot-wrap" aria-hidden="true">
+      <img class="hippo-joke-mascot" src="${HIPPO_MASCOT_SRC}" alt="">
+    </div>
+  `;
+}
+
+function getHomeHippoJokeHtml() {
+  if (!homeHippoJoke) return '';
+
+  if (homeHippoJoke.status === 'loading') {
+    return `
+      <section class="hippo-joke-card" aria-live="polite">
+        <div class="hippo-joke-layout">
+          <div class="hippo-joke-copy">
+            <div class="hippo-joke-head">
+            <div class="hippo-joke-kicker">SUPER HIPCIO</div>
+            <div class="hippo-joke-title">English joke break</div>
+              <div class="hippo-joke-subtitle">Fresh joke from API, local backup if needed</div>
+            </div>
+            <div class="hippo-joke-body hippo-joke-body--loading">
+              <div class="hippo-joke-loading">
+                <span class="hippo-joke-spinner" aria-hidden="true"></span>
+                <span>Super Hipcio is fetching a joke...</span>
+              </div>
+            </div>
+            <div class="hippo-joke-actions">
+              <button class="btn-hippo btn-hippo-ghost" id="btn-hippo-dismiss">Schowaj</button>
+            </div>
+          </div>
+          ${getHippoMascotHtml()}
+        </div>
+      </section>
+    `;
+  }
+
+  const jokeBody = homeHippoJoke.type === 'twopart'
+    ? `
+      <p class="hippo-joke-line">${escapeHtml(homeHippoJoke.setup)}</p>
+      <p class="hippo-joke-delivery">${escapeHtml(homeHippoJoke.delivery)}</p>
+    `
+    : `<p class="hippo-joke-line">${escapeHtml(homeHippoJoke.joke)}</p>`;
+
+  return `
+    <section class="hippo-joke-card" aria-live="polite">
+      <div class="hippo-joke-layout">
+        <div class="hippo-joke-copy">
+          <div class="hippo-joke-head">
+          <div class="hippo-joke-kicker">SUPER HIPCIO</div>
+          <div class="hippo-joke-title">English joke break</div>
+            <div class="hippo-joke-subtitle">Fresh joke from API, local backup if needed</div>
+          </div>
+          <div class="hippo-joke-body">
+            ${jokeBody}
+          </div>
+          <div class="hippo-joke-note">${homeHippoJoke.source === 'api' ? 'From JokeAPI.' : 'Local fallback when API gives nothing usable.'}</div>
+          <div class="hippo-joke-actions">
+            <button class="btn-hippo" id="btn-hippo-refresh">Another joke</button>
+            <button class="btn-hippo btn-hippo-ghost" id="btn-hippo-dismiss">Schowaj</button>
+          </div>
+        </div>
+        ${getHippoMascotHtml()}
+      </div>
+    </section>
+  `;
+}
+
+function dismissHomeHippoJoke() {
+  hippoJokeRequestId++;
+  homeHippoJoke = null;
+  if (currentScreen === 'home') {
+    renderHome();
+  }
+}
+
+function refreshHomeHippoJoke() {
+  const requestId = ++hippoJokeRequestId;
+  homeHippoJoke = { status: 'loading' };
+  if (currentScreen === 'home') {
+    renderHome();
+  }
+
+  (async () => {
+    let apiJokes = [];
+    try {
+      apiJokes = await fetchHippoApiJokes();
+    } catch {}
+
+    const joke = getNextHippoJoke(apiJokes);
+
+    if (requestId !== hippoJokeRequestId) return;
+
+    homeHippoJoke = {
+      status: 'ready',
+      ...joke
+    };
+
+    if (currentScreen === 'home') {
+      renderHome();
+    }
+  })();
+}
+
+function returnHomeWithHippoJoke() {
+  currentScreen = 'home';
+  refreshHomeHippoJoke();
+}
+
 // ===== LEVENSHTEIN =====
 function levenshtein(a, b) {
   const m = a.length, n = b.length;
@@ -571,11 +850,13 @@ function getStats() {
 const app = document.getElementById('app');
 
 function renderHome() {
+  currentScreen = 'home';
   const stats = getStats();
   const recent = getRecentDailyStats(10);
   const streak = getCurrentStreak();
   const maxSessions = Math.max(1, ...recent.rows.map(r => r.sessions));
   const BAR_MAX_PX = 108;
+  const hippoJokeHtml = getHomeHippoJokeHtml();
   const dailyBars = recent.rows.map(r => {
     const hasData = r.sessions > 0;
     const barH = hasData ? Math.max(14, Math.round((r.sessions / maxSessions) * BAR_MAX_PX)) : 0;
@@ -597,6 +878,7 @@ function renderHome() {
   app.innerHTML = `
     <div class="screen">
       <h1>Nauka Słówek PL → EN</h1>
+      ${hippoJokeHtml}
       <div class="stats">
         <div class="stat-box">
           <div class="stat-number stat-due">${stats.dueCount}</div>
@@ -671,6 +953,16 @@ function renderHome() {
     btnStart.addEventListener('click', startSession);
   }
 
+  const btnHippoRefresh = document.getElementById('btn-hippo-refresh');
+  if (btnHippoRefresh) {
+    btnHippoRefresh.addEventListener('click', refreshHomeHippoJoke);
+  }
+
+  const btnHippoDismiss = document.getElementById('btn-hippo-dismiss');
+  if (btnHippoDismiss) {
+    btnHippoDismiss.addEventListener('click', dismissHomeHippoJoke);
+  }
+
   document.getElementById('btn-settings').addEventListener('click', renderSettings);
 
   document.getElementById('btn-reset').addEventListener('click', () => {
@@ -683,6 +975,7 @@ function renderHome() {
 }
 
 function startSession() {
+  currentScreen = 'card';
   const activeWords = getActiveWords();
   if (activeWords.length === 0) {
     renderSettings();
@@ -699,6 +992,7 @@ function startSession() {
 }
 
 function renderCard(mode = 'input') {
+  currentScreen = 'card';
   const word = session[currentIndex];
   const pct = Math.round((currentIndex / session.length) * 100);
   const isHintMode = mode === 'hint';
@@ -859,6 +1153,7 @@ function renderCard(mode = 'input') {
 }
 
 function renderFeedback(word, status, userAnswer) {
+  currentScreen = 'feedback';
   let icon, cls, text;
   if (status === 'correct') {
     icon = '✓';
@@ -940,6 +1235,7 @@ function renderFeedback(word, status, userAnswer) {
 }
 
 function renderSummary() {
+  currentScreen = 'summary';
   const correct = sessionResults.filter(r => r.status === 'correct').length;
   const hintCorrect = sessionResults.filter(r => r.status === 'hint-correct').length;
   const typos = sessionResults.filter(r => r.status === 'typo').length;
@@ -1040,7 +1336,7 @@ function renderSummary() {
     });
   });
 
-  document.getElementById('btn-home').addEventListener('click', renderHome);
+  document.getElementById('btn-home').addEventListener('click', returnHomeWithHippoJoke);
 }
 
 function ignoreWordById(wordId) {
@@ -1088,6 +1384,7 @@ function showHappyHippoPopup() {
 
 // ===== SETTINGS SCREEN =====
 function renderSettings() {
+  currentScreen = 'settings';
   const currentUrl = getSyncUrl();
   const ignoredCount = ignoredWordIds.length;
   const ignoredSet = new Set(ignoredWordIds);
@@ -1360,6 +1657,7 @@ function isAuthenticated() {
 }
 
 function renderLogin() {
+  currentScreen = 'login';
   const app = document.getElementById('app');
   app.innerHTML = `
     <div class="login-box">
