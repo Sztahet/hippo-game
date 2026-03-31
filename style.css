@@ -96,6 +96,191 @@ h2 {
 }
 
 /* ===== HOME SCREEN ===== */
+.hippo-joke-card {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #0f766e 0%, #67e8f9 56%, #fde68a 100%);
+  box-shadow: 0 16px 36px rgba(8, 47, 73, 0.18);
+  animation: hippoJokeEntrance 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hippo-joke-card::after {
+  content: '';
+  position: absolute;
+  top: -28px;
+  right: -22px;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.22);
+}
+
+.hippo-joke-head,
+.hippo-joke-body,
+.hippo-joke-actions,
+.hippo-joke-layout,
+.hippo-joke-note {
+  position: relative;
+  z-index: 1;
+}
+
+.hippo-joke-layout {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hippo-joke-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hippo-joke-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.hippo-joke-mascot-wrap {
+  width: 124px;
+  min-width: 124px;
+  align-self: flex-end;
+  filter: drop-shadow(0 12px 22px rgba(15, 23, 42, 0.22));
+}
+
+.hippo-joke-mascot {
+  width: 100%;
+  display: block;
+  object-fit: contain;
+  transform-origin: center bottom;
+  animation: hippoMascotBob 3.8s ease-in-out infinite;
+}
+
+.hippo-joke-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  font-weight: 800;
+  color: #083344;
+}
+
+.hippo-joke-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(8, 51, 68, 0.76);
+}
+
+.hippo-joke-title {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.hippo-joke-body {
+  margin-top: 0.9rem;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.82);
+  color: #0f172a;
+}
+
+.hippo-joke-note {
+  margin-top: 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  opacity: 0.72;
+}
+
+.hippo-joke-body--loading {
+  color: #0f766e;
+}
+
+.hippo-joke-line,
+.hippo-joke-delivery {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.hippo-joke-delivery {
+  margin-top: 0.6rem;
+  font-weight: 700;
+}
+
+.hippo-joke-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 600;
+}
+
+.hippo-joke-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 118, 110, 0.28);
+  border-top-color: #0f766e;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.hippo-joke-actions {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.btn-hippo {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-hippo:hover {
+  background: #111827;
+}
+
+.btn-hippo-ghost {
+  background: rgba(255,255,255,0.72);
+  color: #0f172a;
+}
+
+.btn-hippo-ghost:hover {
+  background: rgba(255,255,255,0.92);
+}
+
+@keyframes hippoJokeEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes hippoMascotBob {
+  0%, 100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
 .stats {
   display: flex;
   justify-content: space-around;
@@ -889,12 +1074,38 @@ h2 {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 400px) {
+  .hippo-joke-layout {
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .hippo-joke-head {
+    align-items: flex-start;
+  }
+  .hippo-joke-mascot-wrap {
+    width: 92px;
+    min-width: 92px;
+  }
+  .hippo-joke-title { font-size: 1rem; }
+  .hippo-joke-subtitle { font-size: 0.72rem; }
+  .hippo-joke-body { padding: 0.85rem 0.9rem; }
+  .hippo-joke-actions { flex-direction: column; }
+  .btn-hippo { width: 100%; }
   .word-pl { font-size: 1.5rem; }
   .stat-box { padding: 0.75rem 1rem; min-width: 80px; }
   .stat-number { font-size: 1.5rem; }
   .hint-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .daily-bars { gap: 0.25rem; }
   .daily-bar-label { font-size: 0.58rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hippo-joke-card,
+  .hippo-joke-mascot,
+  .hippo-joke-spinner,
+  .screen,
+  .hippo-popup-card {
+    animation: none !important;
+  }
 }
 
 /* ===== SYNC SPINNER ===== */
