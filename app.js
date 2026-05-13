@@ -382,10 +382,14 @@ function getSupabaseDailyStatsRows() {
       if (!Number.isInteger(sessions) || sessions <= 0) return null;
       if (!Number.isInteger(sumPct) || sumPct < 0 || sumPct > sessions * 100) return null;
 
-      return { statDate, sessions, sumPct };
+      return {
+        stat_date: statDate,
+        sessions,
+        sum_pct: sumPct
+      };
     })
     .filter(Boolean)
-    .sort((left, right) => left.statDate.localeCompare(right.statDate));
+    .sort((left, right) => left.stat_date.localeCompare(right.stat_date));
 }
 
 function getSupabaseWordProgressRows() {
@@ -404,14 +408,38 @@ function getSupabaseWordProgressRows() {
       if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return null;
 
       return {
-        wordId: numericWordId,
+        word_id: numericWordId,
         level,
-        nextReview,
-        lastReview
+        next_review: nextReview,
+        last_review: lastReview
       };
     })
     .filter(Boolean)
-    .sort((left, right) => left.wordId - right.wordId);
+    .sort((left, right) => left.word_id - right.word_id);
+}
+
+function getLegacyImportRowCounts() {
+  return {
+    dailyStats: getSupabaseDailyStatsRows().length,
+    wordProgress: getSupabaseWordProgressRows().length
+  };
+}
+
+function hasLegacyProgressRowsForSupabaseImport() {
+  const counts = getLegacyImportRowCounts();
+  return counts.dailyStats > 0 || counts.wordProgress > 0;
+}
+
+function didSupabaseImportMigrateProgressData(importMarker) {
+  const importedDailyStats = Math.max(0, Number(importMarker?.result?.importedDailyStats) || 0);
+  const importedWordProgress = Math.max(0, Number(importMarker?.result?.importedWordProgress) || 0);
+  return importedDailyStats > 0 || importedWordProgress > 0;
+}
+
+function shouldOfferManualLegacyImport(importMarker) {
+  if (!hasLegacyDataForSupabaseImport()) return false;
+  if (!hasCompletedSupabaseLegacyImport(importMarker)) return true;
+  return hasLegacyProgressRowsForSupabaseImport() && !didSupabaseImportMigrateProgressData(importMarker);
 }
 
 function buildSupabaseImportPayload() {
@@ -693,6 +721,7 @@ function getSignedInUserLabel() {
 
 async function maybeBootstrapSupabasePlayer(options = {}) {
   const allowSkippedMarkerOverride = Boolean(options.allowSkippedMarkerOverride);
+  const forceImport = Boolean(options.forceImport);
   if (!isSupabaseAuthenticated() || !supabaseUser) return null;
   if (supabaseImportState.status === 'running') return null;
 
@@ -702,7 +731,7 @@ async function maybeBootstrapSupabasePlayer(options = {}) {
     : { version: SUPABASE_IMPORT_VERSION };
   const importMarker = getSupabaseImportMarker(supabaseUser.id);
   const hasCompletedImport = hasCompletedSupabaseLegacyImport(importMarker);
-  if (hasCompletedImport || (importMarker && !allowSkippedMarkerOverride)) {
+  if (!forceImport && (hasCompletedImport || (importMarker && !allowSkippedMarkerOverride))) {
     supabaseImportState = {
       status: 'done',
       result: importMarker.result || null,
@@ -1363,6 +1392,7 @@ function renderHome() {
     ? getSupabaseImportMarker(supabaseUser.id)
     : null;
   const hasLegacyImportData = hasLegacyDataForSupabaseImport();
+  const shouldShowLegacyImportAction = shouldOfferManualLegacyImport(supabaseImportMarker);
   let authStatusHtml = '';
 
   if (isSupabaseAuthenticated()) {
@@ -1375,6 +1405,9 @@ function renderHome() {
     } else if (supabaseImportState.status === 'error') {
       authStatusText = `Zalogowano, ale import starych danych nie powiódł się: ${escapeHtml(supabaseImportState.error)}. Wejdź w Konto i synchronizację.`;
       authStatusClass = 'home-auth-status--error';
+    } else if (shouldShowLegacyImportAction && hasCompletedSupabaseLegacyImport(supabaseImportMarker)) {
+      authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Poprzedni import nie przeniósł jeszcze postępu do Supabase. Wejdź w Konto i synchronizację i uruchom import ręcznie.`;
+      authStatusClass = 'home-auth-status--info';
     } else if (hasCompletedSupabaseLegacyImport(supabaseImportMarker)) {
       authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Dane z tego urządzenia zostały już przeniesione do Supabase.`;
       authStatusClass = 'home-auth-status--success';
@@ -1931,9 +1964,16 @@ function renderSettings() {
     : null;
   const hasLegacyImportData = hasLegacyDataForSupabaseImport();
   const hasCompletedImport = hasCompletedSupabaseLegacyImport(supabaseImportMarker);
+  const didImportProgressData = didSupabaseImportMigrateProgressData(supabaseImportMarker);
+  const shouldShowManualImportButton = supabaseSignedIn
+    && shouldOfferManualLegacyImport(supabaseImportMarker)
+    && supabaseImportState.status !== 'running';
+  const shouldSuggestReimport = supabaseSignedIn
+    && hasCompletedImport
+    && hasLegacyProgressRowsForSupabaseImport()
+    && !didImportProgressData;
   const canManuallyImportLegacyData = supabaseSignedIn
-    && hasLegacyImportData
-    && !hasCompletedImport
+    && shouldShowManualImportButton
     && supabaseImportState.status !== 'running';
   const authRedirectUrl = getAuthRedirectUrl();
   const ignoredCount = ignoredWordIds.length;
@@ -2009,6 +2049,8 @@ function renderSettings() {
             ? '<span style="color:#1d4ed8;">Przenoszę stare dane z tego urządzenia do Supabase...</span>'
             : supabaseImportState.status === 'error'
               ? `<span style="color:#991b1b;">${escapeHtml(supabaseImportState.error)}</span>`
+              : shouldSuggestReimport
+                ? '<span style="color:#b45309;">Poprzedni import nie przeniósł jeszcze daily stats albo progressu słówek do Supabase. Uruchom import ponownie ręcznie.</span>'
               : hasCompletedImport
                 ? `<span style="color:#166534;">Stare dane z tego urządzenia zostały już przeniesione do Supabase (${escapeHtml(new Date(supabaseImportMarker.importedAt).toLocaleString('pl-PL'))}).</span>`
                 : hasLegacyImportData
@@ -2033,8 +2075,8 @@ function renderSettings() {
         </div>
         ${hasSupabaseLocalOverride() ? '<button class="btn btn-secondary" id="btn-clear-supabase">Usuń lokalne nadpisanie</button>' : ''}
         ` : ''}
-        ${supabaseSignedIn && !hasCompletedImport ? `<button class="btn btn-secondary" id="btn-import-legacy-supabase" ${canManuallyImportLegacyData ? '' : 'disabled'}>Importuj stare dane do Supabase teraz</button>` : ''}
-        ${supabaseSignedIn && !hasCompletedImport ? '<p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Jeśli stare dane są jeszcze tylko w Google Sheets, najpierw użyj „Pobierz postęp z Sheets”, a dopiero potem uruchom import do Supabase.</p>' : ''}
+        ${supabaseSignedIn ? `<button class="btn btn-secondary" id="btn-import-legacy-supabase" ${canManuallyImportLegacyData ? '' : 'disabled'}>${shouldSuggestReimport ? 'Spróbuj ponownie zaimportować stare dane' : 'Importuj stare dane do Supabase teraz'}</button>` : ''}
+        ${supabaseSignedIn ? '<p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Jeśli stare dane są jeszcze tylko w Google Sheets, najpierw użyj „Pobierz postęp z Sheets”, a dopiero potem uruchom import do Supabase.</p>' : ''}
         ${supabaseConfigured && !supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-open-auth-screen">Przejdź do logowania Supabase</button>' : ''}
         ${supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-signout-supabase">Wyloguj się</button>' : ''}
         <div id="supabase-config-result" class="auth-inline-result"></div>
@@ -2213,7 +2255,7 @@ function renderSettings() {
       btnImportLegacySupabase.disabled = true;
       btnImportLegacySupabase.textContent = 'Importuję...';
 
-      await maybeBootstrapSupabasePlayer({ allowSkippedMarkerOverride: true });
+      await maybeBootstrapSupabasePlayer({ allowSkippedMarkerOverride: true, forceImport: true });
       await hydrateLocalStateFromSupabase();
       renderSettings();
     });
