@@ -421,6 +421,131 @@ function buildSupabaseImportPayload() {
   };
 }
 
+async function fetchSupabasePlayerSnapshot() {
+  if (!isSupabaseAuthenticated()) return null;
+
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client.rpc('get_my_player_snapshot');
+  if (error) throw error;
+
+  return data || null;
+}
+
+function applySupabaseSettingsSnapshot(settings) {
+  if (!settings || typeof settings !== 'object') return;
+
+  const remoteLevels = Array.isArray(settings.activeLevels)
+    ? settings.activeLevels.filter(level => ALL_LEVELS.includes(level))
+    : [];
+  if (remoteLevels.length > 0 && !localStorage.getItem(ACTIVE_LEVELS_KEY)) {
+    activeLevels = [...new Set(remoteLevels)];
+    saveActiveLevels();
+  }
+
+  if (Array.isArray(settings.ignoredWordIds) && !localStorage.getItem(IGNORED_WORD_IDS_KEY)) {
+    ignoredWordIds = settings.ignoredWordIds
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    saveIgnoredWordIds();
+  }
+}
+
+function mergeSupabaseDailyStatsRows(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return false;
+
+  let didChange = false;
+
+  rows.forEach((row) => {
+    const statDate = toISODate(row?.statDate);
+    const sessions = Math.floor(Number(row?.sessions));
+    const sumPct = Math.round(Number(row?.sumPct));
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(statDate))) return;
+    if (!Number.isInteger(sessions) || sessions <= 0) return;
+    if (!Number.isInteger(sumPct) || sumPct < 0 || sumPct > sessions * 100) return;
+
+    const localEntry = dailyStats[statDate];
+    if (!localEntry || sessions > localEntry.sessions || (sessions === localEntry.sessions && sumPct >= localEntry.sumPct)) {
+      dailyStats[statDate] = {
+        sessions,
+        sumPct,
+        avgPct: Math.round(sumPct / sessions)
+      };
+      didChange = true;
+    }
+  });
+
+  if (didChange) {
+    saveDailyStats();
+  }
+
+  return didChange;
+}
+
+function getProgressRecencyValue(entry) {
+  if (!entry || typeof entry !== 'object') return '';
+
+  const lastReview = entry.lastReview ? toISODate(entry.lastReview) : '0000-00-00';
+  const nextReview = entry.nextReview ? toISODate(entry.nextReview) : '0000-00-00';
+  return `${lastReview}|${nextReview}`;
+}
+
+function mergeSupabaseWordProgressRows(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return false;
+
+  let didChange = false;
+
+  rows.forEach((row) => {
+    const wordId = Number(row?.wordId);
+    const level = Number(row?.level);
+    const nextReview = toISODate(row?.nextReview);
+    const lastReview = row?.lastReview ? toISODate(row.lastReview) : null;
+
+    if (!Number.isInteger(wordId) || wordId <= 0) return;
+    if (!Number.isInteger(level) || level < 0 || level > 8) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(nextReview))) return;
+    if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return;
+
+    const remoteEntry = { level, nextReview, lastReview };
+    const localEntry = progress[wordId];
+    if (!localEntry || getProgressRecencyValue(remoteEntry) >= getProgressRecencyValue(localEntry)) {
+      progress[wordId] = remoteEntry;
+      didChange = true;
+    }
+  });
+
+  if (didChange) {
+    saveProgress();
+  }
+
+  return didChange;
+}
+
+function applySupabasePlayerSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return false;
+
+  applySupabaseSettingsSnapshot(snapshot.settings);
+  const dailyStatsChanged = mergeSupabaseDailyStatsRows(snapshot.dailyStats);
+  const wordProgressChanged = mergeSupabaseWordProgressRows(snapshot.wordProgress);
+
+  return dailyStatsChanged || wordProgressChanged;
+}
+
+async function hydrateLocalStateFromSupabase() {
+  if (!isSupabaseAuthenticated()) return null;
+
+  try {
+    const snapshot = await fetchSupabasePlayerSnapshot();
+    applySupabasePlayerSnapshot(snapshot);
+    return snapshot;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 function clearSupabaseRedirectState() {
   const hasAuthParams = window.location.search.includes('code=')
     || window.location.search.includes('error=')
@@ -1227,6 +1352,29 @@ function renderHome() {
   const maxSessions = Math.max(1, ...recent.rows.map(r => r.sessions));
   const BAR_MAX_PX = 108;
   const hippoJokeHtml = getHomeHippoJokeHtml();
+  const supabaseImportMarker = isSupabaseAuthenticated() && supabaseUser
+    ? getSupabaseImportMarker(supabaseUser.id)
+    : null;
+  let authStatusHtml = '';
+
+  if (isSupabaseAuthenticated()) {
+    let authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}.`;
+    let authStatusClass = 'home-auth-status--info';
+
+    if (supabaseImportState.status === 'running') {
+      authStatusText = 'Zalogowano. Trwa jednorazowe przenoszenie starych danych z tego urządzenia do Supabase.';
+      authStatusClass = 'home-auth-status--info';
+    } else if (supabaseImportState.status === 'error') {
+      authStatusText = `Zalogowano, ale import starych danych nie powiódł się: ${escapeHtml(supabaseImportState.error)}. Wejdź w Konto i synchronizację.`;
+      authStatusClass = 'home-auth-status--error';
+    } else if (supabaseImportMarker) {
+      authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Dane z tego urządzenia zostały już przeniesione do Supabase.`;
+      authStatusClass = 'home-auth-status--success';
+    }
+
+    authStatusHtml = `<div class="home-auth-status ${authStatusClass}">${authStatusText}</div>`;
+  }
+
   const dailyBars = recent.rows.map(r => {
     const hasData = r.sessions > 0;
     const barH = hasData ? Math.max(14, Math.round((r.sessions / maxSessions) * BAR_MAX_PX)) : 0;
@@ -1248,6 +1396,7 @@ function renderHome() {
   app.innerHTML = `
     <div class="screen">
       <h1>Nauka Słówek PL → EN</h1>
+      ${authStatusHtml}
       ${hippoJokeHtml}
       <div class="stats">
         <div class="stat-box">
@@ -2144,13 +2293,16 @@ async function init() {
     return;
   }
 
-  // Always sync on load if configured — show spinner while waiting
-  if (syncUrl) {
+  if (syncUrl || isSupabaseAuthenticated()) {
     app.innerHTML = `
       <div class="sync-spinner">
         <div class="spinner-ring"></div>
-        <span>Synchronizacja postępu…</span>
+        <span>Synchronizacja postępu...</span>
       </div>`;
+  }
+
+  // Always sync on load if configured — show spinner while waiting
+  if (syncUrl) {
     const remote = await pullFromSheets();
     if (remote) {
       for (const [id, entry] of Object.entries(remote)) {
@@ -2163,10 +2315,12 @@ async function init() {
     }
   }
 
-  renderHome();
   if (isSupabaseAuthenticated()) {
-    void maybeBootstrapSupabasePlayer();
+    await maybeBootstrapSupabasePlayer();
+    await hydrateLocalStateFromSupabase();
   }
+
+  renderHome();
   })();
 
   try {
