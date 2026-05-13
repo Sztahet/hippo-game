@@ -421,6 +421,33 @@ function buildSupabaseImportPayload() {
   };
 }
 
+function getSupabaseSnapshotCounts(data) {
+  return {
+    dailyStatsCount: Array.isArray(data?.dailyStats) ? data.dailyStats.length : 0,
+    wordProgressCount: Array.isArray(data?.wordProgress) ? data.wordProgress.length : 0
+  };
+}
+
+async function shouldUseSupabaseImportMarker(importMarker, importPayload) {
+  if (!importMarker) return false;
+
+  const localCounts = getSupabaseSnapshotCounts(importPayload);
+  if (localCounts.dailyStatsCount === 0 && localCounts.wordProgressCount === 0) {
+    return true;
+  }
+
+  try {
+    const snapshot = await fetchSupabasePlayerSnapshot();
+    const remoteCounts = getSupabaseSnapshotCounts(snapshot);
+
+    return remoteCounts.dailyStatsCount >= localCounts.dailyStatsCount
+      && remoteCounts.wordProgressCount >= localCounts.wordProgressCount;
+  } catch (error) {
+    console.warn('Could not verify Supabase import state. Retrying import.', error);
+    return false;
+  }
+}
+
 async function fetchSupabasePlayerSnapshot() {
   if (!isSupabaseAuthenticated()) return null;
 
@@ -690,8 +717,11 @@ async function maybeBootstrapSupabasePlayer() {
   if (!isSupabaseAuthenticated() || !supabaseUser) return null;
   if (supabaseImportState.status === 'running') return null;
 
+  const importPayload = hasLegacyDataForSupabaseImport()
+    ? buildSupabaseImportPayload()
+    : { version: SUPABASE_IMPORT_VERSION };
   const importMarker = getSupabaseImportMarker(supabaseUser.id);
-  if (importMarker) {
+  if (await shouldUseSupabaseImportMarker(importMarker, importPayload)) {
     supabaseImportState = {
       status: 'done',
       result: importMarker.result || null,
@@ -706,10 +736,6 @@ async function maybeBootstrapSupabasePlayer() {
   supabaseImportState = { status: 'running', result: null, error: null };
 
   try {
-    const importPayload = hasLegacyDataForSupabaseImport()
-      ? buildSupabaseImportPayload()
-      : { version: SUPABASE_IMPORT_VERSION };
-
     const { data, error } = await client.rpc('bootstrap_player_from_auth', {
       import_payload: importPayload
     });
@@ -2238,6 +2264,14 @@ function renderSettings() {
       if (remote) {
         progress = remote;
         saveProgress();
+
+        if (isSupabaseAuthenticated()) {
+          await maybeBootstrapSupabasePlayer();
+          await hydrateLocalStateFromSupabase();
+          renderSettings();
+          return;
+        }
+
         btnPull.textContent = '✓ Pobrano!';
       } else {
         btnPull.textContent = '✗ Błąd pobierania';
