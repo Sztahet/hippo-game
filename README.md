@@ -30,7 +30,8 @@ hippo-game/
 ├── words_20k_pipeline.js # Czyszczenie i import slow z 20k.txt
 ├── generate_words.py   # Pierwotny skrypt generujący słówka A1 (Python)
 ├── generate_words_v2.js # Skrypt generujący pełną bazę A1-C2 (Node.js)
-└── google-apps-script.js # Backend Google Apps Script (synchronizacja)
+├── google-apps-script.js # Backend Google Apps Script (synchronizacja)
+└── supabase/           # Opcjonalny scaffold bazy pod publiczne statystyki
 ```
 
 ---
@@ -90,6 +91,18 @@ Postęp nauki synchronizowany jest z Google Sheets przez Google Apps Script. Dzi
 9. W aplikacji wejdź w **Ustawienia** i wklej URL oraz token
 
 > ⚠️ Po każdej zmianie kodu Apps Script musisz tworzyć **nowe** wdrożenie (nie edytować istniejące).
+
+---
+
+## Supabase scaffold pod publiczne statystyki
+
+Jeśli chcesz wyjść poza prywatny sync i mieć podwaliny pod publiczne porównywanie graczy, w katalogu `supabase/` jest osobny scaffold bazy:
+
+- schema SQL do wdrożenia w Supabase
+- tabela publicznego snapshotu statystyk pod ranking
+- skrypt do wygenerowania SQL importu z obecnych danych z `localStorage`
+
+Szczegóły i flow importu są opisane w `supabase/README.md`.
 
 ---
 

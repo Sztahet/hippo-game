@@ -4,9 +4,12 @@ const SESSION_SIZE = 25;
 const STORAGE_KEY = 'vocab_progress';
 const SYNC_URL_KEY = 'vocab_sync_url';
 const SYNC_TOKEN_KEY = 'vocab_sync_token';
+const SUPABASE_URL_KEY = 'vocab_supabase_url';
+const SUPABASE_PUBLISHABLE_KEY = 'vocab_supabase_publishable_key';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
 const IGNORED_WORD_IDS_KEY = 'vocab_ignored_word_ids';
 const DAILY_STATS_KEY = 'vocab_daily_stats';
+const SUPABASE_IMPORT_VERSION = 'legacy-v1';
 const HIPPO_MASCOT_SRC = 'assets/super-hipcio.png';
 const HIPPO_JOKE_API_URL = 'https://v2.jokeapi.dev/joke/Misc,Pun?lang=en&safe-mode&amount=6&blacklistFlags=nsfw,religious,political,racist,sexist,explicit';
 const HIPPO_JOKE_BLOCKLIST = [
@@ -81,8 +84,8 @@ const LEVEL_DESCRIPTIONS = {
   C2: 'Biegły',
 };
 
-// ===== ACCESS PASSWORD =====
-// Zmień to hasło na coś własnego!
+// ===== LEGACY PASSWORD FALLBACK =====
+// Used only while Supabase Auth is not configured yet.
 const ACCESS_PASSWORD = 'hippo123';
 const AUTH_KEY = 'vocab_auth';
 
@@ -103,6 +106,14 @@ let currentScreen = 'boot';
 let homeHippoJoke = null;
 let hippoJokeRequestId = 0;
 let lastHippoJokeKey = '';
+let supabaseClient = null;
+let supabaseClientCacheKey = '';
+let supabaseAuthSubscription = null;
+let supabaseSession = null;
+let supabaseUser = null;
+let initPromise = null;
+let authUiMessage = null;
+let supabaseImportState = { status: 'idle', result: null, error: null };
 
 // ===== DATA =====
 function loadProgress() {
@@ -242,6 +253,365 @@ function setSyncToken(token) {
     localStorage.setItem(SYNC_TOKEN_KEY, token);
   } else {
     localStorage.removeItem(SYNC_TOKEN_KEY);
+  }
+}
+
+function getProjectSupabaseConfig() {
+  const config = window.HIPPO_SUPABASE_CONFIG && typeof window.HIPPO_SUPABASE_CONFIG === 'object'
+    ? window.HIPPO_SUPABASE_CONFIG
+    : {};
+
+  return {
+    url: typeof config.url === 'string' ? config.url.trim() : '',
+    publishableKey: typeof config.publishableKey === 'string' ? config.publishableKey.trim() : ''
+  };
+}
+
+function getSupabaseUrl() {
+  return (localStorage.getItem(SUPABASE_URL_KEY) || getProjectSupabaseConfig().url || '').trim();
+}
+
+function setSupabaseUrl(url) {
+  const value = String(url || '').trim();
+  if (value) {
+    localStorage.setItem(SUPABASE_URL_KEY, value);
+  } else {
+    localStorage.removeItem(SUPABASE_URL_KEY);
+  }
+}
+
+function getSupabasePublishableKey() {
+  const projectConfig = getProjectSupabaseConfig();
+  return (
+    localStorage.getItem(SUPABASE_PUBLISHABLE_KEY)
+    || projectConfig.publishableKey
+    || ''
+  ).trim();
+}
+
+function setSupabasePublishableKey(key) {
+  const value = String(key || '').trim();
+  if (value) {
+    localStorage.setItem(SUPABASE_PUBLISHABLE_KEY, value);
+  } else {
+    localStorage.removeItem(SUPABASE_PUBLISHABLE_KEY);
+  }
+}
+
+function hasSupabaseLocalOverride() {
+  return Boolean(
+    localStorage.getItem(SUPABASE_URL_KEY)
+    || localStorage.getItem(SUPABASE_PUBLISHABLE_KEY)
+  );
+}
+
+function hasSupabaseConfig() {
+  return Boolean(getSupabaseUrl() && getSupabasePublishableKey());
+}
+
+function hasSupabaseLibrary() {
+  return Boolean(window.supabase && typeof window.supabase.createClient === 'function');
+}
+
+function hasLegacySession() {
+  return sessionStorage.getItem(AUTH_KEY) === '1';
+}
+
+function isHttpOrigin() {
+  return window.location.protocol === 'http:' || window.location.protocol === 'https:';
+}
+
+function getAuthRedirectUrl() {
+  if (!isHttpOrigin()) return '';
+  return window.location.href.split('#')[0].split('?')[0];
+}
+
+function shouldShowSupabaseConfigControls() {
+  const projectConfig = getProjectSupabaseConfig();
+  return !(projectConfig.url && projectConfig.publishableKey);
+}
+
+function getSupabaseImportMarkerKey(userId) {
+  return `vocab_supabase_import_${SUPABASE_IMPORT_VERSION}_${userId}`;
+}
+
+function getSupabaseImportMarker(userId) {
+  if (!userId) return null;
+  try {
+    const raw = localStorage.getItem(getSupabaseImportMarkerKey(userId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setSupabaseImportMarker(userId, result) {
+  if (!userId) return;
+  localStorage.setItem(getSupabaseImportMarkerKey(userId), JSON.stringify({
+    version: SUPABASE_IMPORT_VERSION,
+    importedAt: new Date().toISOString(),
+    result: result || null
+  }));
+}
+
+function hasLegacyDataForSupabaseImport() {
+  return Object.keys(progress).length > 0
+    || Object.keys(dailyStats).length > 0
+    || ignoredWordIds.length > 0
+    || JSON.stringify(activeLevels) !== JSON.stringify(['A1', 'A2']);
+}
+
+function getSupabaseDailyStatsRows() {
+  return Object.entries(dailyStats)
+    .map(([statDate, entry]) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(statDate)) return null;
+      if (!entry || typeof entry !== 'object') return null;
+
+      const sessions = Math.floor(Number(entry.sessions));
+      const sumPctRaw = Number(entry.sumPct);
+      const avgPctRaw = Number(entry.avgPct);
+      const sumPct = Number.isFinite(sumPctRaw)
+        ? Math.round(sumPctRaw)
+        : (Number.isFinite(avgPctRaw) ? Math.round(avgPctRaw * sessions) : NaN);
+
+      if (!Number.isInteger(sessions) || sessions <= 0) return null;
+      if (!Number.isInteger(sumPct) || sumPct < 0 || sumPct > sessions * 100) return null;
+
+      return { statDate, sessions, sumPct };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.statDate.localeCompare(right.statDate));
+}
+
+function getSupabaseWordProgressRows() {
+  return Object.entries(progress)
+    .map(([wordId, entry]) => {
+      const numericWordId = Number(wordId);
+      if (!Number.isInteger(numericWordId) || numericWordId <= 0) return null;
+      if (!entry || typeof entry !== 'object') return null;
+
+      const level = Number(entry.level);
+      const nextReview = toISODate(entry.nextReview);
+      const lastReview = entry.lastReview ? toISODate(entry.lastReview) : null;
+
+      if (!Number.isInteger(level) || level < 0 || level > 8) return null;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(nextReview))) return null;
+      if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return null;
+
+      return {
+        wordId: numericWordId,
+        level,
+        nextReview,
+        lastReview
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.wordId - right.wordId);
+}
+
+function buildSupabaseImportPayload() {
+  return {
+    version: SUPABASE_IMPORT_VERSION,
+    settings: {
+      activeLevels: [...activeLevels],
+      ignoredWordIds: [...ignoredWordIds]
+    },
+    dailyStats: getSupabaseDailyStatsRows(),
+    wordProgress: getSupabaseWordProgressRows()
+  };
+}
+
+function clearSupabaseRedirectState() {
+  const hasAuthParams = window.location.search.includes('code=')
+    || window.location.search.includes('error=')
+    || window.location.hash.includes('access_token=')
+    || window.location.hash.includes('refresh_token=')
+    || window.location.hash.includes('type=');
+
+  if (hasAuthParams) {
+    history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+function setAuthUiMessage(type, text) {
+  authUiMessage = { type, text };
+}
+
+function clearAuthUiMessage() {
+  authUiMessage = null;
+}
+
+function formatAuthError(error, fallback = 'Wystąpił błąd logowania.') {
+  if (!error) return fallback;
+  const message = typeof error === 'string' ? error : error.message;
+  return message ? String(message) : fallback;
+}
+
+function resetSupabaseClient() {
+  if (supabaseAuthSubscription) {
+    supabaseAuthSubscription.unsubscribe();
+    supabaseAuthSubscription = null;
+  }
+  supabaseClient = null;
+  supabaseClientCacheKey = '';
+  supabaseSession = null;
+  supabaseUser = null;
+  supabaseImportState = { status: 'idle', result: null, error: null };
+}
+
+function getSupabaseClient() {
+  const url = getSupabaseUrl();
+  const publishableKey = getSupabasePublishableKey();
+  if (!url || !publishableKey || !hasSupabaseLibrary()) return null;
+
+  const cacheKey = `${url}::${publishableKey}`;
+  if (!supabaseClient || supabaseClientCacheKey !== cacheKey) {
+    resetSupabaseClient();
+    supabaseClient = window.supabase.createClient(url, publishableKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce'
+      }
+    });
+    supabaseClientCacheKey = cacheKey;
+
+    const { data } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      supabaseSession = session;
+      supabaseUser = session ? session.user : null;
+      clearSupabaseRedirectState();
+
+      if (!session) {
+        supabaseImportState = { status: 'idle', result: null, error: null };
+        if (currentScreen === 'settings') {
+          renderSettings();
+        } else if (currentScreen !== 'login') {
+          renderLogin();
+        }
+        return;
+      }
+
+      clearAuthUiMessage();
+      if (currentScreen === 'login' || currentScreen === 'boot') {
+        init();
+      } else if (currentScreen === 'settings') {
+        renderSettings();
+      }
+    });
+    supabaseAuthSubscription = data.subscription;
+  }
+
+  return supabaseClient;
+}
+
+async function refreshSupabaseSession() {
+  const client = getSupabaseClient();
+  if (!client) {
+    supabaseSession = null;
+    supabaseUser = null;
+    return null;
+  }
+
+  const { data, error } = await client.auth.getSession();
+  if (error) throw error;
+
+  supabaseSession = data.session;
+  supabaseUser = data.session ? data.session.user : null;
+  clearSupabaseRedirectState();
+  return data.session;
+}
+
+async function testSupabaseConnection(url = getSupabaseUrl(), publishableKey = getSupabasePublishableKey()) {
+  const trimmedUrl = String(url || '').trim();
+  const trimmedPublishableKey = String(publishableKey || '').trim();
+
+  if (!trimmedUrl || !trimmedPublishableKey) {
+    throw new Error('Wpisz Project URL i publishable key.');
+  }
+  if (!hasSupabaseLibrary()) {
+    throw new Error('Biblioteka Supabase nie załadowała się poprawnie.');
+  }
+
+  const client = window.supabase.createClient(trimmedUrl, trimmedPublishableKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    }
+  });
+
+  const { count, error } = await client
+    .from('player_public_stats')
+    .select('player_id', { head: true, count: 'exact' });
+
+  if (error) throw error;
+  return count || 0;
+}
+
+function isSupabaseAuthenticated() {
+  return Boolean(supabaseSession && supabaseUser);
+}
+
+function getSignedInUserLabel() {
+  if (!supabaseUser) return '';
+  return supabaseUser.user_metadata?.full_name
+    || supabaseUser.email
+    || supabaseUser.phone
+    || 'Zalogowany użytkownik';
+}
+
+async function maybeBootstrapSupabasePlayer() {
+  if (!isSupabaseAuthenticated() || !supabaseUser) return null;
+  if (supabaseImportState.status === 'running') return null;
+
+  const importMarker = getSupabaseImportMarker(supabaseUser.id);
+  if (importMarker) {
+    supabaseImportState = {
+      status: 'done',
+      result: importMarker.result || null,
+      error: null
+    };
+    return importMarker.result || null;
+  }
+
+  const client = getSupabaseClient();
+  if (!client) return null;
+
+  supabaseImportState = { status: 'running', result: null, error: null };
+
+  try {
+    const importPayload = hasLegacyDataForSupabaseImport()
+      ? buildSupabaseImportPayload()
+      : { version: SUPABASE_IMPORT_VERSION };
+
+    const { data, error } = await client.rpc('bootstrap_player_from_auth', {
+      import_payload: importPayload
+    });
+
+    if (error) throw error;
+
+    supabaseImportState = { status: 'done', result: data || null, error: null };
+    setSupabaseImportMarker(supabaseUser.id, data || null);
+
+    if (currentScreen === 'settings') {
+      renderSettings();
+    }
+
+    return data || null;
+  } catch (error) {
+    supabaseImportState = {
+      status: 'error',
+      result: null,
+      error: formatAuthError(error, 'Nie udało się przenieść starych danych do Supabase.')
+    };
+    console.error(error);
+
+    if (currentScreen === 'settings') {
+      renderSettings();
+    }
+
+    return null;
   }
 }
 
@@ -941,7 +1311,7 @@ function renderHome() {
         : '<p style="text-align:center;color:#888;">Brak słówek do nauki na dziś. Wróć jutro!</p>'
       }
       <div id="sync-indicator" class="sync-indicator"></div>
-      <button class="btn btn-secondary" id="btn-settings">⚙ Ustawienia synchronizacji</button>
+      <button class="btn btn-secondary" id="btn-settings">⚙ Konto i synchronizacja</button>
       <button class="btn btn-secondary" id="btn-reset">Resetuj postęp</button>
     </div>
   `;
@@ -1386,6 +1756,20 @@ function showHappyHippoPopup() {
 function renderSettings() {
   currentScreen = 'settings';
   const currentUrl = getSyncUrl();
+  const currentSupabaseUrl = getSupabaseUrl();
+  const currentSupabasePublishableKey = getSupabasePublishableKey();
+  const supabaseConfigured = hasSupabaseConfig();
+  const supabaseSignedIn = isSupabaseAuthenticated();
+  const supabaseUserLabel = supabaseSignedIn ? getSignedInUserLabel() : '';
+  const showSupabaseConfigControls = shouldShowSupabaseConfigControls();
+  const supabaseProjectConfig = getProjectSupabaseConfig();
+  const hasSupabaseProjectConfig = Boolean(
+    supabaseProjectConfig.url && supabaseProjectConfig.publishableKey
+  );
+  const supabaseImportMarker = supabaseSignedIn && supabaseUser
+    ? getSupabaseImportMarker(supabaseUser.id)
+    : null;
+  const authRedirectUrl = getAuthRedirectUrl();
   const ignoredCount = ignoredWordIds.length;
   const ignoredSet = new Set(ignoredWordIds);
   const ignoredWords = allWords.filter(w => ignoredSet.has(Number(w.id)));
@@ -1443,6 +1827,60 @@ function renderSettings() {
         <p style="font-size:0.85rem;color:#6b7280;margin:0.5rem 0 1rem;">Słówka oznaczysz jako ignorowane w podsumowaniu sesji. Ignorowane nie trafiają do kolejnych sesji.</p>
         <div class="ignored-words-list" id="ignored-words-list">${ignoredListHtml}</div>
         <button class="btn btn-secondary" id="btn-clear-ignored" ${ignoredCount === 0 ? 'disabled' : ''}>Wyczyść listę ignorowanych</button>
+      </div>
+
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Konto i logowanie Supabase</h2>
+        <p style="margin-bottom:1rem;color:#555;font-size:0.85rem;line-height:1.55;">
+          ${supabaseSignedIn
+            ? `Zalogowany jako <strong>${escapeHtml(supabaseUserLabel)}</strong>.`
+            : supabaseConfigured
+              ? 'Konfiguracja Supabase jest gotowa. Logowanie działa magic linkiem wysyłanym na e-mail.'
+              : 'Brak konfiguracji Supabase. Wklej dane projektu albo wpisz je na stale w pliku supabase-config.js.'}
+        </p>
+        <div class="auth-inline-result" style="margin-bottom:1rem;">
+          ${supabaseImportState.status === 'running'
+            ? '<span style="color:#1d4ed8;">Przenoszę stare dane z tego urządzenia do Supabase...</span>'
+            : supabaseImportState.status === 'error'
+              ? `<span style="color:#991b1b;">${escapeHtml(supabaseImportState.error)}</span>`
+              : supabaseImportMarker
+                ? `<span style="color:#166534;">Stare dane z tego urządzenia zostały już przeniesione do Supabase (${escapeHtml(new Date(supabaseImportMarker.importedAt).toLocaleString('pl-PL'))}).</span>`
+                : supabaseSignedIn
+                  ? '<span style="color:#166534;">Po pierwszym logowaniu aplikacja jednorazowo przenosi lokalne dane z tego urządzenia do Supabase.</span>'
+                  : '<span style="color:#555;">Użytkownicy logują się magic linkiem. Konfiguracja projektu nie jest pokazywana na produkcji.</span>'}
+        </div>
+        ${showSupabaseConfigControls ? `
+        <label class="settings-label">Project URL:</label>
+        <input type="url" class="input-answer" id="input-supabase-url"
+          placeholder="https://twoj-projekt.supabase.co"
+          value="${escapeHtml(currentSupabaseUrl)}"
+          style="width:100%;margin:0.75rem 0;">
+        <label class="settings-label">Publishable key:</label>
+        <textarea class="auth-textarea" id="input-supabase-publishable-key"
+          placeholder="sb_publishable_xxxxx"
+          style="width:100%;margin:0.75rem 0;">${escapeHtml(currentSupabasePublishableKey)}</textarea>
+        <div class="auth-config-actions">
+          <button class="btn btn-primary" id="btn-save-supabase" style="flex:1;">Zapisz konfigurację</button>
+          <button class="btn btn-secondary" id="btn-test-supabase" style="flex:1;margin-top:0;">Testuj</button>
+        </div>
+        ${hasSupabaseLocalOverride() ? '<button class="btn btn-secondary" id="btn-clear-supabase">Usuń lokalne nadpisanie</button>' : ''}
+        ` : ''}
+        ${supabaseConfigured && !supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-open-auth-screen">Przejdź do logowania Supabase</button>' : ''}
+        ${supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-signout-supabase">Wyloguj się</button>' : ''}
+        <div id="supabase-config-result" class="auth-inline-result"></div>
+        ${showSupabaseConfigControls ? '<hr style="margin:1.5rem 0;border:none;border-top:1px solid #e5e7eb;">' : ''}
+        <p style="font-size:0.85rem;color:#555;line-height:1.55;">
+          ${showSupabaseConfigControls
+            ? hasSupabaseProjectConfig
+              ? 'Projekt ma juz wpisana konfiguracje Supabase. Pola powyzej dzialaja jako lokalne nadpisanie na tym urzadzeniu.'
+              : 'Project URL i publishable key sa publiczne, wiec mozesz wpisac je na stale w supabase-config.js i wypchnac na GitHub Pages.'
+            : 'Konfiguracja Supabase jest wbudowana w aplikację, więc zwykli użytkownicy nie muszą nic tutaj zmieniać.'}
+        </p>
+        ${showSupabaseConfigControls ? `<p class="auth-config-note" style="margin-top:0.75rem;">
+          ${authRedirectUrl
+            ? `Redirect URL do wpisania w Supabase Auth: <strong>${escapeHtml(authRedirectUrl)}</strong>`
+            : 'Do testow lokalnych uruchom aplikacje przez http://localhost, nie przez file://.'}
+        </p>` : ''}
       </div>
 
       <div class="card" style="text-align:left;margin-top:1rem;">
@@ -1522,6 +1960,80 @@ function renderSettings() {
     document.getElementById('sync-test-result').innerHTML =
       '<span style="color:#166534;">✓ Zapisano URL i token</span>';
   });
+
+  const btnSaveSupabase = document.getElementById('btn-save-supabase');
+  if (btnSaveSupabase) {
+    btnSaveSupabase.addEventListener('click', async () => {
+      const url = document.getElementById('input-supabase-url').value.trim();
+      const publishableKey = document.getElementById('input-supabase-publishable-key').value.trim();
+      const resultEl = document.getElementById('supabase-config-result');
+
+      if (!url || !publishableKey) {
+        resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz Project URL i publishable key.</span>';
+        return;
+      }
+
+      setSupabaseUrl(url);
+      setSupabasePublishableKey(publishableKey);
+      resetSupabaseClient();
+      try {
+        await refreshSupabaseSession();
+      } catch {}
+
+      resultEl.innerHTML = '<span style="color:#166534;">✓ Zapisano konfigurację Supabase. Po logowaniu sesja będzie pamiętana.</span>';
+      setAuthUiMessage('success', 'Konfiguracja Supabase zapisana. Możesz się teraz zalogować.');
+    });
+  }
+
+  const btnTestSupabase = document.getElementById('btn-test-supabase');
+  if (btnTestSupabase) {
+    btnTestSupabase.addEventListener('click', async () => {
+      const url = document.getElementById('input-supabase-url').value.trim();
+      const publishableKey = document.getElementById('input-supabase-publishable-key').value.trim();
+      const resultEl = document.getElementById('supabase-config-result');
+      resultEl.innerHTML = '<span style="color:#555;">Testuję Supabase...</span>';
+
+      try {
+        const count = await testSupabaseConnection(url, publishableKey);
+        resultEl.innerHTML = `<span style="color:#166534;">✓ Połączono z Supabase. Ranking ma obecnie ${count} rekordów.</span>`;
+      } catch (error) {
+        resultEl.innerHTML = `<span style="color:#991b1b;">✗ ${escapeHtml(formatAuthError(error, 'Nie udało się połączyć z Supabase.'))}</span>`;
+      }
+    });
+  }
+
+  const btnClearSupabase = document.getElementById('btn-clear-supabase');
+  if (btnClearSupabase) {
+    btnClearSupabase.addEventListener('click', () => {
+      setSupabaseUrl('');
+      setSupabasePublishableKey('');
+      resetSupabaseClient();
+      setAuthUiMessage('info', 'Usunięto lokalne nadpisanie konfiguracji Supabase.');
+      renderSettings();
+    });
+  }
+
+  const btnOpenAuthScreen = document.getElementById('btn-open-auth-screen');
+  if (btnOpenAuthScreen) {
+    btnOpenAuthScreen.addEventListener('click', () => {
+      renderLogin();
+    });
+  }
+
+  const btnSignoutSupabase = document.getElementById('btn-signout-supabase');
+  if (btnSignoutSupabase) {
+    btnSignoutSupabase.addEventListener('click', async () => {
+      const client = getSupabaseClient();
+      if (!client) {
+        renderLogin();
+        return;
+      }
+      await client.auth.signOut();
+      resetSupabaseClient();
+      setAuthUiMessage('info', 'Wylogowano z Supabase.');
+      renderLogin();
+    });
+  }
 
   const btnClearIgnored = document.getElementById('btn-clear-ignored');
   if (btnClearIgnored) {
@@ -1620,6 +2132,9 @@ function escapeHtml(str) {
 
 // ===== INIT =====
 async function init() {
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
   const app = document.getElementById('app');
   progress = loadProgress();
   try {
@@ -1649,51 +2164,263 @@ async function init() {
   }
 
   renderHome();
+  if (isSupabaseAuthenticated()) {
+    void maybeBootstrapSupabasePlayer();
+  }
+  })();
+
+  try {
+    await initPromise;
+  } finally {
+    initPromise = null;
+  }
 }
 
 // ===== LOGIN =====
 function isAuthenticated() {
-  return sessionStorage.getItem(AUTH_KEY) === '1';
+  if (hasSupabaseConfig()) return isSupabaseAuthenticated();
+  return hasLegacySession();
 }
 
 function renderLogin() {
   currentScreen = 'login';
   const app = document.getElementById('app');
+  const supabaseConfigured = hasSupabaseConfig();
+  const message = authUiMessage;
+  const currentSupabaseUrl = getSupabaseUrl();
+  const currentSupabasePublishableKey = getSupabasePublishableKey();
+  const supabaseLibraryReady = hasSupabaseLibrary();
+  const showSupabaseConfigControls = shouldShowSupabaseConfigControls();
+  const showLegacyFallback = !supabaseConfigured;
+  const messageHtml = message
+    ? `<p class="login-status login-status--${escapeHtml(message.type)}">${escapeHtml(message.text)}</p>`
+    : '';
+
   app.innerHTML = `
     <div class="login-box">
       <div class="login-logo">🦛</div>
       <h1>Hippo Words</h1>
-      <p class="login-subtitle">Wpisz hasło, żeby zacząć</p>
-      <form id="login-form">
+      <p class="login-subtitle">
+        ${supabaseConfigured
+          ? 'Zaloguj się magic linkiem wysłanym na e-mail. Sesja zapisze się na urządzeniu.'
+          : 'Najpierw skonfiguruj Supabase Auth. Potem użytkownicy będą logować się normalnie, bez wspólnego hasła.'}
+      </p>
+      ${messageHtml}
+      ${supabaseConfigured ? `
+      <form id="magic-link-form" class="login-form-stack">
         <input
-          id="login-input"
-          type="password"
-          placeholder="hasło"
-          autocomplete="current-password"
+          id="login-email-input"
+          type="email"
+          class="input-answer login-email-input"
+          placeholder="twoj@email.com"
+          autocomplete="email"
           autofocus
         />
-        <button type="submit">Wejdź</button>
-        <p id="login-error" class="login-error" hidden>Złe hasło, spróbuj jeszcze raz 🙈</p>
+        <button class="btn btn-primary" type="submit">Wyślij magic link</button>
       </form>
+      <p class="login-helper">Po kliknięciu linku z maila gra sama wykryje aktywną sesję po powrocie do aplikacji.</p>
+      ` : `
+      <div class="login-callout">
+        Brak konfiguracji Supabase na tym urządzeniu. Wklej <strong>Project URL</strong> i <strong>publishable key</strong> z panelu Supabase albo wpisz je na stałe w pliku <strong>supabase-config.js</strong>.
+      </div>
+      `}
+
+      ${supabaseLibraryReady ? '' : '<div class="login-callout" style="margin-top:1rem;background:#fef2f2;color:#991b1b;">Nie załadowała się biblioteka Supabase z CDN. Sprawdź połączenie z internetem i odśwież stronę.</div>'}
+
+      ${showSupabaseConfigControls ? `
+      <button type="button" class="btn btn-secondary auth-config-toggle" id="btn-toggle-auth-config">
+        ${supabaseConfigured ? '⚙ Zmień konfigurację Supabase' : '⚙ Skonfiguruj Supabase'}
+      </button>
+
+      <div id="login-auth-config" class="auth-config-card" ${supabaseConfigured ? 'hidden' : ''}>
+        <label class="settings-label">Project URL</label>
+        <input
+          id="input-login-supabase-url"
+          type="url"
+          class="input-answer"
+          placeholder="https://twoj-projekt.supabase.co"
+          value="${escapeHtml(currentSupabaseUrl)}"
+        />
+        <label class="settings-label" style="margin-top:0.85rem;">Publishable key</label>
+        <textarea
+          id="input-login-supabase-publishable-key"
+          class="auth-textarea"
+          placeholder="sb_publishable_xxxxx"
+        >${escapeHtml(currentSupabasePublishableKey)}</textarea>
+        <div class="auth-config-actions">
+          <button type="button" class="btn btn-primary" id="btn-save-login-supabase">Zapisz konfigurację</button>
+          <button type="button" class="btn btn-secondary" id="btn-test-login-supabase">Testuj połączenie</button>
+        </div>
+        ${hasSupabaseLocalOverride() ? '<button type="button" class="btn btn-secondary" id="btn-clear-login-supabase">Usuń lokalne nadpisanie</button>' : ''}
+        <div id="login-config-result" class="auth-inline-result"></div>
+        <p class="auth-config-note">
+          ${getAuthRedirectUrl()
+            ? `Redirect URL do wpisania w Supabase Auth: <strong>${escapeHtml(getAuthRedirectUrl())}</strong>`
+            : 'Do testow lokalnych uruchom gre przez http://localhost albo GitHub Pages. Supabase Auth nie zadziala z file://.'}
+        </p>
+      </div>
+      ` : ''}
+
+      ${showLegacyFallback ? `
+      <details class="legacy-login">
+        <summary>Tryb awaryjny: stare hasło lokalne</summary>
+        <form id="login-form" class="login-form-stack">
+          <input
+            id="login-input"
+            type="password"
+            placeholder="hasło"
+            autocomplete="current-password"
+          />
+          <button type="submit" class="btn btn-secondary">Wejdź hasłem</button>
+          <p id="login-error" class="login-error" hidden>Złe hasło, spróbuj jeszcze raz 🙈</p>
+        </form>
+      </details>
+      ` : ''}
     </div>
   `;
-  document.getElementById('login-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const val = document.getElementById('login-input').value;
-    if (val === ACCESS_PASSWORD) {
-      sessionStorage.setItem(AUTH_KEY, '1');
-      init();
-    } else {
-      const err = document.getElementById('login-error');
-      err.hidden = false;
-      document.getElementById('login-input').value = '';
-      document.getElementById('login-input').focus();
+
+  const btnToggleAuthConfig = document.getElementById('btn-toggle-auth-config');
+  const loginAuthConfig = document.getElementById('login-auth-config');
+  if (btnToggleAuthConfig && loginAuthConfig) {
+    btnToggleAuthConfig.addEventListener('click', () => {
+      loginAuthConfig.hidden = !loginAuthConfig.hidden;
+    });
+  }
+
+  const btnSaveLoginSupabase = document.getElementById('btn-save-login-supabase');
+  if (btnSaveLoginSupabase) {
+    btnSaveLoginSupabase.addEventListener('click', async () => {
+      const url = document.getElementById('input-login-supabase-url').value.trim();
+      const publishableKey = document.getElementById('input-login-supabase-publishable-key').value.trim();
+      const resultEl = document.getElementById('login-config-result');
+
+      if (!url || !publishableKey) {
+        resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz Project URL i publishable key.</span>';
+        return;
+      }
+
+      setSupabaseUrl(url);
+      setSupabasePublishableKey(publishableKey);
+      resetSupabaseClient();
+      try {
+        await refreshSupabaseSession();
+      } catch {}
+      setAuthUiMessage('success', 'Konfiguracja Supabase zapisana. Możesz się zalogować.');
+      renderLogin();
+    });
+  }
+
+  const btnTestLoginSupabase = document.getElementById('btn-test-login-supabase');
+  if (btnTestLoginSupabase) {
+    btnTestLoginSupabase.addEventListener('click', async () => {
+      const url = document.getElementById('input-login-supabase-url').value.trim();
+      const publishableKey = document.getElementById('input-login-supabase-publishable-key').value.trim();
+      const resultEl = document.getElementById('login-config-result');
+      resultEl.innerHTML = '<span style="color:#555;">Testuję Supabase...</span>';
+
+      try {
+        const count = await testSupabaseConnection(url, publishableKey);
+        resultEl.innerHTML = `<span style="color:#166534;">✓ Połączono z Supabase. Ranking ma obecnie ${count} rekordów.</span>`;
+      } catch (error) {
+        resultEl.innerHTML = `<span style="color:#991b1b;">✗ ${escapeHtml(formatAuthError(error, 'Nie udało się połączyć z Supabase.'))}</span>`;
+      }
+    });
+  }
+
+  const btnClearLoginSupabase = document.getElementById('btn-clear-login-supabase');
+  if (btnClearLoginSupabase) {
+    btnClearLoginSupabase.addEventListener('click', () => {
+      setSupabaseUrl('');
+      setSupabasePublishableKey('');
+      resetSupabaseClient();
+      setAuthUiMessage('info', 'Usunięto lokalne nadpisanie konfiguracji Supabase.');
+      renderLogin();
+    });
+  }
+
+  if (supabaseConfigured) {
+    const magicLinkForm = document.getElementById('magic-link-form');
+    if (magicLinkForm) {
+      magicLinkForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email-input').value.trim();
+        if (!email) {
+          setAuthUiMessage('error', 'Wpisz adres e-mail.');
+          renderLogin();
+          return;
+        }
+
+        const submitButton = magicLinkForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Wysyłam...';
+
+        try {
+          if (!isHttpOrigin()) {
+            throw new Error('Supabase Auth wymaga uruchomienia przez http://localhost albo GitHub Pages, nie przez file://.');
+          }
+          const client = getSupabaseClient();
+          if (!client) throw new Error('Brak konfiguracji Supabase Auth.');
+          const { error } = await client.auth.signInWithOtp({
+            email,
+            options: {
+              emailRedirectTo: getAuthRedirectUrl()
+            }
+          });
+          if (error) throw error;
+          setAuthUiMessage('success', `Wysłano magic link na ${email}. Otwórz maila i wróć do gry.`);
+        } catch (error) {
+          setAuthUiMessage('error', formatAuthError(error, 'Nie udało się wysłać magic linku.'));
+        }
+
+        renderLogin();
+      });
     }
-  });
+
+  }
+
+  const legacyLoginForm = document.getElementById('login-form');
+  if (legacyLoginForm) {
+    legacyLoginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.getElementById('login-input').value;
+      if (val === ACCESS_PASSWORD) {
+        sessionStorage.setItem(AUTH_KEY, '1');
+        init();
+      } else {
+        const err = document.getElementById('login-error');
+        err.hidden = false;
+        document.getElementById('login-input').value = '';
+        document.getElementById('login-input').focus();
+      }
+    });
+  }
 }
 
-if (isAuthenticated()) {
-  init();
-} else {
+async function boot() {
+  currentScreen = 'boot';
+
+  if (hasSupabaseConfig()) {
+    try {
+      const session = await refreshSupabaseSession();
+      if (session) {
+        await init();
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+      setAuthUiMessage('error', 'Nie udało się połączyć z Supabase Auth. Sprawdź Project URL i publishable key.');
+    }
+
+    renderLogin();
+    return;
+  }
+
+  if (hasLegacySession()) {
+    await init();
+    return;
+  }
+
   renderLogin();
 }
+
+boot();

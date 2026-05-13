@@ -1,0 +1,10 @@
+{
+  "vocab_progress": [
+    {"word_id": 10, "level": 3, "nextReview": "2026-05-12", "lastReview": "2026-05-10"}
+  ],
+  "vocab_daily_stats": [
+    {"date": "2026-05-10", "sessions": 2, "sumPct": 165, "avgPct": 83}
+  ],
+  "vocab_active_levels": [1, 2, 3],
+  "vocab_ignored_word_ids": []
+}

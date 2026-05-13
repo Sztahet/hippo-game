@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   background: #fff;
   border-radius: 20px;
   padding: 3rem 2rem;
@@ -63,6 +64,162 @@
   text-align: center;
   color: #e53e3e;
   font-size: 0.9rem;
+}
+
+.login-status {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.login-status--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.login-status--success {
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.login-status--error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.login-form-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-email-input {
+  text-align: left;
+  letter-spacing: normal;
+}
+
+.login-callout {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-align: left;
+}
+
+.auth-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.auth-provider-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.auth-provider-btn,
+.auth-config-toggle,
+.auth-config-actions .btn,
+.legacy-login .btn-secondary {
+  margin-top: 0;
+}
+
+.auth-config-card {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.settings-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.auth-textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 0.85rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  font-family: inherit;
+}
+
+.auth-textarea:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.auth-config-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.auth-config-actions .btn {
+  flex: 1;
+}
+
+.auth-inline-result {
+  margin-top: 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.auth-config-note,
+.login-helper {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.legacy-login {
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.legacy-login summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+
+.legacy-login[open] summary {
+  margin-bottom: 0.85rem;
 }
 
 body {
