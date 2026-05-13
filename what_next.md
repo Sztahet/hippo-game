@@ -1,83 +1,69 @@
-# Co dalej — plan rozwoju aplikacji
+# Co dalej — roadmap pod Supabase-only
 
-## Stan obecny
+## Priorytet P0: domknąć storage cutover
 
-Aplikacja jest w pełni zaimplementowana zgodnie z pierwotnym planem:
-- ✅ `words.json` — 1000 par PL→EN
-- ✅ `app.js` — pełna logika (637 linii): sesje, spaced repetition, Levenshtein, UI (Home / Flashcard / Feedback / Summary)
-- ✅ `style.css` — kompletny styl
-- ✅ `index.html` — szkielet
-- ✅ `google-apps-script.js` — backend do synchronizacji z Google Sheets (kod gotowy, wymaga wdrożenia)
+1. **Jawny status zapisu do Supabase po sesji**
+   - Pokazać na podsumowaniu albo home, czy `player_daily_stats` i `player_word_progress` zostały zapisane.
+   - Dodać komunikat błędu i możliwość ponowienia zapisu.
 
----
+2. **Dedykowany write path dla danych runtime**
+   - Rozdzielić bootstrap/import od bieżącego zapisu.
+   - Zamiast przeciążać `bootstrap_player_from_auth`, dodać osobny RPC albo zestaw upsertów dla daily stats, settings i word progress.
 
-## Priorytety (co zrobić najpierw)
+3. **Test end-to-end: legacy user -> Supabase-only**
+   - Urządzenie ze starym stanem na Sheets/localStorage.
+   - Login magic linkiem.
+   - Import do Supabase.
+   - Nowe urządzenie odzyskuje pełny stan bez Google Sheets.
 
-### 🔴 Pilne — przed regularnym używaniem
+4. **Spójna strategia konfliktów**
+   - Udokumentować i egzekwować merge dla `player_settings`, `player_daily_stats` i `player_word_progress`.
+   - Upewnić się, że retry nie nadpisuje nowszego stanu starszym snapshotem.
 
-1. **Wdrożyć Google Apps Script**
-   - Otworzyć Google Sheets → Rozszerzenia → Apps Script → wkleić kod z `google-apps-script.js`
-   - Zmienić `SECRET_TOKEN` na własne hasło
-   - Zrobić nowe wdrożenie jako aplikacja internetowa
-   - URL wdrożenia wpisać w ustawieniach aplikacji
+## Priorytet P1: ograniczyć legacy warstwy
 
-2. **Przetestować aplikację** ręcznie w przeglądarce:
-   - Uruchomić `python3 -m http.server` w katalogu projektu
-   - Pierwsza sesja: 20 nowych słówek
-   - Test tolerancji literówek (`"caT"`, `"caat"` → ok; `"caaat"` → błąd)
-   - Sprawdzić `localStorage["vocab_progress"]` w DevTools
-   - Symulacja kolejnego dnia: ręcznie zmienić `nextReview` na wczoraj
+5. **Ukryć Google Sheets dla nowych użytkowników**
+   - Zostawić tylko opcję recovery/importu dla starych urządzeń.
+   - Nie zachęcać już do konfiguracji Apps Script jako normalnego flow.
 
----
+6. **Ograniczyć localStorage do cache'u**
+   - Po zalogowaniu traktować Supabase jako główny stan wejściowy.
+   - Czyścić stare markery i uprościć lokalne klucze, które nie są już potrzebne jako trwałe źródło prawdy.
 
-### 🟡 Średni priorytet — ulepszenia UX
+7. **Usunąć legacy password fallback**
+   - Jeśli produkcja działa już na Supabase Auth, usunąć lokalne hasło aplikacyjne i związane z nim ścieżki UI.
 
-3. **Tryb EN→PL** (odwrotny kierunek)
-   - Przycisk przełącznika na ekranie Home
-   - `buildSession()` zwraca słówka w odwrotnej kolejności
-   - Osobny postęp dla każdego kierunku (klucz w localStorage: `"vocab_progress_enpl"`)
+## Priorytet P2: observability i bezpieczeństwo operacyjne
 
-4. **Wymowa audio (Text-to-Speech)**
-   - Użyć wbudowanego `SpeechSynthesis` API przeglądarki (brak zależności zewnętrznych)
-   - Przycisk 🔊 na karcie flashcard
-   - Automatyczne odtwarzanie po poprawnej odpowiedzi (opcja w ustawieniach)
+8. **Lepsze logowanie błędów synchronizacji**
+   - Rozróżnić błąd auth, błąd RPC, błąd sieci i konflikt danych.
+   - Mieć prosty sposób na diagnozę bez ręcznego grzebania w DevTools.
 
-5. **Tryb ciemny (dark mode)**
-   - Detekcja `prefers-color-scheme: dark`
-   - Opcjonalny przełącznik w ustawieniach
+9. **Checklist deploymentu**
+   - Spisać krótki release checklist: migracje SQL, redirect URLs, smoke test loginu, smoke test zapisu po sesji.
 
-6. **Kategorie słówek**
-   - Dodać pole `category` do `words.json` (np. `"jedzenie"`, `"podróże"`, `"praca"`)
-   - Filtr kategorii na ekranie Home
+10. **Testy dla logiki syncu**
+    - Pokryć merge i serializację payloadów testami.
+    - Osobno przetestować daily stats, word progress i settings.
 
----
+## Priorytet P3: rozwój produktu po cutoverze
 
-### 🟢 Niski priorytet — dodatkowe funkcje
+11. **Publiczne porównania i leaderboard**
+    - Zbudować UI czytające tylko z `player_public_stats`.
+    - Dodać filtrowanie i podstawowe profile publiczne.
 
-7. **PWA (Progressive Web App)**
-   - Dodać `manifest.json` i Service Worker
-   - Aplikacja instalowalna na telefonie, działa offline
+12. **Eksport/import kopii zapasowej**
+    - Traktować to jako narzędzie recovery, nie podstawowy sync.
 
-8. **Eksport/import postępu**
-   - Przyciski na ekranie ustawień: „Pobierz kopię (.json)" i „Wczytaj kopię"
-   - Zabezpieczenie przed przypadkowym nadpisaniem
+13. **Rozwój UX nauki**
+    - EN → PL,
+    - audio/TTS,
+    - dodatkowe filtry i kategorie słówek,
+    - bardziej czytelne statystyki postępu.
 
-9. **Wykresy statystyk**
-   - Wykres słupkowy rozkładu poziomów (można użyć `<canvas>` bez bibliotek)
-   - Historia sesji: ile słówek dziennie przez ostatnie 30 dni
+## Definition of Done dla najbliższego etapu
 
-10. **Więcej słówek**
-    - Rozszerzyć `words.json` do 2000+ par (poziomy B2–C1)
-    - Użyć `generate_words.py` lub ręcznie dodać kolejne kategorie
-
-11. **Wiele profili użytkowników**
-    - Różne klucze w localStorage (`vocab_progress_jan`, `vocab_progress_ania`)
-    - Prosty ekran wyboru profilu przy starcie
-
----
-
-## Drobne poprawki techniczne
-
-- **Dostępność (a11y)**: dodać atrybuty `aria-label` do przycisków, `role="status"` do komunikatów feedback
-- **Obsługa błędu CORS**: przy `file://` `fetch('words.json')` może nie działać w Firefox — dodać komunikat z instrukcją uruchomienia serwera HTTP
-- **Testy jednostkowe**: pokryć `levenshtein()`, `buildSession()`, `advanceLevel()` testami w Node.js (np. z `node --test`)
+- pełna sesja aktualizuje Supabase bez ręcznej interwencji,
+- nowe urządzenie odzyskuje stan z Supabase,
+- Google Sheets nie jest potrzebny nowemu użytkownikowi,
+- `localStorage` nie jest już traktowany jak jedyne trwałe źródło postępu.

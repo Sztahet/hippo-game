@@ -1,61 +1,64 @@
-# 🦛 Hippo Words — Nauka Słówek PL→EN
+# Hippo Words
 
-Aplikacja do nauki angielskich słówek metodą spaced repetition (SRS), z synchronizacją postępu przez Google Sheets.
+Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced repetition. Projekt jest w trakcie przejścia z modelu legacy (`localStorage` + Google Sheets Apps Script) do modelu Supabase-first. Docelowo Supabase ma być jedynym backendem synchronizacji, odzyskiwania stanu i publicznych statystyk, a `localStorage` ma zostać tylko lokalnym cachem i buforem offline.
 
 **Live:** https://sztahet.github.io/hippo-game/
 
----
+## Status projektu
 
-## Funkcje
+- Logowanie działa przez Supabase Auth i magic link wysyłany na e-mail.
+- Supabase przechowuje profil gracza, ustawienia, dzienne statystyki, progress słówek i publiczny snapshot statystyk.
+- Po starcie aplikacja potrafi zassać prywatny snapshot z Supabase i odtworzyć lokalny stan.
+- Supabase służy obecnie w runtime głównie do logowania, odczytu snapshotu i jednorazowego importu legacy danych z localStorage albo Google Sheets.
+- `localStorage` nadal jest używany przez runtime jako natychmiastowy stan UI i warstwa kompatybilności.
+- Google Sheets nadal istnieje jako legacy bridge dla starych danych, ale nie jest docelowym backendem.
 
-- **Spaced repetition** — 9 poziomów (0 → 730 dni), algorytm SM-2-inspired
-- **~10 000 słów** w 6 poziomach trudności CEFR: A1, A2, B1, B2, C1, C2
-- **Synchronizacja postępu** przez Google Sheets — działa na wielu urządzeniach
-- **Zabezpieczenie hasłem** — dostęp tylko dla uprawnionej osoby
-- **Super Hipcio po sesji** — po powrocie na home rzuca family-friendly żart po angielsku
-- **Mobile-friendly** — działa na telefonie i tablecie
+## Mapa dokumentacji
 
----
+- `README.md` - overview projektu, setup i aktualny model działania.
+- `supabase/README.md` - backend Supabase, migracje, Auth, operacje i recovery.
+- `supabase/migration-plan.md` - plan pełnego odejścia od Sheets i redukcji roli `localStorage`.
+- `plan.md` - produktowe założenia i architektura docelowa.
+- `what_next.md` - najbliższy roadmap wdrożeniowy.
 
-## Architektura
+## Najważniejsze funkcje
 
-```
-hippo-game/
-├── index.html          # Strona główna (wymaga serwera HTTP)
-├── app.js              # Cała logika aplikacji (vanilla JS)
-├── style.css           # Style (mobile-first)
-├── assets/super-hipcio.png # Lokalna maskotka Hipcia do karty z żartem
-├── words.json          # Baza słówek (~10 000 par PL→EN z poziomami CEFR)
-├── build.js            # (Opcjonalnie) skrypt budujący bundle offline
-├── words_20k_pipeline.js # Czyszczenie i import slow z 20k.txt
-├── generate_words.py   # Pierwotny skrypt generujący słówka A1 (Python)
-├── generate_words_v2.js # Skrypt generujący pełną bazę A1-C2 (Node.js)
-├── google-apps-script.js # Backend Google Apps Script (synchronizacja)
-└── supabase/           # Opcjonalny scaffold bazy pod publiczne statystyki
-```
+- 9 poziomów SRS od nowych słów do interwału dwuletniego.
+- Baza około 10 000 słów w poziomach CEFR A1-C2.
+- Sesje nauki, feedback po każdej odpowiedzi i dzienne statystyki.
+- Publiczny snapshot statystyk przygotowany pod przyszły ranking i porównania graczy.
+- Magic link login bez hasła aplikacyjnego po stronie użytkownika.
+- Mobile-first UI działające na GitHub Pages.
 
----
+## Architektura runtime
 
-## Poziomy CEFR
+### Frontend
 
-| Poziom | Opis | Przykłady słów |
-|--------|------|----------------|
-| **A1** | Podstawy — pierwsze słowa | dom, kot, jeść, być |
-| **A2** | Elementarny — codzienne sytuacje | zakupy, transport, zdrowie |
-| **B1** | Średniozaawansowany — praca, podróże | kariera, technologia, środowisko |
-| **B2** | Wyższy średni — tematy abstrakcyjne | polityka, nauka, biznes |
-| **C1** | Zaawansowany — profesjonalny | akademicki, prawniczy, medyczny |
-| **C2** | Biegły — rzadkie i literackie | archaikizmy, specjalistyczne |
+- `index.html` - entrypoint aplikacji i ładowanie klienta Supabase.
+- `app.js` - cała logika runtime: sesje, auth, sync, statystyki i UI.
+- `style.css` - styl aplikacji.
+- `words.json` - baza słówek.
+- `supabase-config.js` - publiczny config projektu Supabase (`url` + `publishableKey`).
 
-Poziomy włączane/wyłączane w **Ustawieniach** aplikacji.
+### Warstwy danych
 
----
+- **Supabase** - docelowe źródło prawdy dla profilu gracza, statystyk dziennych, progressu słówek i publicznego snapshotu.
+- **localStorage** - lokalny cache i warstwa przejściowa używana do szybkiego renderu oraz odzyskiwania starego stanu.
+- **Google Sheets** - legacy sync dla starszych urządzeń i ręcznego odzyskiwania danych w okresie przejściowym.
 
-## Algorytm spaced repetition
+### Aktualny flow aplikacji
 
-| Poziom nauki | Następna powtórka |
-|---|---|
-| 0 (reset/nowe) | następna sesja |
+1. Aplikacja ładuje słówka i lokalny stan z `localStorage`.
+2. Jeśli użytkownik ma skonfigurowane Google Sheets, może zostać zassany legacy stan z Apps Script.
+3. Jeśli istnieje aktywna sesja Supabase, aplikacja może jednorazowo przenieść legacy dane z tego urządzenia do Supabase.
+4. Po imporcie aplikacja pobiera snapshot prywatnych danych z Supabase i odbudowuje lokalny stan.
+5. Publiczne porównania powinny czytać wyłącznie z `player_public_stats`.
+
+## Poziomy SRS
+
+| Poziom | Następna powtórka |
+| --- | --- |
+| 0 | następna sesja |
 | 1 | 1 dzień |
 | 2 | 3 dni |
 | 3 | 7 dni |
@@ -63,120 +66,108 @@ Poziomy włączane/wyłączane w **Ustawieniach** aplikacji.
 | 5 | 30 dni |
 | 6 | 90 dni |
 | 7 | 180 dni |
-| 8 (opanowane) | 2 lata |
+| 8 | około 2 lata |
 
-- **Poprawna odpowiedź** → +1 poziom  
-- **Literówka** (1 znak błędu) → −1 poziom  
-- **Błędna odpowiedź** → reset do poziomu 0  
+- Poprawna odpowiedź podnosi poziom o 1.
+- Literówka obniża poziom o 1.
+- Błędna odpowiedź resetuje poziom do 0.
 
----
+## Struktura repo
 
-## Synchronizacja z Google Sheets
-
-Postęp nauki synchronizowany jest z Google Sheets przez Google Apps Script. Działa na wielu urządzeniach jednocześnie (np. telefon + laptop).
-
-### Konfiguracja
-
-1. Utwórz nowy arkusz Google Sheets
-2. Nazwij pierwszą zakładkę: **Progress**
-3. W wierszu 1 wpisz nagłówki: `wordId` | `level` | `nextReview` | `lastReview`
-4. Otwórz **Rozszerzenia → Apps Script**
-5. Wklej zawartość pliku `google-apps-script.js`
-6. **Zmień `SECRET_TOKEN`** na własne, unikalne hasło
-7. Kliknij **Wdróż → Nowe wdrożenie**
-   - Typ: *Aplikacja internetowa*
-   - Wykonaj jako: *Ja*
-   - Kto ma dostęp: *Każdy*
-8. Skopiuj URL wdrożenia
-9. W aplikacji wejdź w **Ustawienia** i wklej URL oraz token
-
-> ⚠️ Po każdej zmianie kodu Apps Script musisz tworzyć **nowe** wdrożenie (nie edytować istniejące).
-
----
-
-## Supabase scaffold pod publiczne statystyki
-
-Jeśli chcesz wyjść poza prywatny sync i mieć podwaliny pod publiczne porównywanie graczy, w katalogu `supabase/` jest osobny scaffold bazy:
-
-- schema SQL do wdrożenia w Supabase
-- tabela publicznego snapshotu statystyk pod ranking
-- skrypt do wygenerowania SQL importu z obecnych danych z `localStorage`
-
-Szczegóły i flow importu są opisane w `supabase/README.md`.
-
----
-
-## Hasło dostępu
-
-Aby zmienić hasło, edytuj w `app.js`:
-
-```js
-const ACCESS_PASSWORD = 'hippo123';
+```text
+hippo-game/
+├── index.html
+├── app.js
+├── style.css
+├── words.json
+├── supabase-config.js
+├── google-apps-script.js
+├── supabase/
+│   ├── README.md
+│   ├── migration-plan.md
+│   ├── generate_import_sql.js
+│   └── migrations/
+├── assets/
+├── build.js
+├── generate_words.py
+├── generate_words_v2.js
+├── generate_words_extension.js
+├── words_20k_pipeline.js
+├── plan.md
+└── what_next.md
 ```
 
-Nastepnie zrob commit i push:
+## Lokalny development
+
+Auth i redirecty wymagają uruchomienia po HTTP. `file://` nie nadaje się do testów magic linka.
 
 ```powershell
-git add .
-git commit -m "zmiana hasla"
-git push
-```
-
-GitHub Pages zaktualizuje się automatycznie po ~1 minucie.
-
----
-
-## Entwicklung lokalny
-
-```powershell
-# Uruchom serwer lokalny (Node.js)
+# Node.js
 npx serve .
-# → http://localhost:3000
 
-# Lub (Python)
-python3 -m http.server 8080
-# → http://localhost:8080
+# albo Python
+python -m http.server 8080
 ```
 
-## Budowanie bundle (opcjonalnie, offline)
+Potem otwórz `http://localhost:3000` albo `http://localhost:8080`.
 
-```powershell
-node build.js
-# → bundle.html (samodzielny plik, działa bez serwera)
-```
+## Setup Supabase
+
+1. Załóż projekt w Supabase.
+2. Uruchom migracje z katalogu `supabase/migrations/` w kolejności nazw plików.
+3. W Supabase Auth ustaw `Site URL` i `Redirect URLs` dla localhosta i GitHub Pages.
+4. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+5. Przetestuj logowanie magic linkiem.
+6. Zweryfikuj, że w bazie istnieją tabele `players`, `player_settings`, `player_daily_stats`, `player_word_progress` i `player_public_stats`.
+
+Szczegóły operacyjne są opisane w `supabase/README.md`.
+
+## Legacy Google Sheets
+
+`google-apps-script.js` zostaje w repo wyłącznie jako wsparcie przejściowe:
+
+- odzyskanie starych danych z urządzeń, które jeszcze żyją na Sheets,
+- ręczny import w okresie przejściowym,
+- awaryjny fallback zanim Supabase-only flow zostanie domknięty.
+
+Nie rozwijamy już Google Sheets jako docelowego backendu.
 
 ## Dodawanie słówek
 
-Import i cleanup z listy `20k.txt`:
-
 ```powershell
-# Sam cleanup (duplikaty, szum, PL==EN)
 node words_20k_pipeline.js --clean-only --import-start-id=3327
-
-# Cleanup + dodanie np. 3000 nowych slow
 node words_20k_pipeline.js --target=3000 --import-start-id=3327
-
-# Cleanup + zuzycie calej kolejki z gory
 node words_20k_pipeline.js --consume-all --import-start-id=3327
-
-git add .
-git commit -m "cleanup i import slow"
-git push
 ```
 
-`bundle.html` nie jest potrzebny do GitHub Pages. Wystarcza `index.html` + `app.js` + `style.css` + `words.json`.
+Po zmianach w `words.json` wystarczy commit i push na GitHub Pages.
 
-Import działa teraz jak kolejka FIFO: skrypt bierze wpisy od góry `20k.txt` i konsumuje je od góry.
-Jeśli dany wpis nie zostanie dodany (np. filtr, duplikat, słaba jakość), i tak znika z początku kolejki.
+## Bundle offline
 
-Po wyczerpaniu kolejki możesz po prostu ponownie utworzyć `20k.txt` (1 angielskie słowo na linię)
-i uruchomić pipeline tym samym skryptem.
+```powershell
+node build.js
+```
 
----
+Bundle jest opcjonalny. Produkcyjny deployment opiera się na `index.html`, `app.js`, `style.css` i `words.json`.
 
-## Technologie
+## Aktualne ograniczenia
 
-- Vanilla JavaScript (ES2020+), bez frameworków
-- CSS custom (mobile-first, bez bibliotek)
-- Google Apps Script (backend sync)
-- GitHub Pages (hosting)
+- Runtime nadal używa `localStorage` jako warstwy lokalnej i kompatybilności.
+- Google Sheets może jeszcze wpływać na startowy stan użytkownika, jeśli jest skonfigurowany.
+- Bieżąca wersja runtime traktuje Supabase głównie jako auth, odczyt snapshotu i jednorazowy import legacy danych, a nie pełny live sync po każdej sesji.
+
+## Szybka walidacja po zmianach
+
+```powershell
+node --check .\app.js
+```
+
+Do smoke testów UI uruchom lokalny serwer HTTP i sprawdź logowanie, start sesji i zapis statystyk.
+
+## Stack techniczny
+
+- Vanilla JavaScript
+- CSS bez frameworka
+- Supabase Auth + Postgres
+- GitHub Pages
+- Google Apps Script wyłącznie jako legacy bridge
