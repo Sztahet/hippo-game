@@ -1202,6 +1202,12 @@ function getStats() {
 // ===== RENDERING =====
 const app = document.getElementById('app');
 
+function resetLearningProgress() {
+  localStorage.removeItem(STORAGE_KEY);
+  progress = {};
+  queueSupabaseStateSync();
+}
+
 function renderHome() {
   currentScreen = 'home';
   const stats = getStats();
@@ -1301,7 +1307,6 @@ function renderHome() {
         : '<p style="text-align:center;color:#888;">Brak słówek do nauki na dziś. Wróć jutro!</p>'
       }
       <button class="btn btn-secondary" id="btn-settings">⚙ Konto</button>
-      <button class="btn btn-secondary" id="btn-reset">Resetuj postęp</button>
     </div>
   `;
 
@@ -1321,15 +1326,6 @@ function renderHome() {
   }
 
   document.getElementById('btn-settings').addEventListener('click', renderSettings);
-
-  document.getElementById('btn-reset').addEventListener('click', () => {
-    if (confirm('Czy na pewno chcesz zresetować cały postęp?')) {
-      localStorage.removeItem(STORAGE_KEY);
-      progress = {};
-      queueSupabaseStateSync();
-      renderHome();
-    }
-  });
 }
 
 function startSession() {
@@ -1863,6 +1859,19 @@ function renderSettings() {
             : 'Do testow lokalnych uruchom aplikacje przez http://localhost, nie przez file://.'}
         </p>` : ''}
       </div>
+
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#991b1b;">! Strefa ostrożności</h2>
+        <p style="font-size:0.85rem;color:#555;line-height:1.55;margin-bottom:1rem;">Reset usuwa cały zapisany postęp nauki słówek. Ta operacja nie powinna być dostępna z ekranu głównego i wymaga dodatkowego potwierdzenia.</p>
+        <button class="btn btn-secondary" id="btn-show-reset-progress" style="background:#fff5f5;color:#991b1b;border:1px solid #fecaca;">! Resetuj postęp</button>
+        <div id="reset-progress-guard" style="display:none;margin-top:1rem;padding:1rem;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;">
+          <p style="margin:0 0 0.85rem;color:#991b1b;font-size:0.9rem;line-height:1.5;"><strong>! Uwaga:</strong> to usunie cały postęp nauki zapisany w aplikacji i wyśle ten stan do Supabase.</p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btn-cancel-reset-progress" style="flex:1;margin-top:0;min-width:140px;">Anuluj</button>
+            <button class="btn btn-primary" id="btn-confirm-reset-progress" style="flex:1;margin-top:0;min-width:140px;background:#991b1b;color:#fff;">!! Tak, resetuj</button>
+          </div>
+        </div>
+      </div>
       <button class="btn btn-secondary" id="btn-back" style="margin-top:0.75rem;">← Wróć</button>
     </div>
   `;
@@ -1993,6 +2002,32 @@ function renderSettings() {
       renderSettings();
     });
   });
+
+  const btnShowResetProgress = document.getElementById('btn-show-reset-progress');
+  const resetProgressGuard = document.getElementById('reset-progress-guard');
+  const btnCancelResetProgress = document.getElementById('btn-cancel-reset-progress');
+  const btnConfirmResetProgress = document.getElementById('btn-confirm-reset-progress');
+
+  if (btnShowResetProgress && resetProgressGuard) {
+    btnShowResetProgress.addEventListener('click', () => {
+      resetProgressGuard.style.display = 'block';
+      btnShowResetProgress.disabled = true;
+    });
+  }
+
+  if (btnCancelResetProgress && resetProgressGuard && btnShowResetProgress) {
+    btnCancelResetProgress.addEventListener('click', () => {
+      resetProgressGuard.style.display = 'none';
+      btnShowResetProgress.disabled = false;
+    });
+  }
+
+  if (btnConfirmResetProgress) {
+    btnConfirmResetProgress.addEventListener('click', () => {
+      resetLearningProgress();
+      renderHome();
+    });
+  }
 
   document.getElementById('btn-back').addEventListener('click', renderHome);
 }
