@@ -1,23 +1,23 @@
 # Supabase backend
 
-Ten katalog opisuje docelowy backend projektu. Supabase nie jest już tylko scaffoldingiem pod publiczne statystyki. To warstwa, do której projekt ma docelowo przenieść auth, synchronizację ustawień, dzienne statystyki, progress słówek i publiczne porównania. `localStorage` oraz Google Sheets pozostają tylko warstwami przejściowymi i recovery.
+Ten katalog opisuje aktywny backend projektu. Supabase obsługuje logowanie, bootstrap rekordu gracza, prywatny snapshot stanu i publiczny snapshot statystyk. Frontend nie używa już migracyjnych ścieżek z poziomu UI.
 
 ## Zakres odpowiedzialności Supabase
 
-- logowanie magic linkiem,
-- identyfikacja gracza,
-- synchronizacja ustawień profilu,
-- zapis `player_daily_stats`,
-- zapis `player_word_progress`,
-- publiczny snapshot `player_public_stats`.
+- logowanie mailowe (`Confirm signup` i `Magic Link`),
+- identyfikacja gracza i powiązanie z `auth.users`,
+- prywatny snapshot ustawień i postępu,
+- publiczny snapshot `player_public_stats`,
+- write path dla `player_settings`, `player_daily_stats` i `player_word_progress`.
 
 ## Zawartość katalogu
 
 - `migrations/202605110001_init_public_stats.sql` - schema tabel, RLS, triggery i publiczny snapshot.
-- `migrations/202605120001_auth_bootstrap_and_legacy_import.sql` - bootstrap gracza po auth oraz jednorazowy import legacy danych.
+- `migrations/202605120001_auth_bootstrap_and_legacy_import.sql` - bootstrap gracza po auth oraz historyczny kontrakt importowy.
 - `migrations/202605130001_get_my_player_snapshot.sql` - prywatny snapshot do odtworzenia stanu aplikacji po zalogowaniu.
-- `generate_import_sql.js` - ręczny generator SQL do recovery i importu z `localStorage`.
-- `migration-plan.md` - plan wygaszenia Google Sheets i uproszczenia storage modelu.
+- `migrations/202605160001_sync_player_state_from_auth.sql` - pełny sync snapshotu gracza z klienta do Supabase.
+- `email-templates/` - szablony maili `Confirm signup` i `Magic Link`.
+- `migration-plan.md` - krótka notatka o zamknięciu cutoveru i kolejnych krokach.
 
 ## Model danych
 
@@ -27,7 +27,7 @@ Ten katalog opisuje docelowy backend projektu. Supabase nie jest już tylko scaf
 - `public.player_word_progress` - stan SRS per słowo.
 - `public.player_public_stats` - bezpieczny publiczny snapshot do rankingu.
 
-RLS jest włączony na surowych tabelach. Publicznie czytelny ma zostać tylko `player_public_stats` dla rekordów z `is_public = true`.
+RLS jest włączony na surowych tabelach. Publicznie czytelny ma pozostać tylko `player_public_stats` dla rekordów z `is_public = true`.
 
 ## Deployment projektu Supabase
 
@@ -37,12 +37,18 @@ RLS jest włączony na surowych tabelach. Publicznie czytelny ma zostać tylko `
    - `202605110001_init_public_stats.sql`
    - `202605120001_auth_bootstrap_and_legacy_import.sql`
    - `202605130001_get_my_player_snapshot.sql`
+  - `202605160001_sync_player_state_from_auth.sql`
 4. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla:
    - `http://localhost:8080`
    - `http://localhost:3000`
    - produkcyjnego URL z GitHub Pages
-5. Włącz email magic link jako główny sposób logowania.
-6. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+5. W `Authentication -> Email Templates` ustaw własne szablony dla:
+   - `Confirm signup`: `Subject` z `email-templates/confirmation-subject.txt`, `Content` z `email-templates/confirmation.html`
+   - `Magic Link`: `Subject` z `email-templates/magic-link-subject.txt`, `Content` z `email-templates/magic-link.html`
+6. W obu szablonach zostaw placeholder `{{ .ConfirmationURL }}` w głównym przycisku.
+7. `signInWithOtp()` tworzy użytkownika, jeśli adres jeszcze nie istnieje, więc pierwszy mail dla nowego adresu będzie typu `Confirm signup`, a kolejne logowania pójdą już standardowym `Magic Link`.
+8. Jeśli używasz własnego SMTP, wyłącz email tracking po stronie dostawcy, żeby nie przepisywał linków auth.
+9. Wpisz `url` i `publishableKey` do `supabase-config.js`.
 
 Szybka kontrola po wdrożeniu:
 
@@ -74,9 +80,9 @@ Nie używamy service role key w przeglądarce.
 Ta funkcja:
 
 - tworzy albo podpina rekord `players` do zalogowanego usera,
-- upsertuje `player_settings`, `player_daily_stats` i `player_word_progress`,
+- potrafi upsertować `player_settings`, `player_daily_stats` i `player_word_progress`,
 - odświeża `player_public_stats`,
-- jest obecnie używana głównie do bootstrapu konta i jednorazowego importu legacy danych z przeglądarki.
+- jest obecnie wywoływana przez frontend z pustym payloadem tylko po to, żeby zapewnić rekord gracza po logowaniu.
 
 ### `get_my_player_snapshot()`
 
@@ -86,41 +92,24 @@ Ta funkcja zwraca prywatny snapshot zalogowanego gracza:
 - `dailyStats`,
 - `wordProgress`.
 
-Frontend używa jej przy starcie do hydratacji lokalnego stanu i do porównania, czy legacy marker importu nadal ma sens.
+Frontend używa jej przy starcie do hydratacji lokalnego stanu po zalogowaniu.
+
+### `sync_player_state_from_auth(state_payload jsonb)`
+
+Ta funkcja:
+
+- zapewnia rekord `players` dla zalogowanego usera,
+- zapisuje pełny snapshot `player_settings`, `player_daily_stats` i `player_word_progress`,
+- usuwa z backendu wpisy, których nie ma już w bieżącym snapshotcie klienta,
+- odświeża `player_public_stats` po każdym zapisie.
 
 ## Aktualny flow frontendu
 
-1. User loguje się magic linkiem.
-2. Frontend odzyskuje sesję Supabase.
-3. Jeśli istnieją legacy dane lokalne, frontend może je przepchnąć do `bootstrap_player_from_auth`.
+1. User loguje się mailem.
+2. Frontend odzyskuje albo odświeża sesję Supabase.
+3. Frontend wywołuje `bootstrap_player_from_auth({})`, żeby zapewnić rekord `players`.
 4. Frontend pobiera `get_my_player_snapshot()` i odbudowuje lokalny stan gry.
-5. Jeśli Google Sheets jest jeszcze skonfigurowany, może nadal zasilać lokalny stan w okresie przejściowym.
-6. Bieżąca wersja runtime nie traktuje jeszcze Supabase jako stałego write pathu po każdej sesji; to jest nadal etap przejściowy.
-
-## Ręczny recovery i import
-
-Jeśli trzeba odratować stare dane z urządzenia, wyeksportuj z przeglądarki:
-
-```js
-copy(JSON.stringify({
-  vocab_progress: JSON.parse(localStorage.getItem('vocab_progress') || '{}'),
-  vocab_daily_stats: JSON.parse(localStorage.getItem('vocab_daily_stats') || '{}'),
-  vocab_active_levels: JSON.parse(localStorage.getItem('vocab_active_levels') || '[]'),
-  vocab_ignored_word_ids: JSON.parse(localStorage.getItem('vocab_ignored_word_ids') || '[]')
-}, null, 2));
-```
-
-Potem wygeneruj SQL:
-
-```powershell
-node supabase/generate_import_sql.js --input stats-export.json --handle ania --display-name "Ania" > supabase/manual-import.sql
-```
-
-Opcjonalnie profil prywatny od startu:
-
-```powershell
-node supabase/generate_import_sql.js --input stats-export.json --handle ania --display-name "Ania" --private > supabase/manual-import.sql
-```
+5. Po zakończonej sesji i po zmianach ustawień frontend wywołuje `sync_player_state_from_auth(...)` z pełnym snapshotem klienta.
 
 ## Przydatne zapytania operacyjne
 
@@ -169,10 +158,9 @@ order by wp.word_id asc
 limit 100;
 ```
 
-## Kierunek docelowy
+## Aktualny stan techniczny
 
-- Supabase ma zostać jedynym backendem synchronizacji i recovery.
-- Google Sheets ma zostać zdegradowany do jednorazowego importu albo całkowicie usunięty.
-- `localStorage` ma służyć do szybkiego renderu i offline bufferu, nie jako trwałe źródło prawdy.
-
-Szczegółowy plan tego przejścia jest w `supabase/migration-plan.md`.
+- Supabase jest jedyną aktywną ścieżką auth.
+- UI i runtime nie używają już starych ścieżek migracyjnych.
+- `localStorage` pozostaje cachem runtime, ale po zakończonej sesji i zmianach ustawień jest synchronizowany do Supabase.
+- Szczegóły najbliższych prac są w `supabase/migration-plan.md`.

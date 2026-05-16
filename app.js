@@ -2,14 +2,14 @@
 const INTERVALS = [0, 1, 3, 7, 14, 30, 90, 180, 730]; // days per level
 const SESSION_SIZE = 25;
 const STORAGE_KEY = 'vocab_progress';
-const SYNC_URL_KEY = 'vocab_sync_url';
-const SYNC_TOKEN_KEY = 'vocab_sync_token';
+const LEGACY_LOCAL_STORAGE_KEYS = ['vocab_sync_url', 'vocab_sync_token'];
+const LEGACY_SESSION_STORAGE_KEYS = ['vocab_auth'];
+const LEGACY_IMPORT_MARKER_PREFIX = 'vocab_supabase_import_';
 const SUPABASE_URL_KEY = 'vocab_supabase_url';
 const SUPABASE_PUBLISHABLE_KEY = 'vocab_supabase_publishable_key';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
 const IGNORED_WORD_IDS_KEY = 'vocab_ignored_word_ids';
 const DAILY_STATS_KEY = 'vocab_daily_stats';
-const SUPABASE_IMPORT_VERSION = 'legacy-v1';
 const HIPPO_MASCOT_SRC = 'assets/super-hipcio.png';
 const HIPPO_JOKE_API_URL = 'https://v2.jokeapi.dev/joke/Misc,Pun?lang=en&safe-mode&amount=6&blacklistFlags=nsfw,religious,political,racist,sexist,explicit';
 const HIPPO_JOKE_BLOCKLIST = [
@@ -84,20 +84,12 @@ const LEVEL_DESCRIPTIONS = {
   C2: 'Biegły',
 };
 
-// ===== LEGACY PASSWORD FALLBACK =====
-// Used only while Supabase Auth is not configured yet.
-const ACCESS_PASSWORD = 'hippo123';
-const AUTH_KEY = 'vocab_auth';
-
 // ===== STATE =====
 let allWords = [];
 let progress = {};
 let session = [];
 let currentIndex = 0;
 let sessionResults = []; // { wordId, status: 'correct'|'typo'|'wrong', userAnswer }
-let syncUrl = localStorage.getItem(SYNC_URL_KEY) || '';
-let syncToken = localStorage.getItem(SYNC_TOKEN_KEY) || '';
-let syncStatus = 'idle'; // 'idle' | 'syncing' | 'ok' | 'error'
 let activeLevels = loadActiveLevels();
 let ignoredWordIds = loadIgnoredWordIds();
 let dailyStats = loadDailyStats();
@@ -113,7 +105,12 @@ let supabaseSession = null;
 let supabaseUser = null;
 let initPromise = null;
 let authUiMessage = null;
-let supabaseImportState = { status: 'idle', result: null, error: null };
+let supabaseStateSyncQueue = Promise.resolve(null);
+let supabaseSyncStatus = {
+  status: 'idle',
+  error: '',
+  syncedAt: null
+};
 
 // ===== DATA =====
 function loadProgress() {
@@ -195,18 +192,6 @@ function saveDailyStats() {
   localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(dailyStats));
 }
 
-function buildSettingsPayload() {
-  // Backward-compatible payload: older Apps Script deployments persist only activeLevels.
-  return {
-    activeLevels: JSON.stringify({
-      levels: activeLevels,
-      ignoredWordIds: ignoredWordIds
-    }),
-    ignoredWordIds: JSON.stringify(ignoredWordIds),
-    dailyStats: JSON.stringify(dailyStats)
-  };
-}
-
 function getActiveWords() {
   const ignoredSet = new Set(ignoredWordIds);
   return allWords.filter(w => activeLevels.includes(w.level || 'A1') && !ignoredSet.has(Number(w.id)));
@@ -216,7 +201,7 @@ function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
-// ===== GOOGLE SHEETS SYNC =====
+// ===== DATE HELPERS =====
 /**
  * Normalizes a date value that may arrive as a full Date string
  * (e.g. "Mon Jun 05 2025 00:00:00 GMT+0200") to ISO "yyyy-MM-dd".
@@ -228,32 +213,6 @@ function toISODate(val) {
   const d = new Date(val);
   if (!isNaN(d)) return d.toISOString().slice(0, 10);
   return String(val);
-}
-
-function getSyncUrl() {
-  return localStorage.getItem(SYNC_URL_KEY) || '';
-}
-
-function setSyncUrl(url) {
-  syncUrl = url;
-  if (url) {
-    localStorage.setItem(SYNC_URL_KEY, url);
-  } else {
-    localStorage.removeItem(SYNC_URL_KEY);
-  }
-}
-
-function getSyncToken() {
-  return localStorage.getItem(SYNC_TOKEN_KEY) || '';
-}
-
-function setSyncToken(token) {
-  syncToken = token;
-  if (token) {
-    localStorage.setItem(SYNC_TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(SYNC_TOKEN_KEY);
-  }
 }
 
 function getProjectSupabaseConfig() {
@@ -313,8 +272,15 @@ function hasSupabaseLibrary() {
   return Boolean(window.supabase && typeof window.supabase.createClient === 'function');
 }
 
-function hasLegacySession() {
-  return sessionStorage.getItem(AUTH_KEY) === '1';
+function clearDeprecatedStorageKeys() {
+  LEGACY_LOCAL_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+  LEGACY_SESSION_STORAGE_KEYS.forEach((key) => sessionStorage.removeItem(key));
+
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith(LEGACY_IMPORT_MARKER_PREFIX)) {
+      localStorage.removeItem(key);
+    }
+  });
 }
 
 function isHttpOrigin() {
@@ -331,127 +297,23 @@ function shouldShowSupabaseConfigControls() {
   return !(projectConfig.url && projectConfig.publishableKey);
 }
 
-function getSupabaseImportMarkerKey(userId) {
-  return `vocab_supabase_import_${SUPABASE_IMPORT_VERSION}_${userId}`;
-}
+async function ensureSupabasePlayerProfile() {
+  if (!isSupabaseAuthenticated()) return null;
 
-function getSupabaseImportMarker(userId) {
-  if (!userId) return null;
+  const client = getSupabaseClient();
+  if (!client) return null;
+
   try {
-    const raw = localStorage.getItem(getSupabaseImportMarkerKey(userId));
-    return raw ? JSON.parse(raw) : null;
-  } catch {
+    const { data, error } = await client.rpc('bootstrap_player_from_auth', {
+      import_payload: {}
+    });
+
+    if (error) throw error;
+    return data || null;
+  } catch (error) {
+    console.error(error);
     return null;
   }
-}
-
-function setSupabaseImportMarker(userId, result, state = 'imported') {
-  if (!userId) return;
-  localStorage.setItem(getSupabaseImportMarkerKey(userId), JSON.stringify({
-    version: SUPABASE_IMPORT_VERSION,
-    state,
-    importedAt: new Date().toISOString(),
-    result: result || null
-  }));
-}
-
-function hasCompletedSupabaseLegacyImport(importMarker) {
-  return Boolean(importMarker && importMarker.state !== 'skipped');
-}
-
-function hasLegacyDataForSupabaseImport() {
-  return Object.keys(progress).length > 0
-    || Object.keys(dailyStats).length > 0
-    || ignoredWordIds.length > 0
-    || JSON.stringify(activeLevels) !== JSON.stringify(['A1', 'A2']);
-}
-
-function getSupabaseDailyStatsRows() {
-  return Object.entries(dailyStats)
-    .map(([statDate, entry]) => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(statDate)) return null;
-      if (!entry || typeof entry !== 'object') return null;
-
-      const sessions = Math.floor(Number(entry.sessions));
-      const sumPctRaw = Number(entry.sumPct);
-      const avgPctRaw = Number(entry.avgPct);
-      const sumPct = Number.isFinite(sumPctRaw)
-        ? Math.round(sumPctRaw)
-        : (Number.isFinite(avgPctRaw) ? Math.round(avgPctRaw * sessions) : NaN);
-
-      if (!Number.isInteger(sessions) || sessions <= 0) return null;
-      if (!Number.isInteger(sumPct) || sumPct < 0 || sumPct > sessions * 100) return null;
-
-      return {
-        stat_date: statDate,
-        sessions,
-        sum_pct: sumPct
-      };
-    })
-    .filter(Boolean)
-    .sort((left, right) => left.stat_date.localeCompare(right.stat_date));
-}
-
-function getSupabaseWordProgressRows() {
-  return Object.entries(progress)
-    .map(([wordId, entry]) => {
-      const numericWordId = Number(wordId);
-      if (!Number.isInteger(numericWordId) || numericWordId <= 0) return null;
-      if (!entry || typeof entry !== 'object') return null;
-
-      const level = Number(entry.level);
-      const nextReview = toISODate(entry.nextReview);
-      const lastReview = entry.lastReview ? toISODate(entry.lastReview) : null;
-
-      if (!Number.isInteger(level) || level < 0 || level > 8) return null;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(nextReview))) return null;
-      if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return null;
-
-      return {
-        word_id: numericWordId,
-        level,
-        next_review: nextReview,
-        last_review: lastReview
-      };
-    })
-    .filter(Boolean)
-    .sort((left, right) => left.word_id - right.word_id);
-}
-
-function getLegacyImportRowCounts() {
-  return {
-    dailyStats: getSupabaseDailyStatsRows().length,
-    wordProgress: getSupabaseWordProgressRows().length
-  };
-}
-
-function hasLegacyProgressRowsForSupabaseImport() {
-  const counts = getLegacyImportRowCounts();
-  return counts.dailyStats > 0 || counts.wordProgress > 0;
-}
-
-function didSupabaseImportMigrateProgressData(importMarker) {
-  const importedDailyStats = Math.max(0, Number(importMarker?.result?.importedDailyStats) || 0);
-  const importedWordProgress = Math.max(0, Number(importMarker?.result?.importedWordProgress) || 0);
-  return importedDailyStats > 0 || importedWordProgress > 0;
-}
-
-function shouldOfferManualLegacyImport(importMarker) {
-  if (!hasLegacyDataForSupabaseImport()) return false;
-  if (!hasCompletedSupabaseLegacyImport(importMarker)) return true;
-  return hasLegacyProgressRowsForSupabaseImport() && !didSupabaseImportMigrateProgressData(importMarker);
-}
-
-function buildSupabaseImportPayload() {
-  return {
-    version: SUPABASE_IMPORT_VERSION,
-    settings: {
-      activeLevels: [...activeLevels],
-      ignoredWordIds: [...ignoredWordIds]
-    },
-    dailyStats: getSupabaseDailyStatsRows(),
-    wordProgress: getSupabaseWordProgressRows()
-  };
 }
 
 async function fetchSupabasePlayerSnapshot() {
@@ -579,6 +441,170 @@ async function hydrateLocalStateFromSupabase() {
   }
 }
 
+function clearSupabaseSyncStatus() {
+  supabaseSyncStatus = {
+    status: 'idle',
+    error: '',
+    syncedAt: null
+  };
+  updateSupabaseSyncNotice();
+}
+
+function formatSupabaseSyncTime(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString('pl-PL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+function getSupabaseSyncNoticeHtml() {
+  if (!isSupabaseAuthenticated()) return '';
+
+  if (supabaseSyncStatus.status === 'syncing') {
+    return '<div class="home-auth-status home-auth-status--info">Synchronizuję stan gry do Supabase...</div>';
+  }
+
+  if (supabaseSyncStatus.status === 'error') {
+    const suffix = supabaseSyncStatus.error
+      ? ` ${escapeHtml(supabaseSyncStatus.error)}`
+      : '';
+    return `<div class="home-auth-status home-auth-status--error">Nie udało się zsynchronizować stanu gry z Supabase.${suffix}</div>`;
+  }
+
+  if (supabaseSyncStatus.status === 'success' && supabaseSyncStatus.syncedAt) {
+    return `<div class="home-auth-status home-auth-status--success">Stan gry zapisany w Supabase o ${escapeHtml(formatSupabaseSyncTime(supabaseSyncStatus.syncedAt))}.</div>`;
+  }
+
+  return '';
+}
+
+function updateSupabaseSyncNotice() {
+  const element = document.getElementById('supabase-sync-notice');
+  if (element) {
+    element.innerHTML = getSupabaseSyncNoticeHtml();
+  }
+}
+
+function buildSupabaseSettingsSyncPayload() {
+  const normalizedLevels = [...new Set(
+    activeLevels.filter((level) => ALL_LEVELS.includes(level))
+  )];
+  const normalizedIgnoredWordIds = [...new Set(
+    ignoredWordIds
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value) && value > 0)
+  )].sort((left, right) => left - right);
+
+  return {
+    activeLevels: normalizedLevels.length ? normalizedLevels : ['A1', 'A2'],
+    ignoredWordIds: normalizedIgnoredWordIds
+  };
+}
+
+function buildSupabaseDailyStatsSyncPayload() {
+  return Object.entries(sanitizeDailyStatsMap(dailyStats))
+    .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+    .map(([statDate, entry]) => ({
+      statDate,
+      sessions: Number(entry.sessions) || 0,
+      sumPct: Number(entry.sumPct) || 0
+    }));
+}
+
+function buildSupabaseWordProgressSyncPayload() {
+  return Object.entries(progress)
+    .map(([wordId, entry]) => {
+      const normalizedWordId = Number(wordId);
+      const level = Number(entry?.level);
+      const nextReview = toISODate(entry?.nextReview);
+      const lastReview = entry?.lastReview ? toISODate(entry.lastReview) : null;
+
+      if (!Number.isInteger(normalizedWordId) || normalizedWordId <= 0) return null;
+      if (!Number.isInteger(level) || level < 0 || level > 8) return null;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(nextReview))) return null;
+      if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return null;
+
+      return {
+        wordId: normalizedWordId,
+        level,
+        nextReview,
+        lastReview
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.wordId - right.wordId);
+}
+
+function buildSupabaseStateSyncPayload() {
+  return {
+    version: 'runtime-sync-v1',
+    settings: buildSupabaseSettingsSyncPayload(),
+    dailyStats: buildSupabaseDailyStatsSyncPayload(),
+    wordProgress: buildSupabaseWordProgressSyncPayload()
+  };
+}
+
+async function syncPlayerStateToSupabase(statePayload) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Brak aktywnego klienta Supabase.');
+  }
+
+  const { data, error } = await client.rpc('sync_player_state_from_auth', {
+    state_payload: statePayload
+  });
+
+  if (error) throw error;
+  return data || null;
+}
+
+function queueSupabaseStateSync() {
+  if (!isSupabaseAuthenticated()) return Promise.resolve(null);
+
+  const payload = buildSupabaseStateSyncPayload();
+  supabaseSyncStatus = {
+    status: 'syncing',
+    error: '',
+    syncedAt: supabaseSyncStatus.syncedAt
+  };
+  updateSupabaseSyncNotice();
+
+  supabaseStateSyncQueue = supabaseStateSyncQueue
+    .catch(() => null)
+    .then(async () => {
+      if (!isSupabaseAuthenticated()) {
+        clearSupabaseSyncStatus();
+        return null;
+      }
+
+      try {
+        const result = await syncPlayerStateToSupabase(payload);
+        supabaseSyncStatus = {
+          status: 'success',
+          error: '',
+          syncedAt: new Date().toISOString()
+        };
+        updateSupabaseSyncNotice();
+        return result;
+      } catch (error) {
+        console.error(error);
+        supabaseSyncStatus = {
+          status: 'error',
+          error: formatAuthError(error, 'Spróbuj ponownie po następnej sesji.'),
+          syncedAt: supabaseSyncStatus.syncedAt
+        };
+        updateSupabaseSyncNotice();
+        return null;
+      }
+    });
+
+  return supabaseStateSyncQueue;
+}
+
 function clearSupabaseRedirectState() {
   const hasAuthParams = window.location.search.includes('code=')
     || window.location.search.includes('error=')
@@ -614,7 +640,7 @@ function resetSupabaseClient() {
   supabaseClientCacheKey = '';
   supabaseSession = null;
   supabaseUser = null;
-  supabaseImportState = { status: 'idle', result: null, error: null };
+  clearSupabaseSyncStatus();
 }
 
 function getSupabaseClient() {
@@ -641,7 +667,6 @@ function getSupabaseClient() {
       clearSupabaseRedirectState();
 
       if (!session) {
-        supabaseImportState = { status: 'idle', result: null, error: null };
         if (currentScreen === 'settings') {
           renderSettings();
         } else if (currentScreen !== 'login') {
@@ -719,140 +744,6 @@ function getSignedInUserLabel() {
     || 'Zalogowany użytkownik';
 }
 
-async function maybeBootstrapSupabasePlayer(options = {}) {
-  const allowSkippedMarkerOverride = Boolean(options.allowSkippedMarkerOverride);
-  const forceImport = Boolean(options.forceImport);
-  if (!isSupabaseAuthenticated() || !supabaseUser) return null;
-  if (supabaseImportState.status === 'running') return null;
-
-  const hasLegacyImportData = hasLegacyDataForSupabaseImport();
-  const importPayload = hasLegacyDataForSupabaseImport()
-    ? buildSupabaseImportPayload()
-    : { version: SUPABASE_IMPORT_VERSION };
-  const importMarker = getSupabaseImportMarker(supabaseUser.id);
-  const hasCompletedImport = hasCompletedSupabaseLegacyImport(importMarker);
-  if (!forceImport && (hasCompletedImport || (importMarker && !allowSkippedMarkerOverride))) {
-    supabaseImportState = {
-      status: 'done',
-      result: importMarker.result || null,
-      error: null
-    };
-    return importMarker.result || null;
-  }
-
-  const client = getSupabaseClient();
-  if (!client) return null;
-
-  supabaseImportState = { status: 'running', result: null, error: null };
-
-  try {
-    const { data, error } = await client.rpc('bootstrap_player_from_auth', {
-      import_payload: importPayload
-    });
-
-    if (error) throw error;
-
-    supabaseImportState = { status: 'done', result: data || null, error: null };
-    setSupabaseImportMarker(supabaseUser.id, data || null, hasLegacyImportData ? 'imported' : 'skipped');
-
-    if (currentScreen === 'settings') {
-      renderSettings();
-    }
-
-    return data || null;
-  } catch (error) {
-    supabaseImportState = {
-      status: 'error',
-      result: null,
-      error: formatAuthError(error, 'Nie udało się przenieść starych danych do Supabase.')
-    };
-    console.error(error);
-
-    if (currentScreen === 'settings') {
-      renderSettings();
-    }
-
-    return null;
-  }
-}
-
-async function pullFromSheets() {
-  if (!syncUrl) return null;
-  syncStatus = 'syncing';
-  updateSyncIndicator();
-  try {
-    const sep = syncUrl.includes('?') ? '&' : '?';
-    const resp = await fetch(syncUrl + sep + 'token=' + encodeURIComponent(syncToken));
-    const data = await resp.json();
-    if (data.ok) {
-      syncStatus = 'ok';
-      updateSyncIndicator();
-      const raw = data.progress || {};
-      // Extract and apply _settings if present
-      if (raw._settings && raw._settings.activeLevels) {
-        try {
-          const remote = JSON.parse(raw._settings.activeLevels);
-
-          // New format: { levels: [...], ignoredWordIds: [...] }
-          if (remote && !Array.isArray(remote) && typeof remote === 'object') {
-            if (Array.isArray(remote.levels) && remote.levels.length > 0) {
-              activeLevels = remote.levels;
-              saveActiveLevels();
-            }
-            if (Array.isArray(remote.ignoredWordIds)) {
-              ignoredWordIds = remote.ignoredWordIds
-                .map((v) => Number(v))
-                .filter((v) => Number.isFinite(v) && v > 0);
-              saveIgnoredWordIds();
-            }
-          }
-
-          // Legacy format: [...levels]
-          if (Array.isArray(remote) && remote.length > 0) {
-            activeLevels = remote;
-            saveActiveLevels();
-          }
-        } catch {}
-      }
-      if (raw._settings && raw._settings.ignoredWordIds) {
-        try {
-          const remoteIgnored = JSON.parse(raw._settings.ignoredWordIds);
-          if (Array.isArray(remoteIgnored)) {
-            ignoredWordIds = remoteIgnored.map((v) => Number(v)).filter((v) => Number.isFinite(v) && v > 0);
-            saveIgnoredWordIds();
-          }
-        } catch {}
-      }
-      if (raw._settings && raw._settings.dailyStats) {
-        try {
-          const remoteDailyStatsRaw = JSON.parse(raw._settings.dailyStats);
-          if (remoteDailyStatsRaw && typeof remoteDailyStatsRaw === 'object' && !Array.isArray(remoteDailyStatsRaw)) {
-            dailyStats = sanitizeDailyStatsMap(remoteDailyStatsRaw);
-            saveDailyStats();
-          }
-        } catch {}
-      }
-      // Return only real word-progress entries (with normalized dates)
-      const cleaned = {};
-      for (const [k, v] of Object.entries(raw)) {
-        if (k !== '_settings') cleaned[k] = {
-          ...v,
-          nextReview: toISODate(v.nextReview),
-          lastReview: toISODate(v.lastReview),
-        };
-      }
-      return cleaned;
-    }
-    syncStatus = 'error';
-    updateSyncIndicator();
-    return null;
-  } catch {
-    syncStatus = 'error';
-    updateSyncIndicator();
-    return null;
-  }
-}
-
 function recordDailySession(sessionPct) {
   const today = getToday();
   const existing = dailyStats[today] || { sessions: 0, sumPct: 0, avgPct: 0 };
@@ -864,7 +755,6 @@ function recordDailySession(sessionPct) {
     avgPct: Math.round(sumPct / sessions)
   };
   saveDailyStats();
-  if (syncUrl) pushSettingsToSheets();
 }
 
 function getRecentDailyStats(days = 10) {
@@ -898,71 +788,6 @@ function getCurrentStreak() {
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
-}
-
-async function pushToSheets(changedIds) {
-  if (!syncUrl) return;
-  const subset = {};
-  for (const id of changedIds) {
-    if (progress[id]) subset[id] = progress[id];
-  }
-  // Always push settings alongside progress changes
-  subset._settings = buildSettingsPayload();
-  syncStatus = 'syncing';
-  updateSyncIndicator();
-  try {
-    await fetch(syncUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      keepalive: true,
-      body: JSON.stringify({ token: syncToken, progress: subset })
-    });
-    syncStatus = 'ok';
-  } catch {
-    syncStatus = 'error';
-  }
-  updateSyncIndicator();
-}
-
-async function pushSettingsToSheets() {
-  if (!syncUrl) return;
-  syncStatus = 'syncing';
-  updateSyncIndicator();
-  try {
-    await fetch(syncUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      keepalive: true,
-      body: JSON.stringify({
-        token: syncToken,
-        progress: {
-          _settings: buildSettingsPayload()
-        }
-      })
-    });
-    syncStatus = 'ok';
-  } catch {
-    syncStatus = 'error';
-  }
-  updateSyncIndicator();
-}
-
-function updateSyncIndicator() {
-  const el = document.getElementById('sync-indicator');
-  if (!el) return;
-  if (!syncUrl) {
-    el.innerHTML = '<span class="sync-dot sync-off"></span> Offline';
-    return;
-  }
-  if (syncStatus === 'syncing') {
-    el.innerHTML = '<span class="sync-dot sync-syncing"></span> Synchronizuję...';
-  } else if (syncStatus === 'ok') {
-    el.innerHTML = '<span class="sync-dot sync-ok"></span> Zsynchronizowano';
-  } else if (syncStatus === 'error') {
-    el.innerHTML = '<span class="sync-dot sync-error"></span> Błąd synchronizacji';
-  } else {
-    el.innerHTML = '<span class="sync-dot sync-off"></span> Offline';
-  }
 }
 
 async function loadWords() {
@@ -1259,7 +1084,6 @@ function advanceLevel(wordId, status) {
     entry.lastReview = today;
     progress[wordId] = entry;
     saveProgress();
-    pushToSheets([wordId]);
     return;
   }
 
@@ -1270,7 +1094,6 @@ function advanceLevel(wordId, status) {
     entry.lastReview = today;
     progress[wordId] = entry;
     saveProgress();
-    pushToSheets([wordId]);
     return;
   }
 
@@ -1287,7 +1110,6 @@ function advanceLevel(wordId, status) {
   entry.lastReview = today;
   progress[wordId] = entry;
   saveProgress();
-  pushToSheets([wordId]);
 }
 
 function getHintChoices(correctWord) {
@@ -1388,36 +1210,10 @@ function renderHome() {
   const maxSessions = Math.max(1, ...recent.rows.map(r => r.sessions));
   const BAR_MAX_PX = 108;
   const hippoJokeHtml = getHomeHippoJokeHtml();
-  const supabaseImportMarker = isSupabaseAuthenticated() && supabaseUser
-    ? getSupabaseImportMarker(supabaseUser.id)
-    : null;
-  const hasLegacyImportData = hasLegacyDataForSupabaseImport();
-  const shouldShowLegacyImportAction = shouldOfferManualLegacyImport(supabaseImportMarker);
-  let authStatusHtml = '';
-
-  if (isSupabaseAuthenticated()) {
-    let authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}.`;
-    let authStatusClass = 'home-auth-status--info';
-
-    if (supabaseImportState.status === 'running') {
-      authStatusText = 'Zalogowano. Trwa jednorazowe przenoszenie starych danych z tego urządzenia do Supabase.';
-      authStatusClass = 'home-auth-status--info';
-    } else if (supabaseImportState.status === 'error') {
-      authStatusText = `Zalogowano, ale import starych danych nie powiódł się: ${escapeHtml(supabaseImportState.error)}. Wejdź w Konto i synchronizację.`;
-      authStatusClass = 'home-auth-status--error';
-    } else if (shouldShowLegacyImportAction && hasCompletedSupabaseLegacyImport(supabaseImportMarker)) {
-      authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Poprzedni import nie przeniósł jeszcze postępu do Supabase. Wejdź w Konto i synchronizację i uruchom import ręcznie.`;
-      authStatusClass = 'home-auth-status--info';
-    } else if (hasCompletedSupabaseLegacyImport(supabaseImportMarker)) {
-      authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Dane z tego urządzenia zostały już przeniesione do Supabase.`;
-      authStatusClass = 'home-auth-status--success';
-    } else if (hasLegacyImportData) {
-      authStatusText = `Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Na tym urządzeniu wykryto stare dane. Wejdź w Konto i synchronizację, aby ręcznie zaimportować je do Supabase.`;
-      authStatusClass = 'home-auth-status--info';
-    }
-
-    authStatusHtml = `<div class="home-auth-status ${authStatusClass}">${authStatusText}</div>`;
-  }
+  const syncNoticeHtml = getSupabaseSyncNoticeHtml();
+  const authStatusHtml = isSupabaseAuthenticated()
+    ? `<div class="home-auth-status home-auth-status--success">Zalogowano jako ${escapeHtml(getSignedInUserLabel())}. Ta wersja gry działa już wyłącznie w modelu Supabase Auth.</div>`
+    : '';
 
   const dailyBars = recent.rows.map(r => {
     const hasData = r.sessions > 0;
@@ -1441,6 +1237,7 @@ function renderHome() {
     <div class="screen">
       <h1>Nauka Słówek PL → EN</h1>
       ${authStatusHtml}
+      <div id="supabase-sync-notice">${syncNoticeHtml}</div>
       ${hippoJokeHtml}
       <div class="stats">
         <div class="stat-box">
@@ -1503,13 +1300,10 @@ function renderHome() {
         ? '<button class="btn btn-primary" id="btn-start">Zacznij sesję</button>'
         : '<p style="text-align:center;color:#888;">Brak słówek do nauki na dziś. Wróć jutro!</p>'
       }
-      <div id="sync-indicator" class="sync-indicator"></div>
-      <button class="btn btn-secondary" id="btn-settings">⚙ Konto i synchronizacja</button>
+      <button class="btn btn-secondary" id="btn-settings">⚙ Konto</button>
       <button class="btn btn-secondary" id="btn-reset">Resetuj postęp</button>
     </div>
   `;
-
-  updateSyncIndicator();
 
   const btnStart = document.getElementById('btn-start');
   if (btnStart) {
@@ -1532,6 +1326,7 @@ function renderHome() {
     if (confirm('Czy na pewno chcesz zresetować cały postęp?')) {
       localStorage.removeItem(STORAGE_KEY);
       progress = {};
+      queueSupabaseStateSync();
       renderHome();
     }
   });
@@ -1808,6 +1603,8 @@ function renderSummary() {
   const isPerfectSession = total > 0 && (correct + hintCorrect) === total;
 
   recordDailySession(pct);
+  queueSupabaseStateSync();
+  const syncNoticeHtml = getSupabaseSyncNoticeHtml();
 
   const ignoredSet = new Set(ignoredWordIds);
   const wordRows = sessionResults.map(r => {
@@ -1850,6 +1647,7 @@ function renderSummary() {
   app.innerHTML = `
     <div class="screen">
       <h1>Podsumowanie sesji</h1>
+      <div id="supabase-sync-notice">${syncNoticeHtml}</div>
       ${isPerfectSession ? `
       <div class="perfect-session-banner">
         <div class="perfect-session-hippo">🦛✨</div>
@@ -1913,9 +1711,7 @@ function ignoreWordById(wordId) {
     saveProgress();
   }
 
-  if (syncUrl) {
-    pushSettingsToSheets();
-  }
+  queueSupabaseStateSync();
 }
 
 function showHappyHippoPopup() {
@@ -1948,7 +1744,6 @@ function showHappyHippoPopup() {
 // ===== SETTINGS SCREEN =====
 function renderSettings() {
   currentScreen = 'settings';
-  const currentUrl = getSyncUrl();
   const currentSupabaseUrl = getSupabaseUrl();
   const currentSupabasePublishableKey = getSupabasePublishableKey();
   const supabaseConfigured = hasSupabaseConfig();
@@ -1959,22 +1754,6 @@ function renderSettings() {
   const hasSupabaseProjectConfig = Boolean(
     supabaseProjectConfig.url && supabaseProjectConfig.publishableKey
   );
-  const supabaseImportMarker = supabaseSignedIn && supabaseUser
-    ? getSupabaseImportMarker(supabaseUser.id)
-    : null;
-  const hasLegacyImportData = hasLegacyDataForSupabaseImport();
-  const hasCompletedImport = hasCompletedSupabaseLegacyImport(supabaseImportMarker);
-  const didImportProgressData = didSupabaseImportMigrateProgressData(supabaseImportMarker);
-  const shouldShowManualImportButton = supabaseSignedIn
-    && shouldOfferManualLegacyImport(supabaseImportMarker)
-    && supabaseImportState.status !== 'running';
-  const shouldSuggestReimport = supabaseSignedIn
-    && hasCompletedImport
-    && hasLegacyProgressRowsForSupabaseImport()
-    && !didImportProgressData;
-  const canManuallyImportLegacyData = supabaseSignedIn
-    && shouldShowManualImportButton
-    && supabaseImportState.status !== 'running';
   const authRedirectUrl = getAuthRedirectUrl();
   const ignoredCount = ignoredWordIds.length;
   const ignoredSet = new Set(ignoredWordIds);
@@ -2036,29 +1815,20 @@ function renderSettings() {
       </div>
 
       <div class="card" style="text-align:left;margin-top:1rem;">
-        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Konto i logowanie Supabase</h2>
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Konto Supabase</h2>
         <p style="margin-bottom:1rem;color:#555;font-size:0.85rem;line-height:1.55;">
           ${supabaseSignedIn
             ? `Zalogowany jako <strong>${escapeHtml(supabaseUserLabel)}</strong>.`
             : supabaseConfigured
-              ? 'Konfiguracja Supabase jest gotowa. Logowanie działa magic linkiem wysyłanym na e-mail.'
+              ? 'Konfiguracja Supabase jest gotowa. Logowanie działa linkiem wysyłanym na e-mail, a przy pierwszym wejściu użytkownik potwierdza adres.'
               : 'Brak konfiguracji Supabase. Wklej dane projektu albo wpisz je na stale w pliku supabase-config.js.'}
         </p>
         <div class="auth-inline-result" style="margin-bottom:1rem;">
-          ${supabaseImportState.status === 'running'
-            ? '<span style="color:#1d4ed8;">Przenoszę stare dane z tego urządzenia do Supabase...</span>'
-            : supabaseImportState.status === 'error'
-              ? `<span style="color:#991b1b;">${escapeHtml(supabaseImportState.error)}</span>`
-              : shouldSuggestReimport
-                ? '<span style="color:#b45309;">Poprzedni import nie przeniósł jeszcze daily stats albo progressu słówek do Supabase. Uruchom import ponownie ręcznie.</span>'
-              : hasCompletedImport
-                ? `<span style="color:#166534;">Stare dane z tego urządzenia zostały już przeniesione do Supabase (${escapeHtml(new Date(supabaseImportMarker.importedAt).toLocaleString('pl-PL'))}).</span>`
-                : hasLegacyImportData
-                  ? '<span style="color:#166534;">Na tym urządzeniu wykryto stare dane. Możesz ręcznie zaimportować je do Supabase.</span>'
-                : supabaseSignedIn
-                  ? '<span style="color:#555;">Jeśli chcesz przenieść stare dane z tego urządzenia albo po wcześniejszym pobraniu ich z Google Sheets, uruchom ręczny import poniżej.</span>'
-                  : '<span style="color:#555;">Użytkownicy logują się magic linkiem. Konfiguracja projektu nie jest pokazywana na produkcji.</span>'}
+          ${supabaseSignedIn
+            ? '<span style="color:#166534;">Sesja Supabase jest aktywna na tym urządzeniu.</span>'
+            : '<span style="color:#555;">Stare ścieżki migracyjne i lokalne hasło awaryjne są wyłączone.</span>'}
         </div>
+        <div id="supabase-sync-notice">${getSupabaseSyncNoticeHtml()}</div>
         ${showSupabaseConfigControls ? `
         <label class="settings-label">Project URL:</label>
         <input type="url" class="input-answer" id="input-supabase-url"
@@ -2075,8 +1845,6 @@ function renderSettings() {
         </div>
         ${hasSupabaseLocalOverride() ? '<button class="btn btn-secondary" id="btn-clear-supabase">Usuń lokalne nadpisanie</button>' : ''}
         ` : ''}
-        ${supabaseSignedIn ? `<button class="btn btn-secondary" id="btn-import-legacy-supabase" ${canManuallyImportLegacyData ? '' : 'disabled'}>${shouldSuggestReimport ? 'Spróbuj ponownie zaimportować stare dane' : 'Importuj stare dane do Supabase teraz'}</button>` : ''}
-        ${supabaseSignedIn ? '<p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Jeśli stare dane są jeszcze tylko w Google Sheets, najpierw użyj „Pobierz postęp z Sheets”, a dopiero potem uruchom import do Supabase.</p>' : ''}
         ${supabaseConfigured && !supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-open-auth-screen">Przejdź do logowania Supabase</button>' : ''}
         ${supabaseSignedIn ? '<button class="btn btn-secondary" id="btn-signout-supabase">Wyloguj się</button>' : ''}
         <div id="supabase-config-result" class="auth-inline-result"></div>
@@ -2088,48 +1856,13 @@ function renderSettings() {
               : 'Project URL i publishable key sa publiczne, wiec mozesz wpisac je na stale w supabase-config.js i wypchnac na GitHub Pages.'
             : 'Konfiguracja Supabase jest wbudowana w aplikację, więc zwykli użytkownicy nie muszą nic tutaj zmieniać.'}
         </p>
+        <p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Ta wersja gry używa już wyłącznie Supabase Auth.</p>
         ${showSupabaseConfigControls ? `<p class="auth-config-note" style="margin-top:0.75rem;">
           ${authRedirectUrl
             ? `Redirect URL do wpisania w Supabase Auth: <strong>${escapeHtml(authRedirectUrl)}</strong>`
             : 'Do testow lokalnych uruchom aplikacje przez http://localhost, nie przez file://.'}
         </p>` : ''}
       </div>
-
-      <div class="card" style="text-align:left;margin-top:1rem;">
-        <h2 style="font-size:1rem;margin-bottom:0.75rem;">Synchronizacja z Google Sheets</h2>
-        <p style="margin-bottom:1rem;color:#555;font-size:0.85rem;">Połącz z Google Sheets aby synchronizować postęp między urządzeniami.</p>
-        <label style="font-weight:600;font-size:0.9rem;">URL Apps Script Web App:</label>
-        <input type="url" class="input-answer" id="input-sync-url"
-          placeholder="https://script.google.com/macros/s/.../exec"
-          value="${escapeHtml(currentUrl)}"
-          style="width:100%;margin:0.75rem 0;">
-        <label style="font-weight:600;font-size:0.9rem;">Token (hasło dostępu):</label>
-        <input type="password" class="input-answer" id="input-sync-token"
-          placeholder="Twoje tajne hasło z Apps Script"
-          value="${escapeHtml(getSyncToken())}"
-          style="width:100%;margin:0.75rem 0;">
-        <div style="display:flex;gap:0.5rem;">
-          <button class="btn btn-primary" id="btn-save-url" style="flex:1;">Zapisz</button>
-          <button class="btn btn-secondary" id="btn-test-sync" style="flex:1;margin-top:0;">Testuj</button>
-        </div>
-        <div id="sync-test-result" style="margin-top:1rem;font-size:0.9rem;"></div>
-        <hr style="margin:1.5rem 0;border:none;border-top:1px solid #e5e7eb;">
-        <h2 style="text-align:left;font-size:1rem;">Jak skonfigurować?</h2>
-        <ol style="font-size:0.85rem;color:#555;padding-left:1.25rem;line-height:1.6;">
-          <li>Utwórz nowy arkusz Google Sheets</li>
-          <li>Nazwij zakładkę <strong>Progress</strong></li>
-          <li>W wierszu 1 wpisz: <code>wordId</code> | <code>level</code> | <code>nextReview</code> | <code>lastReview</code></li>
-          <li>Otwórz <strong>Rozszerzenia → Apps Script</strong></li>
-          <li>Wklej kod z pliku <code>google-apps-script.js</code></li>
-          <li><strong>Zmień SECRET_TOKEN</strong> na własne hasło</li>
-          <li>Kliknij <strong>Wdróż → Nowe wdrożenie</strong></li>
-          <li>Typ: <strong>Aplikacja internetowa</strong>, Dostęp: <strong>Każdy</strong></li>
-          <li>Skopiuj URL i wklej powyżej</li>
-        </ol>
-      </div>
-
-      ${syncUrl ? '<button class="btn btn-secondary" id="btn-force-pull" style="margin-top:0.75rem;">Pobierz postęp z Sheets</button>' : ''}
-      ${syncUrl ? '<button class="btn btn-secondary" id="btn-force-push" style="margin-top:0.75rem;">Wyślij postęp do Sheets</button>' : ''}
       <button class="btn btn-secondary" id="btn-back" style="margin-top:0.75rem;">← Wróć</button>
     </div>
   `;
@@ -2156,21 +1889,12 @@ function renderSettings() {
     document.getElementById('level-warning').style.display = 'none';
     activeLevels = selected;
     saveActiveLevels();
-    if (syncUrl) pushSettingsToSheets();
+    queueSupabaseStateSync();
     document.getElementById('btn-save-levels').textContent = '✓ Zapisano!';
     setTimeout(() => {
       if (document.getElementById('btn-save-levels'))
         document.getElementById('btn-save-levels').textContent = 'Zapisz poziomy';
     }, 2000);
-  });
-
-  document.getElementById('btn-save-url').addEventListener('click', () => {
-    const url = document.getElementById('input-sync-url').value.trim();
-    const token = document.getElementById('input-sync-token').value.trim();
-    setSyncUrl(url);
-    setSyncToken(token);
-    document.getElementById('sync-test-result').innerHTML =
-      '<span style="color:#166534;">✓ Zapisano URL i token</span>';
   });
 
   const btnSaveSupabase = document.getElementById('btn-save-supabase');
@@ -2225,13 +1949,6 @@ function renderSettings() {
     });
   }
 
-  const btnOpenAuthScreen = document.getElementById('btn-open-auth-screen');
-  if (btnOpenAuthScreen) {
-    btnOpenAuthScreen.addEventListener('click', () => {
-      renderLogin();
-    });
-  }
-
   const btnSignoutSupabase = document.getElementById('btn-signout-supabase');
   if (btnSignoutSupabase) {
     btnSignoutSupabase.addEventListener('click', async () => {
@@ -2247,17 +1964,10 @@ function renderSettings() {
     });
   }
 
-  const btnImportLegacySupabase = document.getElementById('btn-import-legacy-supabase');
-  if (btnImportLegacySupabase) {
-    btnImportLegacySupabase.addEventListener('click', async () => {
-      if (!hasLegacyDataForSupabaseImport()) return;
-
-      btnImportLegacySupabase.disabled = true;
-      btnImportLegacySupabase.textContent = 'Importuję...';
-
-      await maybeBootstrapSupabasePlayer({ allowSkippedMarkerOverride: true, forceImport: true });
-      await hydrateLocalStateFromSupabase();
-      renderSettings();
+  const btnOpenAuthScreen = document.getElementById('btn-open-auth-screen');
+  if (btnOpenAuthScreen) {
+    btnOpenAuthScreen.addEventListener('click', () => {
+      renderLogin();
     });
   }
 
@@ -2268,7 +1978,7 @@ function renderSettings() {
       if (!confirm('Czy na pewno chcesz przywrócić wszystkie ignorowane słówka?')) return;
       ignoredWordIds = [];
       saveIgnoredWordIds();
-      if (syncUrl) pushSettingsToSheets();
+      queueSupabaseStateSync();
       renderSettings();
     });
   }
@@ -2279,78 +1989,10 @@ function renderSettings() {
       if (!Number.isFinite(id)) return;
       ignoredWordIds = ignoredWordIds.filter((wordId) => wordId !== id);
       saveIgnoredWordIds();
-      if (syncUrl) pushSettingsToSheets();
+      queueSupabaseStateSync();
       renderSettings();
     });
   });
-
-  document.getElementById('btn-test-sync').addEventListener('click', async () => {
-    const url = document.getElementById('input-sync-url').value.trim();
-    const token = document.getElementById('input-sync-token').value.trim();
-    const resultEl = document.getElementById('sync-test-result');
-    if (!url) { resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz URL</span>'; return; }
-    if (!token) { resultEl.innerHTML = '<span style="color:#991b1b;">Wpisz token</span>'; return; }
-    resultEl.innerHTML = '<span style="color:#555;">Testuję połączenie...</span>';
-    try {
-      const sep = url.includes('?') ? '&' : '?';
-      const resp = await fetch(url + sep + 'token=' + encodeURIComponent(token));
-      const data = await resp.json();
-      if (data.ok) {
-        const count = Object.keys(data.progress || {}).filter(k => k !== '_settings').length;
-        resultEl.innerHTML = `<span style="color:#166534;">✓ Połączono! Znaleziono ${count} wpisów.</span>`;
-      } else {
-        resultEl.innerHTML = `<span style="color:#991b1b;">✗ Błąd: ${escapeHtml(data.error || 'nieznany')}</span>`;
-      }
-    } catch {
-      resultEl.innerHTML = `<span style="color:#991b1b;">✗ Nie udało się połączyć.</span>`;
-    }
-  });
-
-  const btnPull = document.getElementById('btn-force-pull');
-  if (btnPull) {
-    btnPull.addEventListener('click', async () => {
-      btnPull.textContent = 'Pobieram...';
-      btnPull.disabled = true;
-      const remote = await pullFromSheets();
-      if (remote) {
-        progress = remote;
-        saveProgress();
-
-        if (isSupabaseAuthenticated()) {
-          renderSettings();
-          return;
-        }
-
-        btnPull.textContent = '✓ Pobrano!';
-      } else {
-        btnPull.textContent = '✗ Błąd pobierania';
-      }
-    });
-  }
-
-  const btnPush = document.getElementById('btn-force-push');
-  if (btnPush) {
-    btnPush.addEventListener('click', async () => {
-      btnPush.textContent = 'Wysyłam...';
-      btnPush.disabled = true;
-      try {
-        await fetch(syncUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            token: syncToken,
-            progress: {
-              ...progress,
-              _settings: buildSettingsPayload()
-            }
-          })
-        });
-        btnPush.textContent = '✓ Wysłano!';
-      } catch {
-        btnPush.textContent = '✗ Błąd wysyłania';
-      }
-    });
-  }
 
   document.getElementById('btn-back').addEventListener('click', renderHome);
 }
@@ -2368,6 +2010,7 @@ async function init() {
 
   initPromise = (async () => {
   const app = document.getElementById('app');
+  clearDeprecatedStorageKeys();
   progress = loadProgress();
   try {
     allWords = await loadWords();
@@ -2376,29 +2019,16 @@ async function init() {
     return;
   }
 
-  if (syncUrl || isSupabaseAuthenticated()) {
+  if (isSupabaseAuthenticated()) {
     app.innerHTML = `
       <div class="sync-spinner">
         <div class="spinner-ring"></div>
-        <span>Synchronizacja postępu...</span>
+        <span>Ładowanie konta...</span>
       </div>`;
   }
 
-  // Always sync on load if configured — show spinner while waiting
-  if (syncUrl) {
-    const remote = await pullFromSheets();
-    if (remote) {
-      for (const [id, entry] of Object.entries(remote)) {
-        const local = progress[id];
-        if (!local || !local.lastReview || (entry.lastReview && entry.lastReview >= local.lastReview)) {
-          progress[id] = entry;
-        }
-      }
-      saveProgress();
-    }
-  }
-
   if (isSupabaseAuthenticated()) {
+    await ensureSupabasePlayerProfile();
     await hydrateLocalStateFromSupabase();
   }
 
@@ -2414,8 +2044,7 @@ async function init() {
 
 // ===== LOGIN =====
 function isAuthenticated() {
-  if (hasSupabaseConfig()) return isSupabaseAuthenticated();
-  return hasLegacySession();
+  return isSupabaseAuthenticated();
 }
 
 function renderLogin() {
@@ -2427,7 +2056,6 @@ function renderLogin() {
   const currentSupabasePublishableKey = getSupabasePublishableKey();
   const supabaseLibraryReady = hasSupabaseLibrary();
   const showSupabaseConfigControls = shouldShowSupabaseConfigControls();
-  const showLegacyFallback = !supabaseConfigured;
   const messageHtml = message
     ? `<p class="login-status login-status--${escapeHtml(message.type)}">${escapeHtml(message.text)}</p>`
     : '';
@@ -2438,7 +2066,7 @@ function renderLogin() {
       <h1>Hippo Words</h1>
       <p class="login-subtitle">
         ${supabaseConfigured
-          ? 'Zaloguj się magic linkiem wysłanym na e-mail. Sesja zapisze się na urządzeniu.'
+          ? 'Wpisz e-mail. Przy pierwszym logowaniu potwierdzisz adres, a później wejdziesz linkiem bez hasła.'
           : 'Najpierw skonfiguruj Supabase Auth. Potem użytkownicy będą logować się normalnie, bez wspólnego hasła.'}
       </p>
       ${messageHtml}
@@ -2452,9 +2080,9 @@ function renderLogin() {
           autocomplete="email"
           autofocus
         />
-        <button class="btn btn-primary" type="submit">Wyślij magic link</button>
+        <button class="btn btn-primary" type="submit">Wyślij link</button>
       </form>
-      <p class="login-helper">Po kliknięciu linku z maila gra sama wykryje aktywną sesję po powrocie do aplikacji.</p>
+      <p class="login-helper">Po kliknięciu linku z maila gra sama wykryje aktywną sesję po powrocie do aplikacji. Przy pierwszym wejściu sprawdź też wiadomość z potwierdzeniem adresu.</p>
       ` : `
       <div class="login-callout">
         Brak konfiguracji Supabase na tym urządzeniu. Wklej <strong>Project URL</strong> i <strong>publishable key</strong> z panelu Supabase albo wpisz je na stałe w pliku <strong>supabase-config.js</strong>.
@@ -2495,22 +2123,6 @@ function renderLogin() {
             : 'Do testow lokalnych uruchom gre przez http://localhost albo GitHub Pages. Supabase Auth nie zadziala z file://.'}
         </p>
       </div>
-      ` : ''}
-
-      ${showLegacyFallback ? `
-      <details class="legacy-login">
-        <summary>Tryb awaryjny: stare hasło lokalne</summary>
-        <form id="login-form" class="login-form-stack">
-          <input
-            id="login-input"
-            type="password"
-            placeholder="hasło"
-            autocomplete="current-password"
-          />
-          <button type="submit" class="btn btn-secondary">Wejdź hasłem</button>
-          <p id="login-error" class="login-error" hidden>Złe hasło, spróbuj jeszcze raz 🙈</p>
-        </form>
-      </details>
       ` : ''}
     </div>
   `;
@@ -2603,9 +2215,9 @@ function renderLogin() {
             }
           });
           if (error) throw error;
-          setAuthUiMessage('success', `Wysłano magic link na ${email}. Otwórz maila i wróć do gry.`);
+          setAuthUiMessage('success', `Wysłaliśmy link na ${email}. Jeśli to pierwsze logowanie, najpierw potwierdź adres e-mail.`);
         } catch (error) {
-          setAuthUiMessage('error', formatAuthError(error, 'Nie udało się wysłać magic linku.'));
+          setAuthUiMessage('error', formatAuthError(error, 'Nie udało się wysłać linku logowania.'));
         }
 
         renderLogin();
@@ -2613,27 +2225,11 @@ function renderLogin() {
     }
 
   }
-
-  const legacyLoginForm = document.getElementById('login-form');
-  if (legacyLoginForm) {
-    legacyLoginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const val = document.getElementById('login-input').value;
-      if (val === ACCESS_PASSWORD) {
-        sessionStorage.setItem(AUTH_KEY, '1');
-        init();
-      } else {
-        const err = document.getElementById('login-error');
-        err.hidden = false;
-        document.getElementById('login-input').value = '';
-        document.getElementById('login-input').focus();
-      }
-    });
-  }
 }
 
 async function boot() {
   currentScreen = 'boot';
+  clearDeprecatedStorageKeys();
 
   if (hasSupabaseConfig()) {
     try {
@@ -2648,11 +2244,6 @@ async function boot() {
     }
 
     renderLogin();
-    return;
-  }
-
-  if (hasLegacySession()) {
-    await init();
     return;
   }
 

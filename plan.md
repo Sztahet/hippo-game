@@ -1,40 +1,40 @@
 # Plan projektu Hippo Words
 
-To już nie jest prototyp oparty wyłącznie o `localStorage`. Aktualny projekt to statyczna aplikacja webowa z frontendem w vanilla JS i backendem w Supabase. Celem produktu jest nauka słówek PL → EN metodą spaced repetition z prywatnym profilem gracza, możliwością odzyskania stanu na nowym urządzeniu oraz publicznym snapshotem statystyk do porównań.
+Hippo Words to statyczna aplikacja webowa z frontendem w vanilla JS i backendem w Supabase. Celem produktu jest nauka słówek PL → EN metodą spaced repetition z prywatnym profilem gracza, możliwością odzyskania stanu po zalogowaniu i publicznym snapshotem statystyk do porównań.
 
 ## Główne założenia
 
 - frontend pozostaje prosty: `index.html`, `app.js`, `style.css`,
 - słownictwo dalej jest wersjonowane w repo przez `words.json`,
-- auth i synchronizacja przechodzą do Supabase,
-- `localStorage` ma być lokalnym cachem, a nie trwałym źródłem prawdy,
-- Google Sheets ma zostać wygaszony po zakończeniu migracji użytkowników.
+- logowanie i tożsamość gracza są obsługiwane przez Supabase,
+- stan po zalogowaniu ma dać się odtworzyć z prywatnego snapshotu Supabase,
+- `localStorage` ma być szybkim cachem UI, a nie długoterminowym źródłem prawdy.
 
 ## Komponenty systemu
 
 - `index.html` - entrypoint i ładowanie klienta Supabase.
-- `app.js` - logika sesji, auth, synchronizacji i UI.
+- `app.js` - logika sesji, auth, lokalnego stanu i UI.
 - `style.css` - warstwa wizualna.
 - `words.json` - słownik słówek z poziomami CEFR.
 - `supabase-config.js` - publiczna konfiguracja projektu Supabase.
-- `supabase/migrations/*.sql` - kontrakt backendu danych.
-- `google-apps-script.js` - warstwa legacy do odzyskiwania starych danych.
+- `supabase/migrations/*.sql` - schema tabel i RPC backendu.
+- `supabase/email-templates/*` - szablony maili auth.
 
 ## Model produktu
 
 ### Sesja nauki
 
 1. Użytkownik startuje sesję z puli słów due + nowych.
-2. Odpowiedź aktualizuje poziom słowa i daty powtórki.
-3. Po zakończeniu sesji aktualizowane są daily stats.
-4. Lokalny stan zapisuje się od razu, a pełny stały sync do Supabase pozostaje celem docelowym; obecnie aktywny jest przede wszystkim jednorazowy import legacy danych.
+2. Odpowiedź aktualizuje poziom słowa i daty powtórki w lokalnym stanie.
+3. Po zakończeniu sesji aktualizowane są lokalne daily stats.
+4. Po zakończeniu sesji i po zmianach ustawień pełny snapshot gracza trafia do Supabase w trybie best-effort.
 
 ### Konto użytkownika
 
-1. User loguje się magic linkiem Supabase.
-2. Dla usera powstaje rekord `players`.
+1. User loguje się mailem przez Supabase Auth.
+2. Dla usera powstaje albo podpinany jest rekord `players`.
 3. Frontend pobiera snapshot ustawień i progressu.
-4. Zmiany mają trafiać do Supabase bez ręcznej konfiguracji przez końcowego użytkownika.
+4. Użytkownik nie konfiguruje już żadnych dodatkowych backendów ani fallbacków.
 
 ### Publiczne porównania
 
@@ -60,7 +60,7 @@ To już nie jest prototyp oparty wyłącznie o `localStorage`. Aktualny projekt 
 - Literówka zmniejsza poziom o 1.
 - Błąd resetuje poziom do 0.
 
-## Docelowy model danych
+## Model danych
 
 ### W repo
 
@@ -76,21 +76,21 @@ To już nie jest prototyp oparty wyłącznie o `localStorage`. Aktualny projekt 
 
 ### Lokalnie
 
-- `localStorage` - cache runtime, bootstrap starego stanu, offline buffer.
+- `localStorage` - cache runtime używany podczas sesji i po odświeżeniu UI.
 
 ## Ograniczenia architektoniczne
 
 - Auth wymaga HTTP, więc `file://` nie jest wspieranym środowiskiem testowym.
 - Frontend liczy część danych po stronie klienta, więc ranking opiera się na zaufaniu.
-- Sync do backendu musi być best-effort: użytkownik ma móc dokończyć sesję nawet przy chwilowym błędzie sieci.
+- Zapis do backendu musi być best-effort: użytkownik ma móc dokończyć sesję nawet przy chwilowym błędzie sieci.
 
 ## Kryteria sukcesu projektu
 
 - user loguje się tylko przez Supabase,
-- stan można odzyskać na nowym urządzeniu bez Google Sheets,
-- po sesji aktualizują się zarówno daily stats, jak i progress słówek,
-- publiczne porównania działają bez ujawniania surowych danych innych użytkowników,
-- legacy storage nie komplikuje już głównego flow produktu.
+- główny flow nie zawiera migracyjnych ani awaryjnych ścieżek auth,
+- nowe urządzenie odzyskuje stan z prywatnego snapshotu Supabase,
+- po zakończonej sesji aktualizują się zarówno daily stats, jak i progress słówek,
+- publiczne porównania działają bez ujawniania surowych danych innych użytkowników.
 
 ## Poza zakresem na dziś
 

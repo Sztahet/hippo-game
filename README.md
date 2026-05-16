@@ -1,33 +1,33 @@
 # Hippo Words
 
-Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced repetition. Projekt jest w trakcie przejścia z modelu legacy (`localStorage` + Google Sheets Apps Script) do modelu Supabase-first. Docelowo Supabase ma być jedynym backendem synchronizacji, odzyskiwania stanu i publicznych statystyk, a `localStorage` ma zostać tylko lokalnym cachem i buforem offline.
+Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced repetition. Runtime używa Supabase Auth do logowania, bootstrappuje profil gracza w bazie, odtwarza lokalny stan z prywatnego snapshotu i synchronizuje bieżący snapshot do Supabase po zakończonej sesji oraz po zmianach ustawień.
 
 **Live:** https://sztahet.github.io/hippo-game/
 
 ## Status projektu
 
-- Logowanie działa przez Supabase Auth i magic link wysyłany na e-mail.
-- Supabase przechowuje profil gracza, ustawienia, dzienne statystyki, progress słówek i publiczny snapshot statystyk.
-- Po starcie aplikacja potrafi zassać prywatny snapshot z Supabase i odtworzyć lokalny stan.
-- Supabase służy obecnie w runtime głównie do logowania, odczytu snapshotu i jednorazowego importu legacy danych z localStorage albo Google Sheets.
-- `localStorage` nadal jest używany przez runtime jako natychmiastowy stan UI i warstwa kompatybilności.
-- Google Sheets nadal istnieje jako legacy bridge dla starych danych, ale nie jest docelowym backendem.
+- Logowanie działa przez Supabase Auth. Dla nowego adresu pierwszy mail to `Confirm signup`, a kolejne wejścia używają `Magic Link`.
+- Frontend po odzyskaniu sesji wywołuje `bootstrap_player_from_auth({})`, żeby zapewnić rekord `players` dla zalogowanego usera.
+- Aplikacja pobiera `get_my_player_snapshot()` i na tej podstawie hydratyzuje lokalny stan gry.
+- Publiczne porównania mają czytać wyłącznie z `player_public_stats`.
+- Główny flow logowania i uruchomienia aplikacji jest już uproszczony do jednego wariantu auth.
+- Po zakończonej sesji i po zmianach ustawień frontend zapisuje pełny snapshot gracza do Supabase.
 
 ## Mapa dokumentacji
 
-- `README.md` - overview projektu, setup i aktualny model działania.
-- `supabase/README.md` - backend Supabase, migracje, Auth, operacje i recovery.
-- `supabase/migration-plan.md` - plan pełnego odejścia od Sheets i redukcji roli `localStorage`.
-- `plan.md` - produktowe założenia i architektura docelowa.
+- `README.md` - aktualny model działania aplikacji i setup projektu.
+- `supabase/README.md` - backend Supabase, migracje, Auth i kontrakt runtime.
+- `plan.md` - produktowe założenia i kierunek architektury.
 - `what_next.md` - najbliższy roadmap wdrożeniowy.
+- `supabase/migration-plan.md` - krótka notatka o zamknięciu cutoveru i kolejnych krokach technicznych.
 
 ## Najważniejsze funkcje
 
 - 9 poziomów SRS od nowych słów do interwału dwuletniego.
 - Baza około 10 000 słów w poziomach CEFR A1-C2.
-- Sesje nauki, feedback po każdej odpowiedzi i dzienne statystyki.
-- Publiczny snapshot statystyk przygotowany pod przyszły ranking i porównania graczy.
-- Magic link login bez hasła aplikacyjnego po stronie użytkownika.
+- Sesje nauki, feedback po każdej odpowiedzi i dzienne statystyki lokalne.
+- Publiczny snapshot statystyk przygotowany pod ranking i porównania graczy.
+- Login mailowy bez hasła aplikacyjnego po stronie użytkownika.
 - Mobile-first UI działające na GitHub Pages.
 
 ## Architektura runtime
@@ -35,24 +35,24 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 ### Frontend
 
 - `index.html` - entrypoint aplikacji i ładowanie klienta Supabase.
-- `app.js` - cała logika runtime: sesje, auth, sync, statystyki i UI.
-- `style.css` - styl aplikacji.
+- `app.js` - logika runtime: sesje, auth, stan lokalny, statystyki i UI.
+- `style.css` - warstwa wizualna.
 - `words.json` - baza słówek.
 - `supabase-config.js` - publiczny config projektu Supabase (`url` + `publishableKey`).
 
 ### Warstwy danych
 
-- **Supabase** - docelowe źródło prawdy dla profilu gracza, statystyk dziennych, progressu słówek i publicznego snapshotu.
-- **localStorage** - lokalny cache i warstwa przejściowa używana do szybkiego renderu oraz odzyskiwania starego stanu.
-- **Google Sheets** - legacy sync dla starszych urządzeń i ręcznego odzyskiwania danych w okresie przejściowym.
+- **Supabase** - auth, bootstrap profilu gracza, prywatny snapshot stanu i publiczny snapshot statystyk.
+- **localStorage** - lokalny cache runtime używany do szybkiego renderu i pracy w trakcie sesji.
 
 ### Aktualny flow aplikacji
 
-1. Aplikacja ładuje słówka i lokalny stan z `localStorage`.
-2. Jeśli użytkownik ma skonfigurowane Google Sheets, może zostać zassany legacy stan z Apps Script.
-3. Jeśli istnieje aktywna sesja Supabase, aplikacja może jednorazowo przenieść legacy dane z tego urządzenia do Supabase.
-4. Po imporcie aplikacja pobiera snapshot prywatnych danych z Supabase i odbudowuje lokalny stan.
-5. Publiczne porównania powinny czytać wyłącznie z `player_public_stats`.
+1. Aplikacja ładuje słówka i lokalny cache z `localStorage`.
+2. Jeśli istnieje sesja Supabase, frontend ją odświeża i wywołuje `bootstrap_player_from_auth({})`.
+3. Frontend pobiera `get_my_player_snapshot()` i odbudowuje lokalny stan gry.
+4. UI działa na lokalnym cache'u podczas sesji nauki.
+5. Po zakończonej sesji i po zmianie ustawień frontend synchronizuje pełny snapshot gracza do Supabase.
+6. Publiczne porównania powinny czytać wyłącznie z `player_public_stats`.
 
 ## Poziomy SRS
 
@@ -72,34 +72,18 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 - Literówka obniża poziom o 1.
 - Błędna odpowiedź resetuje poziom do 0.
 
-## Struktura repo
+## Najważniejsze pliki w repo
 
-```text
-hippo-game/
-├── index.html
-├── app.js
-├── style.css
-├── words.json
-├── supabase-config.js
-├── google-apps-script.js
-├── supabase/
-│   ├── README.md
-│   ├── migration-plan.md
-│   ├── generate_import_sql.js
-│   └── migrations/
-├── assets/
-├── build.js
-├── generate_words.py
-├── generate_words_v2.js
-├── generate_words_extension.js
-├── words_20k_pipeline.js
-├── plan.md
-└── what_next.md
-```
+- `index.html`, `app.js`, `style.css`, `words.json` - runtime aplikacji.
+- `supabase/README.md` - setup i kontrakt backendu.
+- `supabase/email-templates/` - szablony maili `Confirm signup` i `Magic Link`.
+- `supabase/migrations/` - SQL schema i RPC.
+- `plan.md` - założenia produktu.
+- `what_next.md` - najbliższe zadania.
 
 ## Lokalny development
 
-Auth i redirecty wymagają uruchomienia po HTTP. `file://` nie nadaje się do testów magic linka.
+Auth i redirecty wymagają uruchomienia po HTTP. `file://` nie nadaje się do testów logowania mailowego.
 
 ```powershell
 # Node.js
@@ -115,22 +99,13 @@ Potem otwórz `http://localhost:3000` albo `http://localhost:8080`.
 
 1. Załóż projekt w Supabase.
 2. Uruchom migracje z katalogu `supabase/migrations/` w kolejności nazw plików.
-3. W Supabase Auth ustaw `Site URL` i `Redirect URLs` dla localhosta i GitHub Pages.
-4. Wpisz `url` i `publishableKey` do `supabase-config.js`.
-5. Przetestuj logowanie magic linkiem.
-6. Zweryfikuj, że w bazie istnieją tabele `players`, `player_settings`, `player_daily_stats`, `player_word_progress` i `player_public_stats`.
+3. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla localhosta i GitHub Pages.
+4. W `Authentication -> Email Templates` ustaw własne szablony dla `Confirm signup` i `Magic Link`.
+5. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+6. Przetestuj logowanie nowym i istniejącym adresem e-mail.
+7. Zweryfikuj, że w bazie istnieją tabele `players`, `player_settings`, `player_daily_stats`, `player_word_progress` i `player_public_stats`.
 
 Szczegóły operacyjne są opisane w `supabase/README.md`.
-
-## Legacy Google Sheets
-
-`google-apps-script.js` zostaje w repo wyłącznie jako wsparcie przejściowe:
-
-- odzyskanie starych danych z urządzeń, które jeszcze żyją na Sheets,
-- ręczny import w okresie przejściowym,
-- awaryjny fallback zanim Supabase-only flow zostanie domknięty.
-
-Nie rozwijamy już Google Sheets jako docelowego backendu.
 
 ## Dodawanie słówek
 
@@ -152,9 +127,9 @@ Bundle jest opcjonalny. Produkcyjny deployment opiera się na `index.html`, `app
 
 ## Aktualne ograniczenia
 
-- Runtime nadal używa `localStorage` jako warstwy lokalnej i kompatybilności.
-- Google Sheets może jeszcze wpływać na startowy stan użytkownika, jeśli jest skonfigurowany.
-- Bieżąca wersja runtime traktuje Supabase głównie jako auth, odczyt snapshotu i jednorazowy import legacy danych, a nie pełny live sync po każdej sesji.
+- `localStorage` nadal jest aktywnym cachem runtime podczas sesji.
+- Strategia retry i konfliktów dla równoległych zmian lokalnych i zdalnych wymaga jeszcze dopracowania.
+- Auth wymaga uruchomienia aplikacji po HTTP.
 
 ## Szybka walidacja po zmianach
 
@@ -162,7 +137,7 @@ Bundle jest opcjonalny. Produkcyjny deployment opiera się na `index.html`, `app
 node --check .\app.js
 ```
 
-Do smoke testów UI uruchom lokalny serwer HTTP i sprawdź logowanie, start sesji i zapis statystyk.
+Do smoke testów UI uruchom lokalny serwer HTTP i sprawdź logowanie, zapis po zakończonej sesji oraz odtworzenie stanu po odświeżeniu.
 
 ## Stack techniczny
 
@@ -170,4 +145,3 @@ Do smoke testów UI uruchom lokalny serwer HTTP i sprawdź logowanie, start sesj
 - CSS bez frameworka
 - Supabase Auth + Postgres
 - GitHub Pages
-- Google Apps Script wyłącznie jako legacy bridge
