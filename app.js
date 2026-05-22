@@ -509,9 +509,9 @@ function buildSupabaseDailyStatsSyncPayload() {
   return Object.entries(sanitizeDailyStatsMap(dailyStats))
     .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
     .map(([statDate, entry]) => ({
-      statDate,
+      stat_date: statDate,
       sessions: Number(entry.sessions) || 0,
-      sumPct: Number(entry.sumPct) || 0
+      sum_pct: Number(entry.sumPct) || 0
     }));
 }
 
@@ -529,14 +529,14 @@ function buildSupabaseWordProgressSyncPayload() {
       if (lastReview && !/^\d{4}-\d{2}-\d{2}$/.test(String(lastReview))) return null;
 
       return {
-        wordId: normalizedWordId,
+        word_id: normalizedWordId,
         level,
-        nextReview,
-        lastReview
+        next_review: nextReview,
+        last_review: lastReview
       };
     })
     .filter(Boolean)
-    .sort((left, right) => left.wordId - right.wordId);
+    .sort((left, right) => left.word_id - right.word_id);
 }
 
 function buildSupabaseStateSyncPayload() {
