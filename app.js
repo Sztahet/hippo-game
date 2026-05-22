@@ -1205,7 +1205,7 @@ const app = document.getElementById('app');
 function resetLearningProgress() {
   localStorage.removeItem(STORAGE_KEY);
   progress = {};
-  queueSupabaseStateSync();
+  clearSupabaseSyncStatus();
 }
 
 function renderHome() {
@@ -1785,6 +1785,36 @@ function renderSettings() {
         <span class="level-check">${active ? '✓' : ''}</span>
       </label>`;
   }).join('');
+  const supabaseSyncControlsHtml = supabaseSignedIn
+    ? `
+        <div class="auth-config-actions" style="margin-top:0.75rem;">
+          <button class="btn btn-secondary" id="btn-sync-now" style="flex:1;margin-top:0;">Synchronizuj teraz</button>
+        </div>
+        <p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Ręczna synchronizacja tylko dopisuje albo aktualizuje dane w Supabase. Nie usuwa żadnych wierszy z bazy.</p>
+      `
+    : '';
+  const resetSectionHtml = supabaseSignedIn
+    ? `
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#991b1b;">! Ochrona progresu</h2>
+        <p style="font-size:0.85rem;color:#555;line-height:1.55;margin-bottom:1rem;">Dla zalogowanego konta Supabase pełny reset progresu jest zablokowany w aplikacji. Sync z tego UI może tylko dopisać albo zaktualizować dane, nigdy usunąć wiersze z bazy.</p>
+        <button class="btn btn-secondary" disabled style="background:#f9fafb;color:#9ca3af;border:1px solid #e5e7eb;cursor:not-allowed;">Reset zablokowany dla konta Supabase</button>
+      </div>
+    `
+    : `
+      <div class="card" style="text-align:left;margin-top:1rem;">
+        <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#991b1b;">! Strefa ostrożności</h2>
+        <p style="font-size:0.85rem;color:#555;line-height:1.55;margin-bottom:1rem;">Reset usuwa tylko lokalny postęp zapisany na tym urządzeniu. Ta operacja wymaga dodatkowego potwierdzenia.</p>
+        <button class="btn btn-secondary" id="btn-show-reset-progress" style="background:#fff5f5;color:#991b1b;border:1px solid #fecaca;">! Resetuj lokalny postęp</button>
+        <div id="reset-progress-guard" style="display:none;margin-top:1rem;padding:1rem;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;">
+          <p style="margin:0 0 0.85rem;color:#991b1b;font-size:0.9rem;line-height:1.5;"><strong>! Uwaga:</strong> to usunie tylko lokalny postęp zapisany w tej przeglądarce.</p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btn-cancel-reset-progress" style="flex:1;margin-top:0;min-width:140px;">Anuluj</button>
+            <button class="btn btn-primary" id="btn-confirm-reset-progress" style="flex:1;margin-top:0;min-width:140px;background:#991b1b;color:#fff;">!! Tak, resetuj lokalnie</button>
+          </div>
+        </div>
+      </div>
+    `;
 
   app.innerHTML = `
     <div class="screen">
@@ -1825,6 +1855,7 @@ function renderSettings() {
             : '<span style="color:#555;">Stare ścieżki migracyjne i lokalne hasło awaryjne są wyłączone.</span>'}
         </div>
         <div id="supabase-sync-notice">${getSupabaseSyncNoticeHtml()}</div>
+        ${supabaseSyncControlsHtml}
         ${showSupabaseConfigControls ? `
         <label class="settings-label">Project URL:</label>
         <input type="url" class="input-answer" id="input-supabase-url"
@@ -1859,19 +1890,7 @@ function renderSettings() {
             : 'Do testow lokalnych uruchom aplikacje przez http://localhost, nie przez file://.'}
         </p>` : ''}
       </div>
-
-      <div class="card" style="text-align:left;margin-top:1rem;">
-        <h2 style="font-size:1rem;margin-bottom:0.75rem;color:#991b1b;">! Strefa ostrożności</h2>
-        <p style="font-size:0.85rem;color:#555;line-height:1.55;margin-bottom:1rem;">Reset usuwa cały zapisany postęp nauki słówek. Ta operacja nie powinna być dostępna z ekranu głównego i wymaga dodatkowego potwierdzenia.</p>
-        <button class="btn btn-secondary" id="btn-show-reset-progress" style="background:#fff5f5;color:#991b1b;border:1px solid #fecaca;">! Resetuj postęp</button>
-        <div id="reset-progress-guard" style="display:none;margin-top:1rem;padding:1rem;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;">
-          <p style="margin:0 0 0.85rem;color:#991b1b;font-size:0.9rem;line-height:1.5;"><strong>! Uwaga:</strong> to usunie cały postęp nauki zapisany w aplikacji i wyśle ten stan do Supabase.</p>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-            <button class="btn btn-secondary" id="btn-cancel-reset-progress" style="flex:1;margin-top:0;min-width:140px;">Anuluj</button>
-            <button class="btn btn-primary" id="btn-confirm-reset-progress" style="flex:1;margin-top:0;min-width:140px;background:#991b1b;color:#fff;">!! Tak, resetuj</button>
-          </div>
-        </div>
-      </div>
+      ${resetSectionHtml}
       <button class="btn btn-secondary" id="btn-back" style="margin-top:0.75rem;">← Wróć</button>
     </div>
   `;
@@ -1970,6 +1989,32 @@ function renderSettings() {
       resetSupabaseClient();
       setAuthUiMessage('info', 'Wylogowano z Supabase.');
       renderLogin();
+    });
+  }
+
+  const btnSyncNow = document.getElementById('btn-sync-now');
+  if (btnSyncNow) {
+    btnSyncNow.addEventListener('click', async () => {
+      const defaultLabel = 'Synchronizuj teraz';
+      btnSyncNow.disabled = true;
+      btnSyncNow.textContent = 'Synchronizuję...';
+
+      await queueSupabaseStateSync();
+
+      const currentButton = document.getElementById('btn-sync-now');
+      if (!currentButton) return;
+
+      currentButton.disabled = false;
+      if (supabaseSyncStatus.status === 'success') {
+        currentButton.textContent = '✓ Zsynchronizowano';
+        setTimeout(() => {
+          const nextButton = document.getElementById('btn-sync-now');
+          if (nextButton) nextButton.textContent = defaultLabel;
+        }, 2000);
+        return;
+      }
+
+      currentButton.textContent = defaultLabel;
     });
   }
 
