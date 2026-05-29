@@ -1545,12 +1545,16 @@ function renderFeedback(word, status, userAnswer) {
   }
 
   const isError = status !== 'correct' && status !== 'hint-correct';
-  const delayMs = status === 'correct' ? 1000 : status === 'hint-correct' ? 1200 : 6000;
-  const exampleHtml = getExampleArray(word).length ? `
+  const examples = getExampleArray(word);
+  const hasExamples = examples.length > 0;
+  const baseDelayMs = status === 'correct' ? 1000 : status === 'hint-correct' ? 1200 : 6000;
+  const delayMs = !isError && hasExamples ? Math.max(baseDelayMs, 3200) : baseDelayMs;
+  const showAdvanceButton = isError || hasExamples;
+  const exampleHtml = hasExamples ? `
     <div class="feedback-example-block">
       <div class="feedback-example-label">Przykład użycia</div>
       <div class="feedback-example-list">
-        ${getExampleArray(word).map((example) => `<div class="feedback-example-item">${escapeHtml(example)}</div>`).join('')}
+        ${examples.map((example) => `<div class="feedback-example-item">${escapeHtml(example)}</div>`).join('')}
       </div>
     </div>
   ` : '';
@@ -1576,13 +1580,15 @@ function renderFeedback(word, status, userAnswer) {
         <div class="feedback-text">${text}</div>
         ${comparisonHtml}
         ${exampleHtml}
-        ${isError ? `
+        ${showAdvanceButton ? `
         <div class="feedback-timer-row">
-          <button class="btn-skip-feedback" id="btn-skip">Przejdź dalej <span class="skip-countdown" id="skip-countdown"></span></button>
+          <button class="btn-skip-feedback" id="btn-skip">${isError ? 'Przejdź dalej' : 'Dalej'} ${isError ? '<span class="skip-countdown" id="skip-countdown"></span>' : ''}</button>
         </div>` : ''}
       </div>
     </div>
   `;
+
+  window.scrollTo(0, 0);
 
   const advance = () => {
     clearInterval(timerHandle);
@@ -1603,11 +1609,12 @@ function renderFeedback(word, status, userAnswer) {
       if (el) el.textContent = remaining > 0 ? `(${remaining}s)` : '';
       if (remaining <= 0) advance();
     }, 1000);
-    const skipBtn = document.getElementById('btn-skip');
-    if (skipBtn) skipBtn.addEventListener('click', advance);
   } else {
     timerHandle = setTimeout(advance, delayMs);
   }
+
+  const skipBtn = document.getElementById('btn-skip');
+  if (skipBtn) skipBtn.addEventListener('click', advance);
 }
 
 function renderSummary() {
