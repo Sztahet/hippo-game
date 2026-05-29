@@ -12,10 +12,8 @@ Ten katalog opisuje aktywny backend projektu. Supabase obsługuje logowanie, boo
 
 ## Zawartość katalogu
 
-- `migrations/202605110001_init_public_stats.sql` - schema tabel, RLS, triggery i publiczny snapshot.
-- `migrations/202605120001_auth_bootstrap_and_legacy_import.sql` - bootstrap gracza po auth oraz historyczny kontrakt importowy.
-- `migrations/202605130001_get_my_player_snapshot.sql` - prywatny snapshot do odtworzenia stanu aplikacji po zalogowaniu.
-- `migrations/202605160001_sync_player_state_from_auth.sql` - pełny sync snapshotu gracza z klienta do Supabase.
+- `current-schema.sql` - kanoniczny snapshot aktualnej wersji schematu, funkcji, triggerów, RLS i grantów; tego pliku używaj do stawiania pustego projektu i szybkiego audytu backendu.
+- `migrations/` - historia ewolucji backendu i inkrementalne zmiany dla już istniejących środowisk.
 - `email-templates/` - szablony maili `Confirm signup` i `Magic Link`.
 - `migration-plan.md` - krótka notatka o zamknięciu cutoveru i kolejnych krokach.
 
@@ -33,22 +31,25 @@ RLS jest włączony na surowych tabelach. Publicznie czytelny ma pozostać tylko
 
 1. Załóż projekt w Supabase.
 2. Otwórz SQL Editor.
-3. Uruchom migracje w tej kolejności:
-   - `202605110001_init_public_stats.sql`
-   - `202605120001_auth_bootstrap_and_legacy_import.sql`
-   - `202605130001_get_my_player_snapshot.sql`
-  - `202605160001_sync_player_state_from_auth.sql`
-4. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla:
+3. Dla pustego projektu uruchom `current-schema.sql`.
+4. Jeśli aktualizujesz już istniejące środowisko, dokładaj tylko nowe migracje z `migrations/` zamiast odpalać cały łańcuch od początku.
+5. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla:
    - `http://localhost:8080`
    - `http://localhost:3000`
    - produkcyjnego URL z GitHub Pages
-5. W `Authentication -> Email Templates` ustaw własne szablony dla:
+6. W `Authentication -> Email Templates` ustaw własne szablony dla:
    - `Confirm signup`: `Subject` z `email-templates/confirmation-subject.txt`, `Content` z `email-templates/confirmation.html`
    - `Magic Link`: `Subject` z `email-templates/magic-link-subject.txt`, `Content` z `email-templates/magic-link.html`
-6. W obu szablonach zostaw placeholder `{{ .ConfirmationURL }}` w głównym przycisku.
-7. `signInWithOtp()` tworzy użytkownika, jeśli adres jeszcze nie istnieje, więc pierwszy mail dla nowego adresu będzie typu `Confirm signup`, a kolejne logowania pójdą już standardowym `Magic Link`.
-8. Jeśli używasz własnego SMTP, wyłącz email tracking po stronie dostawcy, żeby nie przepisywał linków auth.
-9. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+7. W obu szablonach zostaw placeholder `{{ .ConfirmationURL }}` w głównym przycisku.
+8. `signInWithOtp()` tworzy użytkownika, jeśli adres jeszcze nie istnieje, więc pierwszy mail dla nowego adresu będzie typu `Confirm signup`, a kolejne logowania pójdą już standardowym `Magic Link`.
+9. Jeśli używasz własnego SMTP, wyłącz email tracking po stronie dostawcy, żeby nie przepisywał linków auth.
+10. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+
+## Workflow zmian SQL
+
+1. Dodaj nową migrację do `migrations/`, jeśli zmiana ma trafić na istniejące środowiska.
+2. Po ustaleniu finalnej definicji obiektu przepisz ją też do `current-schema.sql`.
+3. Traktuj `current-schema.sql` jako punkt prawdy dla aktualnego backendu, a `migrations/` jako dziennik dojscia do tego stanu.
 
 Szybka kontrola po wdrożeniu:
 
@@ -100,7 +101,8 @@ Ta funkcja:
 
 - zapewnia rekord `players` dla zalogowanego usera,
 - zapisuje pełny snapshot `player_settings`, `player_daily_stats` i `player_word_progress`,
-- usuwa z backendu wpisy, których nie ma już w bieżącym snapshotcie klienta,
+- akceptuje payloady w `camelCase` i `snake_case`,
+- robi tylko upserty i nie usuwa istniejących wierszy po stronie backendu,
 - odświeża `player_public_stats` po każdym zapisie.
 
 ## Aktualny flow frontendu

@@ -75,9 +75,10 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 ## Najważniejsze pliki w repo
 
 - `index.html`, `app.js`, `style.css`, `words.json` - runtime aplikacji.
+- `supabase/current-schema.sql` - kanoniczny snapshot aktualnego backendu do fresh setupu i audytu SQL.
 - `supabase/README.md` - setup i kontrakt backendu.
 - `supabase/email-templates/` - szablony maili `Confirm signup` i `Magic Link`.
-- `supabase/migrations/` - SQL schema i RPC.
+- `supabase/migrations/` - historia zmian backendu i inkrementalne migracje.
 - `plan.md` - założenia produktu.
 - `what_next.md` - najbliższe zadania.
 
@@ -98,12 +99,13 @@ Potem otwórz `http://localhost:3000` albo `http://localhost:8080`.
 ## Setup Supabase
 
 1. Załóż projekt w Supabase.
-2. Uruchom migracje z katalogu `supabase/migrations/` w kolejności nazw plików.
-3. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla localhosta i GitHub Pages.
-4. W `Authentication -> Email Templates` ustaw własne szablony dla `Confirm signup` i `Magic Link`.
-5. Wpisz `url` i `publishableKey` do `supabase-config.js`.
-6. Przetestuj logowanie nowym i istniejącym adresem e-mail.
-7. Zweryfikuj, że w bazie istnieją tabele `players`, `player_settings`, `player_daily_stats`, `player_word_progress` i `player_public_stats`.
+2. Dla pustego projektu uruchom `supabase/current-schema.sql`.
+3. `supabase/migrations/` traktuj jako historię zmian i nowe poprawki dla już istniejących środowisk.
+4. W `Authentication -> URL Configuration` ustaw `Site URL` i `Redirect URLs` dla localhosta i GitHub Pages.
+5. W `Authentication -> Email Templates` ustaw własne szablony dla `Confirm signup` i `Magic Link`.
+6. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+7. Przetestuj logowanie nowym i istniejącym adresem e-mail.
+8. Zweryfikuj, że w bazie istnieją tabele `players`, `player_settings`, `player_daily_stats`, `player_word_progress` i `player_public_stats`.
 
 Szczegóły operacyjne są opisane w `supabase/README.md`.
 
