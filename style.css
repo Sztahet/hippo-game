@@ -810,6 +810,34 @@ h2 {
   font-weight: 700;
 }
 
+.feedback-example-block {
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.45);
+  text-align: left;
+}
+
+.feedback-example-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 0.35rem;
+}
+
+.feedback-example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.feedback-example-item {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 /* ===== ANSWER COMPARISON (feedback + summary) ===== */
 .answer-comparison {
   margin-top: 0.75rem;

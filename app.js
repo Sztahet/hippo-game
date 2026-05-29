@@ -791,8 +791,8 @@ function getCurrentStreak() {
 }
 
 async function loadWords() {
-  const resp = await fetch('words.json');
-  return resp.json();
+  const wordsResp = await fetch('words.json');
+  return wordsResp.json();
 }
 
 function getRandomItem(items) {
@@ -1045,6 +1045,19 @@ function getEnDisplay(word) {
 function getEnAllDisplay(word) {
   const arr = getEnArray(word);
   return arr.join(' / ');
+}
+
+/** Returns optional example sentences for display after answering. */
+function getExampleArray(word) {
+  if (Array.isArray(word.examples)) {
+    return word.examples
+      .map((example) => String(example || '').trim())
+      .filter(Boolean);
+  }
+  if (typeof word.example === 'string' && word.example.trim()) {
+    return [word.example.trim()];
+  }
+  return [];
 }
 
 /**
@@ -1533,6 +1546,14 @@ function renderFeedback(word, status, userAnswer) {
 
   const isError = status !== 'correct' && status !== 'hint-correct';
   const delayMs = status === 'correct' ? 1000 : status === 'hint-correct' ? 1200 : 6000;
+  const exampleHtml = getExampleArray(word).length ? `
+    <div class="feedback-example-block">
+      <div class="feedback-example-label">Przykład użycia</div>
+      <div class="feedback-example-list">
+        ${getExampleArray(word).map((example) => `<div class="feedback-example-item">${escapeHtml(example)}</div>`).join('')}
+      </div>
+    </div>
+  ` : '';
 
   const comparisonHtml = isError ? `
     <div class="answer-comparison">
@@ -1554,6 +1575,7 @@ function renderFeedback(word, status, userAnswer) {
         <div class="feedback-icon">${icon}</div>
         <div class="feedback-text">${text}</div>
         ${comparisonHtml}
+        ${exampleHtml}
         ${isError ? `
         <div class="feedback-timer-row">
           <button class="btn-skip-feedback" id="btn-skip">Przejdź dalej <span class="skip-countdown" id="skip-countdown"></span></button>
