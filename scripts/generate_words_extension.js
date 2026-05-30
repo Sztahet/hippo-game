@@ -1,6 +1,6 @@
 /**
  * generate_words_extension.js — dodaje więcej słów do istniejącego words.json
- * Run: node generate_words_extension.js
+ * Run: node scripts/generate_words_extension.js
  */
 const fs = require('fs');
 

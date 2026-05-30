@@ -2,9 +2,6 @@
 const INTERVALS = [0, 1, 3, 7, 14, 30, 90, 180, 730]; // days per level
 const SESSION_SIZE = 25;
 const STORAGE_KEY = 'vocab_progress';
-const LEGACY_LOCAL_STORAGE_KEYS = ['vocab_sync_url', 'vocab_sync_token'];
-const LEGACY_SESSION_STORAGE_KEYS = ['vocab_auth'];
-const LEGACY_IMPORT_MARKER_PREFIX = 'vocab_supabase_import_';
 const SUPABASE_URL_KEY = 'vocab_supabase_url';
 const SUPABASE_PUBLISHABLE_KEY = 'vocab_supabase_publishable_key';
 const ACTIVE_LEVELS_KEY = 'vocab_active_levels';
@@ -270,17 +267,6 @@ function hasSupabaseConfig() {
 
 function hasSupabaseLibrary() {
   return Boolean(window.supabase && typeof window.supabase.createClient === 'function');
-}
-
-function clearDeprecatedStorageKeys() {
-  LEGACY_LOCAL_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
-  LEGACY_SESSION_STORAGE_KEYS.forEach((key) => sessionStorage.removeItem(key));
-
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith(LEGACY_IMPORT_MARKER_PREFIX)) {
-      localStorage.removeItem(key);
-    }
-  });
 }
 
 function isHttpOrigin() {
@@ -628,6 +614,21 @@ function clearAuthUiMessage() {
 function formatAuthError(error, fallback = 'Wystąpił błąd logowania.') {
   if (!error) return fallback;
   const message = typeof error === 'string' ? error : error.message;
+  const normalized = message ? String(message).trim().toLowerCase() : '';
+
+  if (normalized.includes('invalid login credentials')) {
+    return 'Nieprawidłowy e-mail lub hasło.';
+  }
+  if (normalized.includes('email not confirmed')) {
+    return 'Najpierw potwierdź adres e-mail z wiadomości od Supabase.';
+  }
+  if (normalized.includes('password should be at least')) {
+    return 'Hasło jest za krótkie. Użyj co najmniej 8 znaków.';
+  }
+  if (normalized.includes('new password should be different')) {
+    return 'Nowe hasło musi różnić się od poprzedniego.';
+  }
+
   return message ? String(message) : fallback;
 }
 
@@ -1769,6 +1770,7 @@ function showHappyHippoPopup() {
 // ===== SETTINGS SCREEN =====
 function renderSettings() {
   currentScreen = 'settings';
+  const app = document.getElementById('app');
   const currentSupabaseUrl = getSupabaseUrl();
   const currentSupabasePublishableKey = getSupabasePublishableKey();
   const supabaseConfigured = hasSupabaseConfig();
@@ -1779,6 +1781,10 @@ function renderSettings() {
   const hasSupabaseProjectConfig = Boolean(
     supabaseProjectConfig.url && supabaseProjectConfig.publishableKey
   );
+  const message = authUiMessage;
+  const messageHtml = message
+    ? `<p class="login-status login-status--${escapeHtml(message.type)}">${escapeHtml(message.text)}</p>`
+    : '';
   const authRedirectUrl = getAuthRedirectUrl();
   const ignoredCount = ignoredWordIds.length;
   const ignoredSet = new Set(ignoredWordIds);
@@ -1822,6 +1828,34 @@ function renderSettings() {
         <p style="font-size:0.85rem;color:#6b7280;line-height:1.55;margin-top:0.75rem;">Ręczna synchronizacja tylko dopisuje albo aktualizuje dane w Supabase. Nie usuwa żadnych wierszy z bazy.</p>
       `
     : '';
+  const passwordSectionHtml = supabaseSignedIn
+    ? `
+      <div class="auth-config-card" style="margin-top:1rem;">
+        <h3 style="font-size:0.95rem;margin-bottom:0.65rem;">Hasło do konta</h3>
+        <p style="font-size:0.85rem;color:#555;line-height:1.55;">
+          Jeśli konto zaczęło od Magic Link, tutaj możesz ustawić własne hasło. Po zapisaniu będzie można logować się mailem i hasłem bez wysyłania kolejnych wiadomości.
+        </p>
+        <form id="password-settings-form" class="login-form-stack" style="margin-top:0.85rem;">
+          <input
+            id="settings-password-input"
+            type="password"
+            class="input-answer login-email-input"
+            placeholder="Nowe hasło"
+            autocomplete="new-password"
+          />
+          <input
+            id="settings-password-confirm-input"
+            type="password"
+            class="input-answer login-email-input"
+            placeholder="Powtórz nowe hasło"
+            autocomplete="new-password"
+          />
+          <button class="btn btn-primary" type="submit">Ustaw / zmień hasło</button>
+        </form>
+        <p class="login-helper">Hasło powinno mieć co najmniej 8 znaków.</p>
+      </div>
+    `
+    : '';
   const resetSectionHtml = supabaseSignedIn
     ? `
       <div class="card" style="text-align:left;margin-top:1rem;">
@@ -1848,6 +1882,7 @@ function renderSettings() {
   app.innerHTML = `
     <div class="screen">
       <h1>⚙️ Ustawienia</h1>
+      ${messageHtml}
 
       <div class="card" style="text-align:left;">
         <h2 style="font-size:1rem;margin-bottom:0.75rem;">Poziomy CEFR do nauki</h2>
@@ -1885,6 +1920,7 @@ function renderSettings() {
         </div>
         <div id="supabase-sync-notice">${getSupabaseSyncNoticeHtml()}</div>
         ${supabaseSyncControlsHtml}
+        ${passwordSectionHtml}
         ${showSupabaseConfigControls ? `
         <label class="settings-label">Project URL:</label>
         <input type="url" class="input-answer" id="input-supabase-url"
@@ -2021,6 +2057,45 @@ function renderSettings() {
     });
   }
 
+  const passwordSettingsForm = document.getElementById('password-settings-form');
+  if (passwordSettingsForm) {
+    passwordSettingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('settings-password-input').value;
+      const passwordConfirm = document.getElementById('settings-password-confirm-input').value;
+
+      if (password.length < 8) {
+        setAuthUiMessage('error', 'Hasło musi mieć co najmniej 8 znaków.');
+        renderSettings();
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        setAuthUiMessage('error', 'Hasła nie są identyczne.');
+        renderSettings();
+        return;
+      }
+
+      const submitButton = passwordSettingsForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Zapisuję...';
+
+      try {
+        const client = getSupabaseClient();
+        if (!client || !isSupabaseAuthenticated()) throw new Error('Najpierw zaloguj się do konta Supabase.');
+
+        const { error } = await client.auth.updateUser({ password });
+        if (error) throw error;
+
+        setAuthUiMessage('success', 'Hasło zapisane. Od teraz możesz logować się mailem i hasłem bez wysyłania linku.');
+      } catch (error) {
+        setAuthUiMessage('error', formatAuthError(error, 'Nie udało się zapisać hasła.'));
+      }
+
+      renderSettings();
+    });
+  }
+
   const btnSyncNow = document.getElementById('btn-sync-now');
   if (btnSyncNow) {
     btnSyncNow.addEventListener('click', async () => {
@@ -2119,7 +2194,6 @@ async function init() {
 
   initPromise = (async () => {
   const app = document.getElementById('app');
-  clearDeprecatedStorageKeys();
   progress = loadProgress();
   try {
     allWords = await loadWords();
@@ -2152,10 +2226,6 @@ async function init() {
 }
 
 // ===== LOGIN =====
-function isAuthenticated() {
-  return isSupabaseAuthenticated();
-}
-
 function renderLogin() {
   currentScreen = 'login';
   const app = document.getElementById('app');
@@ -2175,7 +2245,7 @@ function renderLogin() {
       <h1>Hippo Words</h1>
       <p class="login-subtitle">
         ${supabaseConfigured
-          ? 'Wpisz e-mail. Przy pierwszym logowaniu potwierdzisz adres, a później wejdziesz linkiem bez hasła.'
+          ? 'Możesz wejść linkiem na e-mail albo hasłem. Jeśli konto zaczęło od Magic Link, ustawisz hasło już po zalogowaniu.'
           : 'Najpierw skonfiguruj Supabase Auth. Potem użytkownicy będą logować się normalnie, bez wspólnego hasła.'}
       </p>
       ${messageHtml}
@@ -2192,6 +2262,25 @@ function renderLogin() {
         <button class="btn btn-primary" type="submit">Wyślij link</button>
       </form>
       <p class="login-helper">Po kliknięciu linku z maila gra sama wykryje aktywną sesję po powrocie do aplikacji. Przy pierwszym wejściu sprawdź też wiadomość z potwierdzeniem adresu.</p>
+      <div class="auth-divider">albo</div>
+      <form id="password-login-form" class="login-form-stack">
+        <input
+          id="password-login-email-input"
+          type="email"
+          class="input-answer login-email-input"
+          placeholder="twoj@email.com"
+          autocomplete="email"
+        />
+        <input
+          id="password-login-password-input"
+          type="password"
+          class="input-answer login-email-input"
+          placeholder="Hasło"
+          autocomplete="current-password"
+        />
+        <button class="btn btn-secondary" type="submit">Zaloguj się hasłem</button>
+      </form>
+      <p class="login-helper">Masz już ustawione hasło? Użyj go tutaj i wejdź bez wysyłania maila.</p>
       ` : `
       <div class="login-callout">
         Brak konfiguracji Supabase na tym urządzeniu. Wklej <strong>Project URL</strong> i <strong>publishable key</strong> z panelu Supabase albo wpisz je na stałe w pliku <strong>supabase-config.js</strong>.
@@ -2333,12 +2422,42 @@ function renderLogin() {
       });
     }
 
+    const passwordLoginForm = document.getElementById('password-login-form');
+    if (passwordLoginForm) {
+      passwordLoginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('password-login-email-input').value.trim();
+        const password = document.getElementById('password-login-password-input').value;
+        if (!email || !password) {
+          setAuthUiMessage('error', 'Wpisz e-mail i hasło.');
+          renderLogin();
+          return;
+        }
+
+        const submitButton = passwordLoginForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Loguję...';
+
+        try {
+          const client = getSupabaseClient();
+          if (!client) throw new Error('Brak konfiguracji Supabase Auth.');
+          const { error } = await client.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          clearAuthUiMessage();
+          return;
+        } catch (error) {
+          setAuthUiMessage('error', formatAuthError(error, 'Nie udało się zalogować hasłem.'));
+        }
+
+        renderLogin();
+      });
+    }
+
   }
 }
 
 async function boot() {
   currentScreen = 'boot';
-  clearDeprecatedStorageKeys();
 
   if (hasSupabaseConfig()) {
     try {

@@ -1,7 +1,7 @@
 /**
  * generate_words_v2.js
  * Reads existing words.json (marks all as A1), appends A2-C2 vocab.
- * Run: node generate_words_v2.js
+ * Run: node scripts/generate_words_v2.js
  */
 const fs = require('fs');
 

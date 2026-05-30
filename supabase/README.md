@@ -4,7 +4,7 @@ Ten katalog opisuje aktywny backend projektu. Supabase obsługuje logowanie, boo
 
 ## Zakres odpowiedzialności Supabase
 
-- logowanie mailowe (`Confirm signup` i `Magic Link`),
+- logowanie mailowe (`Confirm signup`, `Magic Link` i opcjonalnie e-mail + hasło po zapisaniu hasła przez użytkownika),
 - identyfikacja gracza i powiązanie z `auth.users`,
 - prywatny snapshot ustawień i postępu,
 - publiczny snapshot `player_public_stats`,
@@ -42,8 +42,9 @@ RLS jest włączony na surowych tabelach. Publicznie czytelny ma pozostać tylko
    - `Magic Link`: `Subject` z `email-templates/magic-link-subject.txt`, `Content` z `email-templates/magic-link.html`
 7. W obu szablonach zostaw placeholder `{{ .ConfirmationURL }}` w głównym przycisku.
 8. `signInWithOtp()` tworzy użytkownika, jeśli adres jeszcze nie istnieje, więc pierwszy mail dla nowego adresu będzie typu `Confirm signup`, a kolejne logowania pójdą już standardowym `Magic Link`.
-9. Jeśli używasz własnego SMTP, wyłącz email tracking po stronie dostawcy, żeby nie przepisywał linków auth.
-10. Wpisz `url` i `publishableKey` do `supabase-config.js`.
+9. Po zalogowaniu użytkownik może w UI wywołać `auth.updateUser({ password })` i od tej chwili korzystać też z `signInWithPassword(...)` bez wysyłania kolejnych maili.
+10. Jeśli używasz własnego SMTP, wyłącz email tracking po stronie dostawcy, żeby nie przepisywał linków auth.
+11. Wpisz `url` i `publishableKey` do `supabase-config.js`.
 
 ## Workflow zmian SQL
 
@@ -107,11 +108,12 @@ Ta funkcja:
 
 ## Aktualny flow frontendu
 
-1. User loguje się mailem.
+1. User loguje się mailem przez `Magic Link` albo, jeśli wcześniej ustawił hasło, przez e-mail + hasło.
 2. Frontend odzyskuje albo odświeża sesję Supabase.
 3. Frontend wywołuje `bootstrap_player_from_auth({})`, żeby zapewnić rekord `players`.
 4. Frontend pobiera `get_my_player_snapshot()` i odbudowuje lokalny stan gry.
-5. Po zakończonej sesji i po zmianach ustawień frontend wywołuje `sync_player_state_from_auth(...)` z pełnym snapshotem klienta.
+5. Zalogowany user może opcjonalnie ustawić albo zmienić hasło przez `auth.updateUser({ password })`.
+6. Po zakończonej sesji i po zmianach ustawień frontend wywołuje `sync_player_state_from_auth(...)` z pełnym snapshotem klienta.
 
 ## Przydatne zapytania operacyjne
 

@@ -2,7 +2,7 @@
  * build.js — generuje bundle.html: jeden samodzielny plik HTML
  * działający bezpośrednio z dysku (file://) bez potrzeby serwera.
  *
- * Uruchom: node build.js
+ * Uruchom: node scripts/build.js
  */
 
 const fs = require('fs');

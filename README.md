@@ -6,7 +6,7 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 
 ## Status projektu
 
-- Logowanie działa przez Supabase Auth. Dla nowego adresu pierwszy mail to `Confirm signup`, a kolejne wejścia używają `Magic Link`.
+- Logowanie działa przez Supabase Auth. Dla nowego adresu pierwszy mail to `Confirm signup`, a kolejne wejścia mogą używać `Magic Link`, a po ustawieniu hasła także zwykłego logowania e-mail + hasło.
 - Frontend po odzyskaniu sesji wywołuje `bootstrap_player_from_auth({})`, żeby zapewnić rekord `players` dla zalogowanego usera.
 - Aplikacja pobiera `get_my_player_snapshot()` i na tej podstawie hydratyzuje lokalny stan gry.
 - Publiczne porównania mają czytać wyłącznie z `player_public_stats`.
@@ -27,7 +27,7 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 - Baza około 10 000 słów w poziomach CEFR A1-C2.
 - Sesje nauki, feedback po każdej odpowiedzi i dzienne statystyki lokalne.
 - Publiczny snapshot statystyk przygotowany pod ranking i porównania graczy.
-- Login mailowy bez hasła aplikacyjnego po stronie użytkownika.
+- Login mailowy z Magic Link oraz opcjonalnym hasłem ustawianym już po zalogowaniu.
 - Mobile-first UI działające na GitHub Pages.
 
 ## Architektura runtime
@@ -51,7 +51,8 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 2. Jeśli istnieje sesja Supabase, frontend ją odświeża i wywołuje `bootstrap_player_from_auth({})`.
 3. Frontend pobiera `get_my_player_snapshot()` i odbudowuje lokalny stan gry.
 4. UI działa na lokalnym cache'u podczas sesji nauki.
-5. Po zakończonej sesji i po zmianie ustawień frontend synchronizuje pełny snapshot gracza do Supabase.
+5. Zalogowany użytkownik może w ustawieniach zapisać własne hasło, jeśli chce wracać bez maila.
+6. Po zakończonej sesji i po zmianie ustawień frontend synchronizuje pełny snapshot gracza do Supabase.
 6. Publiczne porównania powinny czytać wyłącznie z `player_public_stats`.
 
 ## Poziomy SRS
@@ -75,6 +76,7 @@ Hippo Words to statyczna aplikacja do nauki słówek PL → EN metodą spaced re
 ## Najważniejsze pliki w repo
 
 - `index.html`, `app.js`, `style.css`, `words.json` - runtime aplikacji.
+- `scripts/` - skrypty offline do bundlowania, rozszerzania i czyszczenia datasetu.
 - `supabase/current-schema.sql` - kanoniczny snapshot aktualnego backendu do fresh setupu i audytu SQL.
 - `supabase/README.md` - setup i kontrakt backendu.
 - `supabase/email-templates/` - szablony maili `Confirm signup` i `Magic Link`.
@@ -112,9 +114,9 @@ Szczegóły operacyjne są opisane w `supabase/README.md`.
 ## Dodawanie słówek
 
 ```powershell
-node words_20k_pipeline.js --clean-only --import-start-id=3327
-node words_20k_pipeline.js --target=3000 --import-start-id=3327
-node words_20k_pipeline.js --consume-all --import-start-id=3327
+node scripts/words_20k_pipeline.js --clean-only --import-start-id=3327
+node scripts/words_20k_pipeline.js --target=3000 --import-start-id=3327
+node scripts/words_20k_pipeline.js --consume-all --import-start-id=3327
 ```
 
 Po zmianach w `words.json` wystarczy commit i push na GitHub Pages.
@@ -122,10 +124,20 @@ Po zmianach w `words.json` wystarczy commit i push na GitHub Pages.
 ## Bundle offline
 
 ```powershell
-node build.js
+node scripts/build.js
 ```
 
 Bundle jest opcjonalny. Produkcyjny deployment opiera się na `index.html`, `app.js`, `style.css` i `words.json`.
+
+## Skrypty offline
+
+- `scripts/build.js` - generuje opcjonalny `bundle.html`.
+- `scripts/generate_examples.js` - dopisuje przykłady do `words.json`.
+- `scripts/generate_words_extension.js` i `scripts/generate_words_v2.js` - starsze skrypty rozszerzające dataset.
+- `scripts/add_synonyms.js` - stary skrypt do dopisywania synonimów.
+- `scripts/words_20k_pipeline.js` - pipeline do importu i czyszczenia większych paczek słów.
+- `scripts/validate_words.js` - szybka walidacja `words.json` po cleanupie lub imporcie.
+- `scripts/generate_words.py` - archiwalny generator początkowej wersji słownika.
 
 ## Aktualne ograniczenia
 
@@ -136,6 +148,7 @@ Bundle jest opcjonalny. Produkcyjny deployment opiera się na `index.html`, `app
 ## Szybka walidacja po zmianach
 
 ```powershell
+node scripts/validate_words.js
 node --check .\app.js
 ```
 
